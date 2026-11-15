@@ -5,7 +5,7 @@
   width: min(24rem, calc(100vw - 2.5rem));
   padding: 1.5rem 1.6rem 1.6rem;
   border-radius: 22px;
-  background: linear-gradient(to bottom, rgb(255 255 255 / 0.62), rgb(255 255 255 / 0.4));
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0.84), rgb(255 255 255 / 0.7));
   border: 1px solid rgb(255 255 255 / 0.7);
   box-shadow:
     0 24px 50px -22px rgb(15 30 50 / 0.5),

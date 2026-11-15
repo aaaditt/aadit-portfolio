@@ -33,6 +33,13 @@ const PATHS: [number, number, number, number][] = [
   [3, -11, 6, -13],
 ];
 
+/** Lines of sight from each section's camera to its subject. Tall things are kept out of them. */
+const SIGHTLINES: [number, number, number, number][] = [
+  [-8, 16, -17, -8],
+  [8, 16, 17, -8],
+  [2.5, -9, 0, -23],
+];
+
 const BLEND = 6;
 
 /** The river's z position at a given x. */
@@ -121,6 +128,7 @@ export function isReserved(x: number, z: number, margin = 1.5): boolean {
   // Keep the slope in front of the lookout open, so nothing stands between it and the camera.
   if (z > 20 && Math.abs(x) < 26) return true;
   if (Math.hypot(x, z - 23) < 15) return true;
+  if (SIGHTLINES.some((line) => distToSegment(x, z, line) < 6)) return true;
   if (PATHS.some((p) => distToSegment(x, z, p) < 1.3 + margin)) return true;
   return PLATEAUS.some((p) => Math.hypot(x - p.x, z - p.z) < p.r + margin);
 }
