@@ -133,6 +133,8 @@ export function isReserved(x: number, z: number, margin = 1.5): boolean {
   if (z > 20 && Math.abs(x) < 26) return true;
   if (Math.hypot(x, z - 23) < 15) return true;
   if (SIGHTLINES.some((line) => distToSegment(x, z, line) < 9)) return true;
+  // The corner of the Design view nearest its camera.
+  if (Math.hypot(x + 26, z - 5) < 8) return true;
   if (PATHS.some((p) => distToSegment(x, z, p) < 1.3 + margin)) return true;
   return PLATEAUS.some((p) => Math.hypot(x - p.x, z - p.z) < p.r + margin);
 }
