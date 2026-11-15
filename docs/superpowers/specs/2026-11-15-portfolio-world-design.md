@@ -105,3 +105,27 @@ What changed as a result (Claude's calls, for Aadit to correct):
 - The island lives in the root layout so it keeps running between sections.
 - Quick View (`/work`) is still planned; the section pages now carry the project content, shown in a panel over the scene.
 - The look studies were removed from the code; they remain in git history.
+
+## Update after the island review (2026-11-15)
+
+Aadit reviewed the rounded Paper Daylight island and asked for a different direction:
+
+- **Style:** pixelated and blocky, "somewhat in the middle" of a top-down pixel RPG and a block-building game. It must stay an original design.
+- **World:** a whole terrain, not one island; bigger, busier, more detailed, with better colours.
+- **Entrance:** a cinematic opening animation.
+- **Character:** modelled on Aadit's GitHub profile picture (dark curly hair, navy hoodie, closed-eye smile), animated, saying hi.
+- **Name:** shown properly, not as multicoloured blocks.
+- **Bar and font:** a more transparent, premium bottom bar; a different font.
+- **Process:** a critic agent reviews the design in the background and its advice is implemented in rounds.
+- **GitHub:** every change is pushed to https://github.com/aaaditt/aadit-portfolio.
+
+What was built in response (Claude's calls):
+
+- The world is generated: a 96x96 height map with a river, a lake to the south, a ring of mountains, and flat plateaus for each place. All blocks are drawn in instanced batches.
+- The scene is drawn at one third of screen resolution and scaled up with hard edges for the pixel look.
+- Places: a lookout camp with the character (Home and About), a Design Studio with a giant pencil, a Code Lab with a `</>` sculpture, an Arcade with a giant cabinet, tent and stage, plus a village, farm, windmill, bridge, boat and hot-air balloon.
+- A 9-second opening flight that starts as a top-down map view, with letterbox bars and a skip button. It plays once per browser tab and never under reduced motion.
+- Fonts: Pixelify Sans for headings, Space Grotesk for body text.
+- Paper Daylight's rounded shapes and palette were dropped in favour of natural terrain colours with coral, teal and navy accents.
+
+Still open: how projects are presented inside each section (a recommendation has been put to Aadit).
