@@ -6,7 +6,7 @@ const TOP: Record<Ground, string[]> = {
   grass: ["#7db05f", "#74a758", "#86b866", "#7aab5c"],
   sand: ["#e3d2a0", "#dccb97"],
   path: ["#c7a878", "#bf9f70", "#cdb083"],
-  stone: ["#979da3", "#9298a0", "#9ba1a7"],
+  stone: ["#8f97a3", "#8a929e", "#949ca8"],
   snow: ["#f2f4f3", "#e8eef0"],
   bed: ["#c9bb8c", "#bfb183"],
 };
@@ -15,8 +15,9 @@ const BODY: Record<Ground, string> = {
   grass: "#8a6748",
   sand: "#cdbb86",
   path: "#8a6748",
-  stone: "#7d848b",
-  snow: "#8e949b",
+  // Rock and snow use nearly the same colour on top and sides, so slopes read as solid, not striped.
+  stone: "#858d99",
+  snow: "#dfe6ea",
   bed: "#b3a57a",
 };
 

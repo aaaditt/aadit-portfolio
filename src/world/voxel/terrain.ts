@@ -107,8 +107,8 @@ export function groundAt(x: number, z: number): Ground {
   if (z > 30 && h <= 2 && southOpening(x, z) > 0.2) return "sand";
   if (onPath(x, z)) return "path";
   if (PLATEAUS.some((p) => p.paved && Math.hypot(x - p.x, z - p.z) < p.r)) return "path";
-  if (h >= 15) return "snow";
-  if (h >= 9 + Math.round(noise(x / 4, z / 4, 4) * 2)) return "stone";
+  if (h >= 14 + Math.round(noise(x / 6, z / 6, 6) * 2)) return "snow";
+  if (h >= 10 + Math.round(noise(x / 4, z / 4, 4) * 2)) return "stone";
   return "grass";
 }
 
@@ -119,7 +119,8 @@ export const forestAt = (x: number, z: number) => noise(x / 10, z / 10, 5);
 export function isReserved(x: number, z: number, margin = 1.5): boolean {
   if (riverDistance(x, z) < 4.6) return true;
   // Keep the slope in front of the lookout open, so nothing stands between it and the camera.
-  if (z > 22 && Math.abs(x) < 16) return true;
+  if (z > 20 && Math.abs(x) < 26) return true;
+  if (Math.hypot(x, z - 23) < 15) return true;
   if (PATHS.some((p) => distToSegment(x, z, p) < 1.3 + margin)) return true;
   return PLATEAUS.some((p) => Math.hypot(x - p.x, z - p.z) < p.r + margin);
 }

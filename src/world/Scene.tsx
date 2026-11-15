@@ -16,7 +16,7 @@ export function Scene({ greet }: { greet: boolean }) {
 
   return (
     <>
-      <fog attach="fog" args={[HAZE, 70, 190]} />
+      <fog attach="fog" args={[HAZE, 48, 175]} />
 
       <hemisphereLight args={["#eaf6ff", "#8fb97a", 0.95]} />
       <ambientLight intensity={0.25} />

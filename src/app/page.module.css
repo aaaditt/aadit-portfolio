@@ -24,9 +24,18 @@
   font-weight: 700;
   color: var(--paper);
   /* A hard offset shadow, like lettering in a pixel game. */
+  /* A solid navy outline all the way round, then a hard drop shadow, so it reads over anything. */
   text-shadow:
-    0.045em 0.045em 0 var(--navy),
-    0.09em 0.09em 0 rgb(23 32 43 / 0.28);
+    -0.035em 0 0 var(--navy),
+    0.035em 0 0 var(--navy),
+    0 -0.035em 0 var(--navy),
+    0 0.035em 0 var(--navy),
+    -0.035em -0.035em 0 var(--navy),
+    0.035em -0.035em 0 var(--navy),
+    -0.035em 0.035em 0 var(--navy),
+    0.035em 0.035em 0 var(--navy),
+    0.08em 0.08em 0 var(--navy),
+    0.13em 0.13em 0 rgb(23 32 43 / 0.3);
   margin-bottom: 1.1rem;
 }
 

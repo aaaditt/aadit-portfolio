@@ -21,7 +21,7 @@ export const SECTIONS: Section[] = [
     href: "/",
     title: "Aadit",
     blurb: "Design, code, games and events.",
-    camera: { position: [10, 16.5, 48], target: [0, 6.5, 12] },
+    camera: { position: [9, 14.5, 50], target: [0, 9.5, 10] },
   },
   {
     id: "design",
