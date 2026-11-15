@@ -1,16 +1,24 @@
 "use client";
 
-import { useThree } from "@react-three/fiber";
-import { Float, OrbitControls, PerspectiveCamera, Stars } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import { Float, OrbitControls, Stars } from "@react-three/drei";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
+import * as THREE from "three";
 import type { Mood } from "../moods";
 import { Building, Character, Island, NameSign, Tree } from "./parts";
 
-/** The camera. It widens its view in tall, narrow frames so the whole island stays in shot. */
+/** Widens the view in tall, narrow frames so the whole island stays in shot. */
 function Framing() {
-  const aspect = useThree((s) => s.size.width / s.size.height);
-  const fov = aspect < 1 ? Math.min(35 / aspect, 62) : 35;
-  return <PerspectiveCamera makeDefault position={[9, 6.5, 11]} fov={fov} />;
+  useFrame(({ camera, size }) => {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return;
+    const aspect = size.width / size.height;
+    const fov = aspect < 1 ? Math.min(35 / aspect, 62) : 35;
+    if (camera.fov !== fov) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
+    }
+  });
+  return null;
 }
 
 /** The same tiny scene every time; only the mood changes how it looks. */
