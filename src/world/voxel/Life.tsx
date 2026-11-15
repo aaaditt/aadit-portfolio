@@ -4,12 +4,10 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useMotion } from "../motion";
+import { walker } from "../walker";
 import { b, type Box } from "./box";
-import { heightAt, plateau, riverDistance } from "./terrain";
+import { groundY, plateau } from "./terrain";
 import { Voxels } from "./Voxels";
-
-/** The height of the bridge deck, which walkers use while over the river. */
-const DECK = 2.05;
 
 function person(shirt: string, hair: string, skin: string): Box[] {
   return [
@@ -33,31 +31,43 @@ const WALKERS: Walker[] = [
   { route: [8, -20, 12, -21], speed: 0.6, phase: 0.1, model: person("#f5f3ea", "#1f1a1b", "#a9744b") },
 ];
 
-function groundY(x: number, z: number) {
-  return riverDistance(x, z) < 4.4 ? DECK : heightAt(Math.floor(x), Math.floor(z));
-}
+/** How close the character has to run past for a villager to stop and watch. */
+const NOTICE = 7;
 
-/** Villagers strolling back and forth along the paths, slowing to a stop at each end. */
+/**
+ * Villagers strolling back and forth along the paths, slowing to a stop at each end.
+ * When the character runs past, they stop and turn to watch him go.
+ */
 export function Villagers() {
   const refs = useRef<(THREE.Group | null)[]>([]);
   const animate = useMotion();
+  /** How far round its circuit each villager is, and how fully each has stopped to watch (0 to 1). */
+  const laps = useRef(WALKERS.map((w) => w.phase));
+  const watching = useRef(WALKERS.map(() => 0));
 
-  useFrame(({ clock }) => {
+  useFrame(({ clock }, delta) => {
+    const step = Math.min(delta, 0.1);
     WALKERS.forEach((w, i) => {
       const group = refs.current[i];
       if (!group) return;
       const [x1, z1, x2, z2] = w.route;
       const length = Math.hypot(x2 - x1, z2 - z1);
-      const lap = animate ? (clock.elapsedTime * w.speed) / (length * 2) + w.phase : w.phase;
+      const watch = watching.current[i];
+      if (animate) laps.current[i] += ((step * w.speed) / (length * 2)) * (1 - watch);
+      const lap = laps.current[i];
       const tri = 1 - Math.abs(((lap % 1) + 1) % 1 * 2 - 1);
       // Ease in and out of each end, which reads as a short pause.
       const u = tri * tri * (3 - 2 * tri);
       const forward = (((lap % 1) + 1) % 1) < 0.5;
       const x = x1 + (x2 - x1) * u;
       const z = z1 + (z2 - z1) * u;
-      const moving = Math.sin(Math.PI * tri);
+      const moving = Math.sin(Math.PI * tri) * (1 - watch);
+      const noticed = animate && walker.moving && Math.hypot(walker.x - x, walker.z - z) < NOTICE;
+      watching.current[i] += ((noticed ? 1 : 0) - watch) * (1 - Math.exp(-(noticed ? 12 : 2.5) * step));
       group.position.set(x, groundY(x, z) + Math.abs(Math.sin(clock.elapsedTime * 9 + i)) * 0.07 * moving, z);
-      group.rotation.y = Math.atan2(x2 - x1, z2 - z1) + (forward ? 0 : Math.PI);
+      const ahead = Math.atan2(x2 - x1, z2 - z1) + (forward ? 0 : Math.PI);
+      const towards = Math.atan2(walker.x - x, walker.z - z);
+      group.rotation.y = ahead + Math.atan2(Math.sin(towards - ahead), Math.cos(towards - ahead)) * watch;
     });
   });
 

@@ -5,6 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { bubbleAnchor } from "../bubbleAnchor";
 import { useMotion } from "../motion";
+import { walker } from "../walker";
 import { b, type Box } from "./box";
 import { Voxels } from "./Voxels";
 
@@ -23,12 +24,8 @@ const FACE = "#2a1d18";
 /** One model pixel, in world units. The character is about 3.4 blocks tall. */
 const U = 0.17;
 
-const LEGS: Box[] = [
-  b(-3, -5, -1.5, 2.6, 5, 3, PANTS),
-  b(0.4, -5, -1.5, 2.6, 5, 3, PANTS),
-  b(-3.1, -5.8, -1.5, 2.8, 0.8, 3.8, SHOE),
-  b(0.3, -5.8, -1.5, 2.8, 0.8, 3.8, SHOE),
-];
+const LEG_L: Box[] = [b(-3, -5, -1.5, 2.6, 5, 3, PANTS), b(-3.1, -5.8, -1.5, 2.8, 0.8, 3.8, SHOE)];
+const LEG_R: Box[] = [b(0.4, -5, -1.5, 2.6, 5, 3, PANTS), b(0.3, -5.8, -1.5, 2.8, 0.8, 3.8, SHOE)];
 
 const TORSO: Box[] = [
   b(-3.5, 0, -2, 7, 6.5, 4, HOODIE),
@@ -90,66 +87,163 @@ const CROSSED_X = -1.05;
 const CROSSED_Z = 0.95;
 
 const ARM: Box[] = [b(-1, -5.5, -1, 2, 6, 2, HOODIE), b(-1.1, -5.6, -1.1, 2.2, 0.8, 2.2, HOODIE_D), b(-0.8, -6.8, -0.8, 1.6, 1.2, 1.6, SKIN)];
+const BRUSH: Box[] = [b(-0.3, -8.8, -0.3, 0.6, 2.2, 0.6, "#8b6b4a"), b(-0.45, -9.7, -0.45, 0.9, 1, 0.9, "#c8553d")];
 
 /**
- * Aadit, in blocks. Bobs on the spot, looks around, and waves hello.
- * `greet` shows the speech bubble.
+ * Every joint that moves, as angles. Arms and legs swing forward when negative; an arm's
+ * `Side` angle lifts it out to the side when positive on the right and negative on the left.
  */
-export function Character({ position, greet }: { position: [number, number, number]; greet: boolean }) {
+type Pose = { armR: number; armRSide: number; armL: number; armLSide: number; legR: number; legL: number; lean: number; sway: number; hop: number };
+
+const pose: Pose = { armR: 0, armRSide: 0, armL: 0, armLSide: 0, legR: 0, legL: 0, lean: 0, sway: 0, hop: 0 };
+
+/** Turns `from` towards `to` by the shorter way round. */
+function turn(from: number, to: number, amount: number) {
+  const gap = Math.atan2(Math.sin(to - from), Math.cos(to - from));
+  return from + gap * amount;
+}
+
+/**
+ * Aadit, in blocks. He runs to whichever section is open and gets on with something there:
+ * painting, typing, playing, or standing at the lookout with a wave. `greet` shows the speech bubble.
+ */
+export function Character({ greet }: { greet: boolean }) {
   const root = useRef<THREE.Group>(null);
   const head = useRef<THREE.Group>(null);
-  const waving = useRef<THREE.Group>(null);
-  const resting = useRef<THREE.Group>(null);
+  const armR = useRef<THREE.Group>(null);
+  const armL = useRef<THREE.Group>(null);
+  const legR = useRef<THREE.Group>(null);
+  const legL = useRef<THREE.Group>(null);
+  const brush = useRef<THREE.Group>(null);
   const animate = useMotion();
   /** When he last started greeting, so the first wave comes straight away. */
   const wavedAt = useRef(-1);
+  /** How far through his stride he is, as an angle. */
+  const stride = useRef(0);
+  /** The joints as drawn, which ease towards the pose he is aiming for. */
+  const shown = useRef<Pose>({ ...pose });
+  const facing = useRef(walker.heading);
 
-  useFrame(({ clock, camera, size, pointer }) => {
-    // Tell the page where the speech bubble should sit: just above and beside the head.
+  useFrame(({ clock, camera, size, pointer }, delta) => {
+    const step = Math.min(delta, 0.1);
+    walker.advance(step);
+    const running = walker.moving;
+    const place = walker.section;
+    const atLookout = place === "home" || place === "about";
+    const t = animate ? clock.elapsedTime : 0;
+    // With motion reduced, everything snaps to a still pose.
+    const ease = (rate: number) => (animate ? 1 - Math.exp(-rate * step) : 1);
+
+    // Wave on arrival at the lookout, then every so often.
+    const greeting = greet && !running;
+    if (greeting && wavedAt.current < 0) wavedAt.current = t;
+    if (!greeting) wavedAt.current = -1;
+    const cycle = wavedAt.current < 0 || !animate ? 99 : (t - wavedAt.current) % 13;
+    const up = cycle < 3 ? Math.min(1, cycle * 3) : Math.max(0, 1 - (cycle - 3) * 3);
+
+    pose.lean = 0;
+    pose.sway = 0;
+    pose.hop = Math.abs(Math.sin(t * 2)) * 0.06;
+    pose.legR = 0;
+    pose.legL = 0;
+    if (running) {
+      // The faster he goes, the faster his legs turn over, up to a limit the eye can still follow.
+      stride.current += Math.min(21, 6 + walker.speed * 0.9) * step;
+      const swing = Math.sin(stride.current);
+      pose.legR = swing * 0.95;
+      pose.legL = -swing * 0.95;
+      pose.armR = -swing * 1.15 - 0.25;
+      pose.armL = swing * 1.15 - 0.25;
+      pose.armRSide = 0.14;
+      pose.armLSide = -0.14;
+      pose.lean = 0.24;
+      pose.hop = Math.abs(Math.cos(stride.current)) * 0.2;
+    } else if (place === "design") {
+      // Painting: brush arm up at the canvas, making strokes.
+      pose.armR = -1.4 + Math.sin(t * 3.1) * 0.22;
+      pose.armRSide = -0.2 + Math.sin(t * 2.3) * 0.2;
+      pose.armL = 0.1;
+      pose.armLSide = -0.3;
+      pose.lean = 0.04;
+    } else if (place === "code") {
+      // Typing: both hands out in front, tapping in turn.
+      pose.armR = -1 + Math.max(0, Math.sin(t * 13)) * 0.18;
+      pose.armL = -1 + Math.max(0, Math.sin(t * 13 + 2)) * 0.18;
+      pose.armRSide = -0.2;
+      pose.armLSide = 0.2;
+      pose.lean = 0.06;
+    } else if (place === "play") {
+      // Playing: one hand on the stick, the other hammering a button, leaning into it.
+      pose.armR = -1.05;
+      pose.armRSide = -0.22 + Math.sin(t * 5.2) * 0.24;
+      pose.armL = -1 + Math.max(0, Math.sin(t * 9)) * 0.22;
+      pose.armLSide = 0.22;
+      pose.lean = 0.1;
+      pose.sway = Math.sin(t * 5.2) * 0.05;
+    } else {
+      // Arms crossed, as in the profile picture, with one unfolding to wave.
+      pose.armR = CROSSED_X * (1 - up);
+      pose.armRSide = up * (2.55 + Math.sin(t * 9) * 0.32) - (1 - up) * CROSSED_Z;
+      pose.armL = CROSSED_X + Math.sin(t * 2) * 0.03;
+      pose.armLSide = CROSSED_Z;
+    }
+
+    const now = shown.current;
+    const k = ease(running ? 30 : 12);
+    for (const key of Object.keys(pose) as (keyof Pose)[]) now[key] += (pose[key] - now[key]) * k;
+
+    if (root.current) {
+      // Look around a little at the lookout; face the work everywhere else.
+      const want = walker.heading + (atLookout && !running ? Math.sin(t * 0.5) * 0.18 : 0);
+      facing.current = animate ? turn(facing.current, want, ease(running ? 14 : 7)) : want;
+      root.current.position.set(walker.x, walker.y + 5.8 * U + now.hop, walker.z);
+      root.current.rotation.set(now.lean, facing.current, now.sway, "YXZ");
+    }
+    if (armR.current) armR.current.rotation.set(now.armR, 0, now.armRSide);
+    if (armL.current) armL.current.rotation.set(now.armL, 0, now.armLSide);
+    if (legR.current) legR.current.rotation.x = now.legR;
+    if (legL.current) legL.current.rotation.x = now.legL;
+    if (brush.current) brush.current.visible = place === "design" && !running;
+
     if (head.current) {
+      // At the lookout he looks towards the visitor's pointer. At work he watches what he is doing.
+      const h = head.current.rotation;
+      const follow = atLookout && !running ? 1 : 0.15;
+      const wantY = (pointer.x * 0.6 + Math.sin(t * 0.7) * 0.08) * follow;
+      const wantX = running ? -0.1 : atLookout ? -pointer.y * 0.3 : 0.16 + Math.sin(t * 1.3) * 0.05;
+      h.z = Math.sin(t * 1.1) * 0.06;
+      h.y += (wantY - h.y) * ease(5);
+      h.x += (wantX - h.x) * ease(5);
+
+      // Tell the page where the speech bubble should sit: just above and beside the head.
       head.current.getWorldPosition(anchor);
       anchor.y += 10.5 * U;
       anchor.project(camera);
       bubbleAnchor.x = (anchor.x * 0.5 + 0.5) * size.width;
       bubbleAnchor.y = (-anchor.y * 0.5 + 0.5) * size.height;
-      bubbleAnchor.visible = greet && anchor.z < 1;
+      bubbleAnchor.visible = greeting && anchor.z < 1;
     }
-    if (!animate) return;
-    const t = clock.elapsedTime;
-    if (root.current) {
-      root.current.position.y = position[1] + 5.8 * U + Math.abs(Math.sin(t * 2)) * 0.06;
-      root.current.rotation.y = Math.sin(t * 0.5) * 0.18;
-    }
-    if (head.current) {
-      // He looks towards the visitor's pointer, with a little idle sway on top.
-      const h = head.current.rotation;
-      h.z = Math.sin(t * 1.1) * 0.06;
-      h.y += (pointer.x * 0.6 + Math.sin(t * 0.7) * 0.08 - h.y) * 0.08;
-      h.x += (-pointer.y * 0.3 - h.x) * 0.08;
-    }
-    // Stand with arms crossed, as in the profile picture. Wave on arrival, then every so often.
-    if (greet && wavedAt.current < 0) wavedAt.current = t;
-    if (!greet) wavedAt.current = -1;
-    const cycle = wavedAt.current < 0 ? 99 : (t - wavedAt.current) % 13;
-    const up = cycle < 3 ? Math.min(1, cycle * 3) : Math.max(0, 1 - (cycle - 3) * 3);
-    if (waving.current) {
-      waving.current.rotation.x = CROSSED_X * (1 - up);
-      waving.current.rotation.z = up * (2.55 + Math.sin(t * 9) * 0.32) - (1 - up) * CROSSED_Z;
-    }
-    if (resting.current) resting.current.rotation.x = CROSSED_X + Math.sin(t * 2) * 0.03;
   });
 
   return (
-    <group ref={root} position={[position[0], position[1] + 5.8 * U, position[2]]} scale={U}>
-      <Voxels boxes={LEGS} />
+    <group ref={root} scale={U}>
+      <group ref={legL}>
+        <Voxels boxes={LEG_L} />
+      </group>
+      <group ref={legR}>
+        <Voxels boxes={LEG_R} />
+      </group>
       <Voxels boxes={TORSO} />
       <group ref={head} position={[0, 6.6, 0]}>
         <Voxels boxes={HEAD} />
       </group>
-      <group ref={waving} position={[4.4, 5.9, 0]} rotation={[CROSSED_X, 0, -CROSSED_Z]}>
+      <group ref={armR} position={[4.4, 5.9, 0]} rotation={[CROSSED_X, 0, -CROSSED_Z]}>
         <Voxels boxes={ARM} />
+        <group ref={brush} visible={false}>
+          <Voxels boxes={BRUSH} />
+        </group>
       </group>
-      <group ref={resting} position={[-4.4, 5.9, 0]} rotation={[CROSSED_X, 0, CROSSED_Z]}>
+      <group ref={armL} position={[-4.4, 5.9, 0]} rotation={[CROSSED_X, 0, CROSSED_Z]}>
         <Voxels boxes={ARM} />
       </group>
     </group>

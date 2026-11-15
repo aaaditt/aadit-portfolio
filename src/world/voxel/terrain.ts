@@ -123,6 +123,14 @@ export function groundAt(x: number, z: number): Ground {
   return "grass";
 }
 
+/** The height of the bridge deck, which walkers use while over the river. */
+const DECK = 2.05;
+
+/** The height someone walking at this spot stands at: the ground, or the bridge over the river. */
+export function groundY(x: number, z: number): number {
+  return riverDistance(x, z) < 4.4 ? DECK : heightAt(Math.floor(x), Math.floor(z));
+}
+
 /** How thick the woods are at a position, from 0 (open) to 1 (dense). */
 export const forestAt = (x: number, z: number) => noise(x / 10, z / 10, 5);
 

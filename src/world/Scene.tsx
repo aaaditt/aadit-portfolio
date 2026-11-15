@@ -6,8 +6,8 @@ import { Hotspots } from "./Hotspots";
 import { Boat, Campfire, Clouds, HotAirBalloon, Water, WindmillSails } from "./voxel/Animated";
 import { Appear } from "./voxel/Appear";
 import { Character } from "./voxel/Character";
+import { Exhibits } from "./voxel/Exhibits";
 import { Birds, ChimneySmoke, Villagers } from "./voxel/Life";
-import { plateau } from "./voxel/terrain";
 import { Voxels } from "./voxel/Voxels";
 import { getWorld } from "./voxel/world";
 
@@ -24,7 +24,6 @@ export function Scene({
   onOpen: (href: string) => void;
 }) {
   const world = useMemo(() => getWorld(), []);
-  const lookout = plateau("lookout");
 
   return (
     <>
@@ -57,8 +56,11 @@ export function Scene({
 
       {/* Things that stand on the land wait for it to rise during the opening. */}
       <Appear distance={35}>
-        <Character position={[1.2, lookout.h + 0.2, lookout.z + 4.2]} greet={greet} />
+        <Character greet={greet} />
         <Campfire />
+      </Appear>
+      <Appear distance={20}>
+        <Exhibits current={current} onOpen={onOpen} />
       </Appear>
       <Appear distance={22}>
         <Villagers />

@@ -7,12 +7,15 @@ import type { Section } from "@/content/sections";
 import { intro } from "./introStore";
 import { flight } from "./overlayState";
 import { riseClock } from "./voxel/Voxels";
+import { walker } from "./walker";
 
 /** How long the opening flight lasts, in seconds. */
 const INTRO_SECONDS = 9;
 /** How long a move between sections lasts, in seconds. */
 const MOVE_SECONDS = 1.8;
 const FOV = 35;
+/** Where the camera sits while following a run: how far to the side, above and south of him. */
+const CHASE = [5, 10, 16];
 /** The opening starts zoomed in, like a flat game map, and widens as the camera drops. */
 const MAP_FOV = 30;
 /** The share of the opening spent holding the map view before the camera descends. */
@@ -36,6 +39,8 @@ const FLIGHT_LOOK_FROM = new THREE.Vector3(0, 0, 0);
 const goalPosition = new THREE.Vector3();
 const goalTarget = new THREE.Vector3();
 const flightPoint = new THREE.Vector3();
+const chasePosition = new THREE.Vector3();
+const chaseTarget = new THREE.Vector3();
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const smoothstep = (a: number, c: number, t: number) => {
@@ -43,11 +48,13 @@ const smoothstep = (a: number, c: number, t: number) => {
   return x * x * (3 - 2 * x);
 };
 
-type Move = { from: THREE.Vector3; fromTarget: THREE.Vector3; t: number };
+/** `run` is true when the character is running there and the camera goes with him. */
+type Move = { from: THREE.Vector3; fromTarget: THREE.Vector3; t: number; run: boolean };
 
 /**
- * Flies the opening shot, then carries the camera between sections in a timed arc that lifts
- * over the rooftops. Jumps straight to the section when motion is reduced.
+ * Flies the opening shot. Between sections it follows the character as he runs there, then
+ * settles into the section's own view. Where there is no run to follow, it crosses in a timed
+ * arc that lifts over the rooftops. Jumps straight to the section when motion is reduced.
  */
 export function CameraRig({ section, animate }: { section: Section; animate: boolean }) {
   const target = useRef<THREE.Vector3 | null>(null);
@@ -55,6 +62,8 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
   const shown = useRef(section.id);
   const move = useRef<Move | null>(null);
   const flying = useRef(false);
+  /** Which way he is running, east (+) or west (-), smoothed. The camera hangs back on that side. */
+  const lean = useRef(0);
 
   useFrame(({ camera, scene, size, pointer }, delta) => {
     if (!(camera instanceof THREE.PerspectiveCamera)) return;
@@ -70,6 +79,8 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
     // First frame without an opening flight: start at the section, do not glide in from the sky.
     if (!target.current) {
       target.current = goalTarget.clone();
+      // Arriving by a direct link, he is already there.
+      walker.place(section.id);
       if (intro.get() !== "playing") camera.position.copy(goalPosition);
     }
 
@@ -102,11 +113,29 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
       riseClock.value = 100;
       if (shown.current !== section.id) {
         shown.current = section.id;
-        move.current = animate ? { from: camera.position.clone(), fromTarget: target.current.clone(), t: 0 } : null;
+        if (animate) {
+          const run = walker.go(section.id);
+          move.current = { from: camera.position.clone(), fromTarget: target.current.clone(), t: 0, run };
+        } else {
+          walker.place(section.id);
+          move.current = null;
+        }
       }
 
       const m = move.current;
-      if (m) {
+      if (m?.run) {
+        m.t = walker.moving ? walker.progress : 1;
+        // Follow from above on the valley's open south side, a little behind him to east or west.
+        lean.current += (Math.sin(walker.heading) - lean.current) * (1 - Math.exp(-3 * step));
+        chaseTarget.set(walker.x, walker.y + 2, walker.z);
+        chasePosition.set(-lean.current * CHASE[0], CHASE[1], CHASE[2]).multiplyScalar(pullBack).add(chaseTarget);
+        // Swing in behind him as he sets off, and out to the section's view as he arrives.
+        const join = smoothstep(0, 0.3, m.t);
+        const leave = smoothstep(0.58, 1, m.t);
+        camera.position.lerpVectors(m.from, chasePosition, join).lerp(goalPosition, leave);
+        target.current.lerpVectors(m.fromTarget, chaseTarget, join).lerp(goalTarget, leave);
+        if (m.t >= 1) move.current = null;
+      } else if (m) {
         m.t += step / MOVE_SECONDS;
         const e = easeInOut(Math.min(1, m.t));
         // Rise in the middle of the move, so the camera clears the village instead of flying through it.

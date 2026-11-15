@@ -124,18 +124,6 @@ function buildWorld(): World {
   props.push(...place(M.camp(), [lookout.x, lookout.h, lookout.z]));
   props.push(...place(M.well(), [plaza.x, plaza.h, plaza.z]));
 
-  // Exhibits in front of each landmark. Each one will stand for a project once there is content.
-  const stand = (x: number, z: number): [number, number, number] => [x, heightAt(Math.floor(x), Math.floor(z)), z];
-  props.push(...place(M.easel([M.K.coral, M.K.yellow, M.K.teal]), stand(-21, -3.2)));
-  props.push(...place(M.easel([M.K.blue, M.K.pink, M.K.gold]), stand(-17.5, -2.4)));
-  props.push(...place(M.easel([M.K.leaf, M.K.orange, M.K.navy]), stand(-14, -3.2)));
-  add(M.terminal(M.K.yellow), stand(14.5, -2.6));
-  add(M.terminal(M.K.pink), stand(17.5, -1.9));
-  add(M.terminal(M.K.orange), stand(20.5, -2.6));
-  add(M.cabinet(M.K.teal, "#9be7c4"), stand(-3.2, -17));
-  add(M.cabinet(M.K.navy, "#ffd27a"), stand(0, -16.2));
-  add(M.cabinet(M.K.orange, "#bfe9ff"), stand(3.2, -17));
-
   const a = plateau("cottage-a");
   const bb = plateau("cottage-b");
   const c = plateau("cottage-c");
