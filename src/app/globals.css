@@ -73,7 +73,7 @@ html:not([data-intro="done"]) .reveal {
   position: fixed;
   z-index: 5;
   pointer-events: none;
-  translate: 6px -100%;
+  translate: 26px -150%;
   padding: 0.45rem 0.8rem 0.5rem;
   background: var(--paper);
   color: var(--ink);
