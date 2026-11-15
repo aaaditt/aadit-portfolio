@@ -89,3 +89,19 @@ Each stage ends with Aadit looking at it in the browser and directing changes be
 - Frame rate in the world on a normal laptop: steady 60fps target, never below 30. Loading under ~3s on a decent connection.
 - Lighthouse on `/work`: performance and accessibility 90+.
 - Tested on a real phone from Stage 2 onward; keyboard-only path to all content via Quick View.
+
+## Update after the Stage 0 look review (2026-11-15)
+
+Aadit reviewed the three look studies and decided:
+
+- **Look:** the Paper Daylight colour scheme is the starting point, but not the sketch as it was. The real scene should be much more detailed.
+- **Layout:** a small floating bar at the bottom with the site's options, like the tab bar in Instagram and YouTube on iPad.
+- **Main page:** a detailed 3D scene.
+
+What changed as a result (Claude's calls, for Aadit to correct):
+
+- The bottom bar is the way to get around. Walk-around character controls (WASD, click-to-move) and Rapier physics are dropped.
+- The bar's options are Home, Design, Code, Play, About. Each is a real address (`/design`, `/code`, `/play`, `/about`) and glides the camera to that part of the same island.
+- The island lives in the root layout so it keeps running between sections.
+- Quick View (`/work`) is still planned; the section pages now carry the project content, shown in a panel over the scene.
+- The look studies were removed from the code; they remain in git history.

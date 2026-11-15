@@ -1,0 +1,51 @@
+.hero {
+  position: absolute;
+  top: clamp(1.25rem, 4vw, 3rem);
+  left: clamp(1.25rem, 4vw, 3rem);
+  max-width: min(26rem, calc(100vw - 2.5rem));
+  animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.eyebrow {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--coral);
+  margin-bottom: 0.4rem;
+}
+
+.name {
+  font-family: var(--font-display), var(--font-geist-sans), sans-serif;
+  font-size: clamp(3.5rem, 11vw, 7rem);
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 0.9rem;
+}
+
+.line {
+  font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.hint {
+  margin-top: 0.4rem;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero {
+    animation: none;
+  }
+}

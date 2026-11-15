@@ -1,0 +1,21 @@
+/** The Paper Daylight palette. Every colour in the world comes from here. */
+export const C = {
+  sky: "#f6e7d2",
+  grass: "#a8d5a2",
+  grassDark: "#8cc48a",
+  earth: "#b08968",
+  earthDark: "#8f6d52",
+  orange: "#f4a261",
+  coral: "#e76f51",
+  teal: "#2a9d8f",
+  tealDark: "#1f7a70",
+  navy: "#264653",
+  cream: "#fff8ec",
+  yellow: "#e9c46a",
+  pink: "#f2b5a7",
+  ink: "#3d2c2e",
+  wood: "#8d6e63",
+  stone: "#d8cfc0",
+  water: "#8ecae6",
+  white: "#ffffff",
+} as const;
