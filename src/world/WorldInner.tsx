@@ -10,8 +10,15 @@ import { Scene } from "./Scene";
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
 
-/** How many screen pixels each drawn pixel covers. This is what makes the world look pixelated. */
-const PIXEL = 3;
+/**
+ * The world is drawn small and scaled up with hard edges, which is what makes it look pixelated.
+ * Each drawn pixel covers a whole number of real screen pixels (about two CSS pixels), so the
+ * blocks stay crisp on displays scaled to 125% or 150% as well as 100%.
+ */
+function pixelRatio() {
+  const device = window.devicePixelRatio || 1;
+  return device / Math.max(2, Math.round(2 * device));
+}
 
 function subscribeReduced(onChange: () => void) {
   const query = window.matchMedia(REDUCED);
@@ -31,6 +38,7 @@ function hasWebGL() {
 /** Only ever rendered in the browser (see World). */
 export default function WorldInner({ section, onOpen }: { section: Section; onOpen: (href: string) => void }) {
   const [supported] = useState(hasWebGL);
+  const [dpr] = useState(pixelRatio);
   const reduced = useSyncExternalStore(
     subscribeReduced,
     () => window.matchMedia(REDUCED).matches,
@@ -55,7 +63,7 @@ export default function WorldInner({ section, onOpen }: { section: Section; onOp
       // Hard-edged shadows and untouched colours suit the pixel look.
       shadows="basic"
       flat
-      dpr={1 / PIXEL}
+      dpr={dpr}
       gl={{ antialias: false, alpha: true }}
       camera={{ position: [0, 112, 24], fov: 30, near: 0.5, far: 400 }}
       style={{ imageRendering: "pixelated" }}

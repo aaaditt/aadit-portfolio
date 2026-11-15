@@ -29,7 +29,7 @@ export const SECTIONS: Section[] = [
     href: "/design",
     title: "Design Studio",
     blurb: "Interfaces, visuals and brand work.",
-    camera: { position: [-18, 20, 19], target: [-19.5, 4.5, -7] },
+    camera: { position: [-17, 16, 15], target: [-18, 5, -8] },
   },
   {
     id: "code",
@@ -37,7 +37,7 @@ export const SECTIONS: Section[] = [
     href: "/code",
     title: "Code Lab",
     blurb: "Apps, tools and experiments in software.",
-    camera: { position: [15.5, 20, 19], target: [14, 4.5, -7] },
+    camera: { position: [18.5, 20, 19], target: [15, 4.5, -7] },
   },
   {
     id: "play",
@@ -45,7 +45,7 @@ export const SECTIONS: Section[] = [
     href: "/play",
     title: "Arcade",
     blurb: "Games and events I've made or run.",
-    camera: { position: [5, 20, 6], target: [-2, 6.5, -22] },
+    camera: { position: [5, 23, 10], target: [1, 6.5, -23] },
   },
   {
     id: "about",
@@ -53,7 +53,7 @@ export const SECTIONS: Section[] = [
     href: "/about",
     title: "About & contact",
     blurb: "Who I am and how to reach me.",
-    camera: { position: [6.4, 10.4, 36], target: [0.9, 9.5, 27.4] },
+    camera: { position: [6.2, 8.6, 35.6], target: [0.8, 9.4, 27.3] },
   },
 ];
 

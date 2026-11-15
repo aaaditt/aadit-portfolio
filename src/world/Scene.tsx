@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import type { SectionId } from "@/content/sections";
 import { Hotspots } from "./Hotspots";
 import { Boat, Campfire, Clouds, HotAirBalloon, Water, WindmillSails } from "./voxel/Animated";
+import { Appear } from "./voxel/Appear";
 import { Character } from "./voxel/Character";
 import { Birds, ChimneySmoke, Villagers } from "./voxel/Life";
 import { plateau } from "./voxel/terrain";
@@ -51,14 +52,21 @@ export function Scene({
       <Voxels boxes={world.terrain} cast={false} grain rise />
       <Voxels boxes={world.props} grain rise />
       <Voxels boxes={world.plants} cast={false} rise />
-      <Voxels boxes={world.glow} glow />
+      <Voxels boxes={world.glow} glow rise />
       <Water />
 
-      <Character position={[1.2, lookout.h + 0.2, lookout.z + 4.2]} greet={greet} />
-      <Villagers />
-      <Campfire />
-      <ChimneySmoke />
-      <WindmillSails />
+      {/* Things that stand on the land wait for it to rise during the opening. */}
+      <Appear distance={35}>
+        <Character position={[1.2, lookout.h + 0.2, lookout.z + 4.2]} greet={greet} />
+        <Campfire />
+      </Appear>
+      <Appear distance={22}>
+        <Villagers />
+      </Appear>
+      <Appear distance={38}>
+        <ChimneySmoke />
+        <WindmillSails />
+      </Appear>
       <Boat />
       <HotAirBalloon />
       <Birds />

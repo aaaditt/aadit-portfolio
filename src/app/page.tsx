@@ -15,13 +15,11 @@ export default function Home() {
           </span>
         ))}
       </h1>
-      <p className={`${styles.line} reveal`} style={{ "--reveal-delay": "0.75s" } as CSSProperties}>
-        Design, code, games and events.
-      </p>
-      <p className={`${styles.hint} reveal`} style={{ "--reveal-delay": "0.95s" } as CSSProperties}>
-        Pick a place to visit from the bar below, or click one in the world.
-      </p>
-      <ReplayIntro />
+      <div className={`${styles.plate} reveal`} style={{ "--reveal-delay": "0.75s" } as CSSProperties}>
+        <p className={styles.line}>Design, code, games and events.</p>
+        <p className={styles.hint}>Pick a place to visit from the bar below, or click one in the world.</p>
+        <ReplayIntro />
+      </div>
     </main>
   );
 }

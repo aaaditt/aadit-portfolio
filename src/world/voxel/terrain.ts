@@ -15,7 +15,7 @@ export const PLATEAUS: Plateau[] = [
   { id: "play", x: 0, z: -24, r: 14, h: 4, paved: true },
   // Listed after the arcade so the plaza keeps its own level where the two meet.
   { id: "plaza", x: 0, z: -7, r: 5, h: 3, paved: true },
-  { id: "cottage-a", x: -7, z: -2.5, r: 3.5, h: 3 },
+  { id: "cottage-a", x: -28, z: 19, r: 3.5, h: 4 },
   { id: "cottage-b", x: 27, z: -1, r: 4, h: 3 },
   { id: "cottage-c", x: -31, z: -13, r: 4, h: 4 },
   { id: "farm", x: 10, z: 0, r: 4.5, h: 2 },
@@ -34,9 +34,9 @@ const PATHS: [number, number, number, number][] = [
 
 /** Lines of sight from each section's camera to its subject. Tall things are kept out of them. */
 const SIGHTLINES: [number, number, number, number][] = [
-  [-18, 19, -17, -8],
-  [15.5, 19, 17, -8],
-  [5, 6, 0, -23],
+  [-17, 15, -17, -8],
+  [18.5, 19, 17, -8],
+  [5, 10, 0, -23],
 ];
 
 const BLEND = 6;
@@ -118,7 +118,7 @@ export function groundAt(x: number, z: number): Ground {
   if (z > 30 && h <= 2 && southOpening(x, z) > 0.2) return "sand";
   if (onPath(x, z)) return "path";
   if (PLATEAUS.some((p) => p.paved && Math.hypot(x - p.x, z - p.z) < p.r)) return "path";
-  if (h >= 14 + Math.round(noise(x / 6, z / 6, 6) * 2)) return "snow";
+  if (h >= 18 + Math.round(noise(x / 6, z / 6, 6) * 2)) return "snow";
   if (h >= 10 + Math.round(noise(x / 4, z / 4, 4) * 2)) return "stone";
   return "grass";
 }

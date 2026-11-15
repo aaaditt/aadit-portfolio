@@ -1,6 +1,5 @@
 "use client";
 
-import type { CSSProperties } from "react";
 import { intro } from "@/world/introStore";
 import styles from "./ReplayIntro.module.css";
 
@@ -9,8 +8,7 @@ export function ReplayIntro() {
   return (
     <button
       type="button"
-      className={`${styles.button} reveal`}
-      style={{ "--reveal-delay": "1.15s" } as CSSProperties}
+      className={styles.button}
       onClick={() => intro.replay()}
     >
       <span aria-hidden="true">▶</span> Replay intro

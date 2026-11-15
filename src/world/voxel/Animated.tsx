@@ -57,21 +57,28 @@ const CLOUDS: [number, number, number][] = [
 
 export function Clouds() {
   const models = useMemo(() => CLOUDS.map((_, i) => M.cloud(i)), []);
+  const ref = useRef<THREE.Group>(null);
+
+  // Seen from high above in the opening map view, clouds are just white slabs in the way.
+  useFrame(({ camera }) => {
+    if (ref.current) ref.current.visible = camera.position.y < 60;
+  });
+
   return (
-    <>
+    <group ref={ref}>
       {CLOUDS.map((at, i) => (
         <Drifter key={i} start={at} span={7} speed={0.05 + (i % 3) * 0.02} bob={0.4}>
           <Voxels boxes={models[i]} shadows={false} />
         </Drifter>
       ))}
-    </>
+    </group>
   );
 }
 
 export function HotAirBalloon() {
   const model = useMemo(() => M.balloon(), []);
   return (
-    <Drifter start={[-22, 17, -18]} span={9} speed={0.07} bob={1.2}>
+    <Drifter start={[24, 22, -20]} span={6} speed={0.07} bob={1.2}>
       <Voxels boxes={model} />
     </Drifter>
   );

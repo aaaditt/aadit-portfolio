@@ -101,6 +101,8 @@ export function Character({ position, greet }: { position: [number, number, numb
   const waving = useRef<THREE.Group>(null);
   const resting = useRef<THREE.Group>(null);
   const animate = useMotion();
+  /** When he last started greeting, so the first wave comes straight away. */
+  const wavedAt = useRef(-1);
 
   useFrame(({ clock, camera, size, pointer }) => {
     // Tell the page where the speech bubble should sit: just above and beside the head.
@@ -126,7 +128,9 @@ export function Character({ position, greet }: { position: [number, number, numb
       h.x += (-pointer.y * 0.3 - h.x) * 0.08;
     }
     // Stand with arms crossed, as in the profile picture. Wave on arrival, then every so often.
-    const cycle = t % 13;
+    if (greet && wavedAt.current < 0) wavedAt.current = t;
+    if (!greet) wavedAt.current = -1;
+    const cycle = wavedAt.current < 0 ? 99 : (t - wavedAt.current) % 13;
     const up = cycle < 3 ? Math.min(1, cycle * 3) : Math.max(0, 1 - (cycle - 3) * 3);
     if (waving.current) {
       waving.current.rotation.x = CROSSED_X * (1 - up);

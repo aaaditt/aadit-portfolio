@@ -64,7 +64,7 @@ export function Villagers() {
   return (
     <>
       {WALKERS.map((w, i) => (
-        <group key={i} ref={(el) => void (refs.current[i] = el)} scale={0.105}>
+        <group key={i} ref={(el) => void (refs.current[i] = el)} scale={0.14}>
           <Voxels boxes={w.model} />
         </group>
       ))}

@@ -13,15 +13,38 @@ const colour = new THREE.Color();
  */
 export const riseClock = { value: 100 };
 
+/** When, in seconds on the rise clock, something this far from the village has fully landed. */
+export const landedAt = (distance: number) => distance * 0.035 + 0.35 + 0.9;
+
 const RISE_VERTEX = `
   #ifdef USE_INSTANCING
-    float riseDistance = length(instanceMatrix[3].xz - vec2(0.0, -7.0));
-    float riseK = clamp((uRise - riseDistance * 0.035) / 0.5, 0.0, 1.0);
+    vec2 riseAt = instanceMatrix[3].xz;
+    float riseDistance = length(riseAt - vec2(0.0, -7.0));
+    // Each column starts at a slightly different moment, so the land arrives as falling blocks, not a wipe.
+    float riseJitter = fract(sin(dot(floor(riseAt), vec2(12.9898, 78.233))) * 43758.5453) * 0.35;
+    float riseK = clamp((uRise - riseDistance * 0.035 - riseJitter) / 0.9, 0.0, 1.0);
     // Ease out with a small overshoot, so each block lands with a bounce.
     float riseE = 1.0 + 2.70158 * pow(riseK - 1.0, 3.0) + 1.70158 * pow(riseK - 1.0, 2.0);
     // Start deep enough that even the mountain tops are under water.
     transformed.y -= (1.0 - riseE) * 36.0 / instanceMatrix[1][1];
   #endif`;
+
+function addRise(shader: { uniforms: Record<string, unknown>; vertexShader: string }) {
+  shader.uniforms.uRise = riseClock;
+  shader.vertexShader = shader.vertexShader
+    .replace("#include <common>", "#include <common>\nuniform float uRise;")
+    .replace("#include <begin_vertex>", `#include <begin_vertex>${RISE_VERTEX}`);
+}
+
+/** A full-brightness material for lit things, which can also rise with the land. */
+function glowMaterial(rise: boolean) {
+  const material = new THREE.MeshBasicMaterial({ toneMapped: false });
+  if (rise) {
+    material.onBeforeCompile = addRise;
+    material.customProgramCacheKey = () => "glow-rise";
+  }
+  return material;
+}
 
 /**
  * A matte material for blocks.
@@ -35,12 +58,7 @@ function blockMaterial(grain: boolean, rise: boolean) {
   if (!grain && !rise) return material;
 
   material.onBeforeCompile = (shader) => {
-    if (rise) {
-      shader.uniforms.uRise = riseClock;
-      shader.vertexShader = shader.vertexShader
-        .replace("#include <common>", "#include <common>\nuniform float uRise;")
-        .replace("#include <begin_vertex>", `#include <begin_vertex>${RISE_VERTEX}`);
-    }
+    if (rise) addRise(shader);
     if (grain) {
       shader.vertexShader = shader.vertexShader
         .replace("#include <common>", "#include <common>\nvarying vec3 vGrain;")
@@ -101,7 +119,7 @@ export function Voxels({
   const ref = useRef<THREE.InstancedMesh>(null);
 
   const material = useMemo(() => {
-    if (glow) return new THREE.MeshBasicMaterial({ toneMapped: false });
+    if (glow) return glowMaterial(rise);
     return blockMaterial(grain, rise);
   }, [glow, grain, rise]);
 

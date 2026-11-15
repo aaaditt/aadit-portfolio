@@ -7,7 +7,7 @@ const TOP: Record<Ground, string[]> = {
   sand: ["#e3d2a0", "#dccb97"],
   path: ["#c7a878", "#bf9f70", "#cdb083"],
   stone: ["#a39382", "#978877", "#9c8c7b"],
-  snow: ["#f2f4f3", "#e8eef0"],
+  snow: ["#f4f6f5", "#eceff0"],
   bed: ["#c9bb8c", "#bfb183"],
 };
 
@@ -95,6 +95,8 @@ function scatter(props: Box[], plants: Box[]) {
           continue;
         }
       }
+      // Keep the ground round the character clear, so nothing pokes up in front of him.
+      if (Math.hypot(x - 1.2, z - 27.2) < 4) continue;
       const small = hash(x, z, 25);
       if (small < 0.07) plants.push(...place(M.flower(petals[Math.floor(hash(x, z, 26) * petals.length)]), [x + 0.3 + small * 4, h, z + 0.5]));
       else if (small < 0.17) plants.push(...place(M.tuft(), at));
@@ -121,6 +123,18 @@ function buildWorld(): World {
   add(M.arcade(), [play.x, play.h, play.z + 1]);
   props.push(...place(M.camp(), [lookout.x, lookout.h, lookout.z]));
   props.push(...place(M.well(), [plaza.x, plaza.h, plaza.z]));
+
+  // Exhibits in front of each landmark. Each one will stand for a project once there is content.
+  const stand = (x: number, z: number): [number, number, number] => [x, heightAt(Math.floor(x), Math.floor(z)), z];
+  props.push(...place(M.easel([M.K.coral, M.K.yellow, M.K.teal]), stand(-21, -3.2)));
+  props.push(...place(M.easel([M.K.blue, M.K.pink, M.K.gold]), stand(-17.5, -2.4)));
+  props.push(...place(M.easel([M.K.leaf, M.K.orange, M.K.navy]), stand(-14, -3.2)));
+  add(M.terminal(M.K.yellow), stand(14.5, -2.6));
+  add(M.terminal(M.K.pink), stand(17.5, -1.9));
+  add(M.terminal(M.K.orange), stand(20.5, -2.6));
+  add(M.cabinet(M.K.teal, "#9be7c4"), stand(-3.2, -17));
+  add(M.cabinet(M.K.navy, "#ffd27a"), stand(0, -16.2));
+  add(M.cabinet(M.K.orange, "#bfe9ff"), stand(3.2, -17));
 
   const a = plateau("cottage-a");
   const bb = plateau("cottage-b");

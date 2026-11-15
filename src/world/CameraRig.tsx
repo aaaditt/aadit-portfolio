@@ -16,7 +16,7 @@ const FOV = 35;
 /** The opening starts zoomed in, like a flat game map, and widens as the camera drops. */
 const MAP_FOV = 30;
 /** The share of the opening spent holding the map view before the camera descends. */
-const HOLD = 0.3;
+const HOLD = 0.27;
 
 // The opening flight: it starts looking straight down like a game map, then swoops round the
 // west side of the valley and settles at the lookout.
@@ -88,7 +88,8 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
       // The land rises out of the lake in a wave from the village.
       riseClock.value = flown.current * INTRO_SECONDS;
       // Hold the map view for the first 30% while that happens, then fly down.
-      const t = easeInOut(Math.max(0, (flight.progress - HOLD) / (1 - HOLD)));
+      // A smoothstep leaves the map promptly instead of lingering on it.
+      const t = smoothstep(HOLD, 1, flight.progress);
       FLIGHT.getPoint(t, flightPoint);
       // Hand over from the flight path to the real resting place over the last stretch.
       camera.position.copy(flightPoint).lerp(goalPosition, smoothstep(0.72, 1, t));

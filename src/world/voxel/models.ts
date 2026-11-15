@@ -243,6 +243,7 @@ export function arcade(): { solid: Box[]; glow: Box[] } {
 
 /** The lookout camp: a small tent, a log bench, a signpost, a mailbox and a flag. */
 export function camp(): Box[] {
+  // No flagpole: it used to cut across the view of the valley.
   return [
     // tent
     ...[0, 1, 2].map((k) => b(-5.2 + k * 0.5, k, -3.2, 3.4 - k, 1, 3, k % 2 ? K.creamD : K.orange)),
@@ -252,18 +253,14 @@ export function camp(): Box[] {
     b(-2.3, 0, 1.6, 0.5, 0.5, 0.6, K.woodD),
     b(-4.4, 0.5, 1.5, 2.8, 0.4, 0.8, K.wood),
     // signpost
-    b(3.2, 0, 2.4, 0.3, 3.2, 0.3, K.woodD),
-    b(3.4, 2.5, 2.35, 1.6, 0.5, 0.2, K.teal),
-    b(1.8, 1.8, 2.35, 1.5, 0.5, 0.2, K.coral),
-    b(3.4, 1.1, 2.35, 1.3, 0.5, 0.2, K.yellow),
+    b(4.4, 0, -0.5, 0.3, 3.2, 0.3, K.woodD),
+    b(4.6, 2.5, -0.55, 1.6, 0.5, 0.2, K.teal),
+    b(3, 1.8, -0.55, 1.5, 0.5, 0.2, K.coral),
+    b(4.6, 1.1, -0.55, 1.3, 0.5, 0.2, K.yellow),
     // mailbox
     b(-4.4, 0, 3.4, 0.3, 1.4, 0.3, K.wood),
     b(-4.75, 1.4, 3.1, 1, 0.8, 0.9, K.red),
     b(-3.75, 1.7, 3.4, 0.12, 0.7, 0.3, K.gold),
-    // flagpole
-    b(4.35, 0, -2.4, 0.3, 6, 0.3, K.stoneL),
-    b(4.65, 4.6, -2.35, 2, 1.2, 0.15, K.coral),
-    b(4.65, 5, -2.33, 2, 0.4, 0.17, K.white),
     // a pale stone slab for the character to stand on
     b(-0.2, 0, 2.8, 2.8, 0.2, 2.8, "#d9d2c0"),
     // fire ring
@@ -371,4 +368,50 @@ export function cloud(variant: number): Box[] {
     b(-long / 2 + 1.5, -0.6, -1, long - 2, 0.6, 2, "#e4eef2"),
     b(long / 2 - 1, 0.2, -0.8, 2, 0.8, 1.8, K.white),
   ];
+}
+
+/** A free-standing easel with a small pixel painting. One per design project, later. */
+export function easel(colours: [string, string, string]): Box[] {
+  return [
+    b(-0.85, 0, 0.1, 0.14, 2.3, 0.14, K.wood),
+    b(0.7, 0, 0.1, 0.14, 2.3, 0.14, K.wood),
+    b(-0.07, 0, -0.5, 0.14, 2.1, 0.14, K.wood),
+    b(-0.95, 0.85, 0.24, 1.9, 1.45, 0.12, K.white),
+    b(-0.75, 1.05, 0.36, 0.7, 0.55, 0.05, colours[0]),
+    b(-0.05, 1.05, 0.36, 0.85, 0.35, 0.05, colours[1]),
+    b(0.1, 1.55, 0.36, 0.55, 0.55, 0.05, colours[2]),
+    b(-0.7, 1.7, 0.36, 0.5, 0.4, 0.05, colours[1]),
+  ];
+}
+
+/** A terminal on a stone plinth. One per code project, later. */
+export function terminal(accent: string): { solid: Box[]; glow: Box[] } {
+  return {
+    solid: [
+      b(-0.7, 0, -0.5, 1.4, 0.7, 1, K.stoneD),
+      b(-0.8, 0.7, -0.55, 1.6, 0.12, 1.1, K.stoneL),
+      b(-0.15, 0.82, -0.2, 0.3, 0.35, 0.3, K.navyD),
+      b(-0.75, 1.15, -0.15, 1.5, 1.05, 0.2, K.black),
+    ],
+    glow: [
+      b(-0.6, 1.9, 0.05, 0.8, 0.1, 0.04, accent),
+      b(-0.45, 1.7, 0.05, 0.95, 0.1, 0.04, K.glass),
+      b(-0.45, 1.5, 0.05, 0.6, 0.1, 0.04, K.crop),
+      b(-0.6, 1.3, 0.05, 0.4, 0.1, 0.04, accent),
+    ],
+  };
+}
+
+/** A small arcade cabinet. One per game or event, later. */
+export function cabinet(colour: string, screen: string): { solid: Box[]; glow: Box[] } {
+  return {
+    solid: [
+      b(-0.6, 0, -0.5, 1.2, 2.5, 1, colour),
+      b(-0.6, 1, 0.5, 1.2, 0.2, 0.4, K.white),
+      b(-0.3, 1.2, 0.6, 0.08, 0.25, 0.08, K.black),
+      b(-0.36, 1.42, 0.54, 0.2, 0.18, 0.2, K.red),
+      b(-0.5, 1.35, 0.5, 1, 0.75, 0.05, K.black),
+    ],
+    glow: [b(-0.6, 2.15, 0.5, 1.2, 0.3, 0.1, K.gold), b(-0.38, 1.47, 0.54, 0.76, 0.5, 0.04, screen)],
+  };
 }
