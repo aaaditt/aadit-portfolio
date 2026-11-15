@@ -48,9 +48,9 @@ export function Scene({
       />
 
       {/* The ground receives shadows but does not cast them, which halves the shadow work. */}
-      <Voxels boxes={world.terrain} cast={false} grain />
-      <Voxels boxes={world.props} grain />
-      <Voxels boxes={world.plants} cast={false} />
+      <Voxels boxes={world.terrain} cast={false} grain rise />
+      <Voxels boxes={world.props} grain rise />
+      <Voxels boxes={world.plants} cast={false} rise />
       <Voxels boxes={world.glow} glow />
       <Water />
 

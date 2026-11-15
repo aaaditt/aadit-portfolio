@@ -6,6 +6,7 @@ import * as THREE from "three";
 import type { Section } from "@/content/sections";
 import { intro } from "./introStore";
 import { flight } from "./overlayState";
+import { riseClock } from "./voxel/Voxels";
 
 /** How long the opening flight lasts, in seconds. */
 const INTRO_SECONDS = 9;
@@ -14,6 +15,8 @@ const MOVE_SECONDS = 1.8;
 const FOV = 35;
 /** The opening starts zoomed in, like a flat game map, and widens as the camera drops. */
 const MAP_FOV = 30;
+/** The share of the opening spent holding the map view before the camera descends. */
+const HOLD = 0.3;
 
 // The opening flight: it starts looking straight down like a game map, then swoops round the
 // west side of the valley and settles at the lookout.
@@ -51,6 +54,7 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
   const flown = useRef(0);
   const shown = useRef(section.id);
   const move = useRef<Move | null>(null);
+  const flying = useRef(false);
 
   useFrame(({ camera, scene, size, pointer }, delta) => {
     if (!(camera instanceof THREE.PerspectiveCamera)) return;
@@ -72,11 +76,19 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
     let fov = FOV;
 
     if (intro.get() === "playing") {
+      // Each time the opening starts (including a replay), begin from the top.
+      if (!flying.current) {
+        flying.current = true;
+        flown.current = 0;
+      }
       // The first frames stall while the world is prepared. Do not count those, or the
       // flight would be half over before anything has been seen.
       if (delta < 0.12) flown.current += delta / INTRO_SECONDS;
       flight.progress = Math.min(1, flown.current);
-      const t = easeInOut(flight.progress);
+      // The land rises out of the lake in a wave from the village.
+      riseClock.value = flown.current * INTRO_SECONDS;
+      // Hold the map view for the first 30% while that happens, then fly down.
+      const t = easeInOut(Math.max(0, (flight.progress - HOLD) / (1 - HOLD)));
       FLIGHT.getPoint(t, flightPoint);
       // Hand over from the flight path to the real resting place over the last stretch.
       camera.position.copy(flightPoint).lerp(goalPosition, smoothstep(0.72, 1, t));
@@ -84,7 +96,9 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
       fov = MAP_FOV + (FOV - MAP_FOV) * smoothstep(0.15, 0.8, t);
       if (flown.current >= 1) intro.finish();
     } else {
+      flying.current = false;
       flight.progress = 1;
+      riseClock.value = 100;
       if (shown.current !== section.id) {
         shown.current = section.id;
         move.current = animate ? { from: camera.position.clone(), fromTarget: target.current.clone(), t: 0 } : null;

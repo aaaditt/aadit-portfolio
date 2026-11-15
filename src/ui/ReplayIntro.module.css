@@ -1,0 +1,28 @@
+.button {
+  margin-top: 1.1rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid rgb(255 255 255 / 0.5);
+  background: rgb(12 18 28 / 0.34);
+  color: #fff;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.button:hover {
+  background: rgb(12 18 28 / 0.55);
+}
+
+.button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.button span {
+  margin-right: 0.35em;
+  font-size: 0.8em;
+}

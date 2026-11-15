@@ -50,11 +50,13 @@ export function IntroOverlay() {
       mouseY = event.clientY;
     };
     const follow = () => {
-      const showLabels = intro.get() === "playing" && flight.progress > 0.04 && flight.progress < 0.3;
+      const showLabels = intro.get() === "playing" && flight.progress > 0.14 && flight.progress < 0.36;
       labels.current.forEach((el, i) => {
         if (!el) return;
         el.style.left = `${mapLabels[i].x}px`;
-        el.style.top = `${mapLabels[i].y}px`;
+        // Keep the tags clear of the cinema bars at the top and bottom.
+        const y = Math.min(Math.max(mapLabels[i].y, window.innerHeight * 0.16), window.innerHeight * 0.84);
+        el.style.top = `${y}px`;
         el.style.opacity = showLabels ? "1" : "0";
       });
       if (tag.current) {

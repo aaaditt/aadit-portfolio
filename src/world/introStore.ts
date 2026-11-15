@@ -30,6 +30,8 @@ export const intro = {
     }
   },
   start: () => set("playing"),
+  /** Plays the opening again, on request. */
+  replay: () => set("playing"),
   /** Ends the opening, whether it ran to the end or was skipped. */
   finish() {
     try {

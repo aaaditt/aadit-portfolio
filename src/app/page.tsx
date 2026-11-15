@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { ReplayIntro } from "@/ui/ReplayIntro";
 import styles from "./page.module.css";
 
 const NAME = "AADIT";
@@ -18,8 +19,9 @@ export default function Home() {
         Design, code, games and events.
       </p>
       <p className={`${styles.hint} reveal`} style={{ "--reveal-delay": "0.95s" } as CSSProperties}>
-        Pick a place to visit from the bar below.
+        Pick a place to visit from the bar below, or click one in the world.
       </p>
+      <ReplayIntro />
     </main>
   );
 }
