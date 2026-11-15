@@ -102,7 +102,7 @@ export function Character({ position, greet }: { position: [number, number, numb
   const resting = useRef<THREE.Group>(null);
   const animate = useMotion();
 
-  useFrame(({ clock, camera, size }) => {
+  useFrame(({ clock, camera, size, pointer }) => {
     // Tell the page where the speech bubble should sit: just above and beside the head.
     if (head.current) {
       head.current.getWorldPosition(anchor);
@@ -119,8 +119,11 @@ export function Character({ position, greet }: { position: [number, number, numb
       root.current.rotation.y = Math.sin(t * 0.5) * 0.18;
     }
     if (head.current) {
-      head.current.rotation.z = Math.sin(t * 1.1) * 0.07;
-      head.current.rotation.y = Math.sin(t * 0.7) * 0.2;
+      // He looks towards the visitor's pointer, with a little idle sway on top.
+      const h = head.current.rotation;
+      h.z = Math.sin(t * 1.1) * 0.06;
+      h.y += (pointer.x * 0.6 + Math.sin(t * 0.7) * 0.08 - h.y) * 0.08;
+      h.x += (-pointer.y * 0.3 - h.x) * 0.08;
     }
     // Stand with arms crossed, as in the profile picture. Wave on arrival, then every so often.
     const cycle = t % 13;
