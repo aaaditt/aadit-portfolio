@@ -29,7 +29,7 @@ async function SectionCard({ params }: Props) {
   if (!section || section.id === "home") notFound();
 
   return (
-    <main className={styles.card}>
+    <main className={`${styles.card} reveal`}>
       <p className={styles.eyebrow}>{section.label}</p>
       <h1 className={styles.title}>{section.title}</h1>
       <p className={styles.blurb}>{section.blurb}</p>

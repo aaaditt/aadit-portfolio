@@ -47,7 +47,7 @@ export function BottomBar() {
   const current = sectionForPath(usePathname());
 
   return (
-    <nav className={styles.bar} aria-label="Sections">
+    <nav className={`${styles.bar} reveal`} aria-label="Sections">
       <ul className={styles.list}>
         {SECTIONS.map((section) => {
           const active = section.id === current.id;

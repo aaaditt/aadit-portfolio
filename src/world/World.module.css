@@ -1,6 +1,7 @@
+/* The sky is a page gradient; the 3D scene is drawn over it with a see-through background. */
 .world {
   position: fixed;
   inset: 0;
   z-index: 0;
-  background: var(--sky);
+  background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 38%, var(--haze) 62%);
 }

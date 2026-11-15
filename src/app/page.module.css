@@ -2,50 +2,53 @@
   position: absolute;
   top: clamp(1.25rem, 4vw, 3rem);
   left: clamp(1.25rem, 4vw, 3rem);
-  max-width: min(26rem, calc(100vw - 2.5rem));
-  animation: rise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  max-width: min(30rem, calc(100vw - 2.5rem));
 }
 
 .eyebrow {
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-mono), monospace;
   font-size: 0.78rem;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: var(--coral);
-  margin-bottom: 0.4rem;
+  color: var(--paper);
+  text-shadow: 1px 1px 0 var(--navy);
+  margin-bottom: 0.2rem;
 }
 
 .name {
-  font-family: var(--font-display), var(--font-geist-sans), sans-serif;
-  font-size: clamp(3.5rem, 11vw, 7rem);
+  display: flex;
+  font-family: var(--font-display), monospace;
+  font-size: clamp(4rem, 13vw, 8.5rem);
   line-height: 0.9;
-  letter-spacing: -0.04em;
+  letter-spacing: 0.02em;
   font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 0.9rem;
+  color: var(--paper);
+  /* A hard offset shadow, like lettering in a pixel game. */
+  text-shadow:
+    0.045em 0.045em 0 var(--navy),
+    0.09em 0.09em 0 rgb(23 32 43 / 0.28);
+  margin-bottom: 1.1rem;
+}
+
+.name span {
+  display: inline-block;
 }
 
 .line {
   font-size: clamp(1.05rem, 2.2vw, 1.3rem);
   line-height: 1.4;
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--paper);
+  text-shadow:
+    1px 1px 0 var(--navy),
+    0 0 14px rgb(23 32 43 / 0.45);
 }
 
 .hint {
-  margin-top: 0.4rem;
+  margin-top: 0.35rem;
   font-size: 0.95rem;
-  color: var(--muted);
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero {
-    animation: none;
-  }
+  color: rgb(255 255 255 / 0.92);
+  text-shadow:
+    1px 1px 0 var(--navy),
+    0 0 12px rgb(23 32 43 / 0.5);
 }

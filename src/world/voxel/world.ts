@@ -1,0 +1,148 @@
+import { b, hash, place, type Box } from "./box";
+import * as M from "./models";
+import { HALF, forestAt, groundAt, heightAt, isReserved, plateau, riverZ, type Ground } from "./terrain";
+
+const TOP: Record<Ground, string[]> = {
+  grass: ["#7db05f", "#74a758", "#86b866", "#7aab5c"],
+  sand: ["#e3d2a0", "#dccb97"],
+  path: ["#c7a878", "#bf9f70", "#cdb083"],
+  stone: ["#979da3", "#9298a0", "#9ba1a7"],
+  snow: ["#f2f4f3", "#e8eef0"],
+  bed: ["#c9bb8c", "#bfb183"],
+};
+
+const BODY: Record<Ground, string> = {
+  grass: "#8a6748",
+  sand: "#cdbb86",
+  path: "#8a6748",
+  stone: "#7d848b",
+  snow: "#8e949b",
+  bed: "#b3a57a",
+};
+
+export type World = {
+  /** Ground columns. */
+  terrain: Box[];
+  /** Everything standing on the ground that never moves. */
+  props: Box[];
+  /** Flowers and grass: too small to be worth casting shadows. */
+  plants: Box[];
+  /** Small lit things: screens, lamps, stage lights. Drawn at full brightness. */
+  glow: Box[];
+};
+
+function buildTerrain(): Box[] {
+  const out: Box[] = [];
+  for (let x = -HALF; x < HALF; x++) {
+    for (let z = -HALF; z < HALF; z++) {
+      const h = heightAt(x, z);
+      const ground = groundAt(x, z);
+      const tones = TOP[ground];
+      const top = tones[Math.floor(hash(x, z, 9) * tones.length)];
+      // A cap in the surface colour. Below it, earth or rock, but only as far down as a
+      // lower neighbour could let you see, which skips most of the hidden blocks.
+      out.push(b(x, h - 1, z, 1, 1, 1, top));
+      const lowest = Math.min(heightAt(x - 1, z), heightAt(x + 1, z), heightAt(x, z - 1), heightAt(x, z + 1));
+      const edge = x === -HALF || x === HALF - 1 || z === -HALF || z === HALF - 1;
+      const bottom = edge ? -3 : Math.max(-1, lowest - 1);
+      if (bottom < h - 1) out.push(b(x, bottom, z, 1, h - 1 - bottom, 1, BODY[ground]));
+    }
+  }
+  return out;
+}
+
+function scatter(props: Box[], plants: Box[]) {
+  const petals = [M.K.coral, M.K.yellow, M.K.pink, M.K.white, M.K.orange];
+  for (let x = -HALF + 1; x < HALF - 1; x++) {
+    for (let z = -HALF + 1; z < HALF - 1; z++) {
+      const ground = groundAt(x, z);
+      const h = heightAt(x, z);
+      const roll = hash(x, z, 21);
+      const at: [number, number, number] = [x + 0.5, h, z + 0.5];
+
+      if (ground === "stone" || ground === "snow") {
+        // Sparse pines and boulders on the mountainsides; nothing on the highest peaks.
+        if (h < 20 && roll < 0.035 && hash(x, z, 22) < 0.8) props.push(...place(M.pine(x + z, ground === "snow"), at));
+        else if (roll > 0.985) props.push(...place(M.rock(), at));
+        continue;
+      }
+      if (ground !== "grass") continue;
+
+      const reserved = isReserved(x, z);
+      if (!reserved) {
+        const woods = forestAt(x, z);
+        const density = woods > 0.55 ? 0.2 : woods > 0.4 ? 0.07 : 0.018;
+        // Trees need a clear neighbour so trunks never touch.
+        if (roll < density && (x + z) % 2 === 0) {
+          const kind = hash(x, z, 23);
+          props.push(...place(h >= 6 || kind < 0.3 ? M.pine(x * 3 + z) : M.tree(x * 5 + z), at));
+          continue;
+        }
+        if (roll > 0.992) {
+          props.push(...place(M.rock(), at, Math.floor(hash(x, z, 24) * 4)));
+          continue;
+        }
+        if (roll > 0.975) {
+          props.push(...place(M.bush(), at));
+          continue;
+        }
+      }
+      const small = hash(x, z, 25);
+      if (small < 0.07) plants.push(...place(M.flower(petals[Math.floor(hash(x, z, 26) * petals.length)]), [x + 0.3 + small * 4, h, z + 0.5]));
+      else if (small < 0.17) plants.push(...place(M.tuft(), at));
+    }
+  }
+}
+
+function buildWorld(): World {
+  const props: Box[] = [];
+  const glow: Box[] = [];
+  const add = (model: { solid: Box[]; glow: Box[] }, at: [number, number, number], turns = 0) => {
+    props.push(...place(model.solid, at, turns));
+    glow.push(...place(model.glow, at, turns));
+  };
+
+  const design = plateau("design");
+  const code = plateau("code");
+  const play = plateau("play");
+  const lookout = plateau("lookout");
+  const plaza = plateau("plaza");
+
+  add(M.studio(), [design.x + 0.5, design.h, design.z - 1]);
+  add(M.lab(), [code.x + 1, code.h, code.z - 1]);
+  add(M.arcade(), [play.x, play.h, play.z + 1]);
+  props.push(...place(M.camp(), [lookout.x, lookout.h, lookout.z]));
+  props.push(...place(M.well(), [plaza.x, plaza.h, plaza.z]));
+
+  const a = plateau("cottage-a");
+  const bb = plateau("cottage-b");
+  const c = plateau("cottage-c");
+  props.push(...place(M.cottage(M.K.teal, M.K.tealD), [a.x, a.h, a.z]));
+  props.push(...place(M.cottage(M.K.coral, M.K.coralD), [bb.x, bb.h, bb.z]));
+  props.push(...place(M.cottage(M.K.yellow, M.K.gold), [c.x, c.h, c.z], 3));
+
+  const farm = plateau("farm");
+  props.push(...place(M.farm(), [farm.x, farm.h, farm.z]));
+  const mill = plateau("windmill");
+  props.push(...place(M.windmillTower(), [mill.x, mill.h, mill.z]));
+
+  // The bridge carries the main path over the river.
+  props.push(...place(M.bridge(9), [0.5, 1.7, riverZ(0)]));
+
+  // Lamps along the main path and around the plaza.
+  for (const [x, z] of [[2.2, 15], [-1.8, 2], [2.2, -2], [-4, -4], [4.5, -10], [-6, -8.5], [7, -6.5], [-2.2, -13.5]] as const) {
+    add(M.lamp(), [x, heightAt(Math.floor(x), Math.floor(z)), z]);
+  }
+
+  const plants: Box[] = [];
+  scatter(props, plants);
+  return { terrain: buildTerrain(), props, plants, glow };
+}
+
+let cached: World | null = null;
+
+/** The whole world, built once. It is the same on every visit. */
+export function getWorld(): World {
+  cached ??= buildWorld();
+  return cached;
+}

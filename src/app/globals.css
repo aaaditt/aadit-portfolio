@@ -1,15 +1,12 @@
-/* Paper Daylight. Keep in step with src/world/theme.ts. */
 :root {
-  --sky: #f6e7d2;
-  --cream: #fff8ec;
-  --white: #ffffff;
-  --ink: #3d2c2e;
-  --navy: #264653;
-  --teal: #2a9d8f;
-  --coral: #e76f51;
-  --orange: #f4a261;
-  --yellow: #e9c46a;
-  --muted: #6b5a58;
+  --sky-top: #8fcdf0;
+  --sky-mid: #bfe4f3;
+  --haze: #d6ecf2; /* keep in step with HAZE in src/world/Scene.tsx */
+  --ink: #17202b;
+  --ink-soft: #3c4857;
+  --paper: #ffffff;
+  --accent: #c8553d;
+  --navy: #27374d;
   color-scheme: light;
 }
 
@@ -27,8 +24,8 @@ body {
 
 body {
   color: var(--ink);
-  background: var(--sky);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  background: var(--haze);
+  font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -43,7 +40,7 @@ a {
   outline-offset: 3px;
 }
 
-/* Page content floats above the island. Empty space lets the pointer through to the scene. */
+/* Page content floats above the world. Empty space lets the pointer through to the scene. */
 .content {
   position: fixed;
   inset: 0;
@@ -53,4 +50,69 @@ a {
 
 .content > * {
   pointer-events: auto;
+}
+
+/* Anything marked .reveal stays hidden until the opening flight is over, then rises into place. */
+.reveal {
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+html:not([data-intro="done"]) .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  pointer-events: none;
+  transition: none;
+}
+
+/* The character's speech bubble. It is moved around by src/ui/SpeechBubble.tsx. */
+.bubble {
+  position: fixed;
+  z-index: 5;
+  pointer-events: none;
+  translate: 6px -100%;
+  padding: 0.45rem 0.8rem 0.5rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  box-shadow: 4px 4px 0 0 rgb(23 32 43 / 0.25);
+  font-family: var(--font-display), monospace;
+  font-size: 1.05rem;
+  line-height: 1;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(8px) scale(0.6);
+  transition:
+    opacity 0.25s ease,
+    transform 0.45s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.bubble-on {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.9s;
+}
+
+.bubble::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  bottom: -11px;
+  width: 10px;
+  height: 8px;
+  background: var(--paper);
+  border: solid var(--ink);
+  border-width: 0 3px 3px 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: none;
+  }
+
+  .bubble {
+    transition: none;
+  }
 }
