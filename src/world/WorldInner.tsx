@@ -29,7 +29,7 @@ function hasWebGL() {
 }
 
 /** Only ever rendered in the browser (see World). */
-export default function WorldInner({ section }: { section: Section }) {
+export default function WorldInner({ section, onOpen }: { section: Section; onOpen: (href: string) => void }) {
   const [supported] = useState(hasWebGL);
   const reduced = useSyncExternalStore(
     subscribeReduced,
@@ -52,17 +52,23 @@ export default function WorldInner({ section }: { section: Section }) {
 
   return (
     <Canvas
-      shadows
+      // Hard-edged shadows and untouched colours suit the pixel look.
+      shadows="basic"
+      flat
       dpr={1 / PIXEL}
       gl={{ antialias: false, alpha: true }}
-      camera={{ position: [0, 76, 22], fov: 35, near: 0.5, far: 400 }}
+      camera={{ position: [0, 112, 24], fov: 30, near: 0.5, far: 400 }}
       style={{ imageRendering: "pixelated" }}
       // The page's own headings and links describe the content; the scene is decoration.
       aria-hidden="true"
     >
       <MotionContext.Provider value={!reduced}>
         <CameraRig section={section} animate={!reduced} />
-        <Scene greet={introState === "done" && (section.id === "home" || section.id === "about")} />
+        <Scene
+          greet={introState === "done" && (section.id === "home" || section.id === "about")}
+          current={section.id}
+          onOpen={onOpen}
+        />
       </MotionContext.Provider>
     </Canvas>
   );

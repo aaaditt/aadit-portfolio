@@ -1,29 +1,40 @@
 "use client";
 
 import { useMemo } from "react";
+import type { SectionId } from "@/content/sections";
+import { Hotspots } from "./Hotspots";
 import { Boat, Campfire, Clouds, HotAirBalloon, Water, WindmillSails } from "./voxel/Animated";
 import { Character } from "./voxel/Character";
+import { Birds, ChimneySmoke, Villagers } from "./voxel/Life";
 import { plateau } from "./voxel/terrain";
 import { Voxels } from "./voxel/Voxels";
 import { getWorld } from "./voxel/world";
 
 /** The colour the far distance fades to. Matches the horizon of the page's sky gradient. */
-export const HAZE = "#d6ecf2";
+export const HAZE = "#eef0dc";
 
-export function Scene({ greet }: { greet: boolean }) {
+export function Scene({
+  greet,
+  current,
+  onOpen,
+}: {
+  greet: boolean;
+  current: SectionId;
+  onOpen: (href: string) => void;
+}) {
   const world = useMemo(() => getWorld(), []);
   const lookout = plateau("lookout");
 
   return (
     <>
-      <fog attach="fog" args={[HAZE, 48, 175]} />
+      <fog attach="fog" args={[HAZE, 45, 150]} />
 
-      <hemisphereLight args={["#eaf6ff", "#8fb97a", 0.95]} />
-      <ambientLight intensity={0.25} />
+      <hemisphereLight args={["#cfe2ff", "#8fae78", 1.5]} />
       <directionalLight
-        position={[38, 60, 30]}
-        intensity={2.4}
-        color="#fff3d9"
+        // A lower, warmer sun from the south-west gives every block a lit side and a shaded side.
+        position={[-42, 40, 36]}
+        intensity={2.9}
+        color="#ffe6c0"
         castShadow
         shadow-mapSize={[2048, 2048]}
         shadow-camera-left={-62}
@@ -37,18 +48,23 @@ export function Scene({ greet }: { greet: boolean }) {
       />
 
       {/* The ground receives shadows but does not cast them, which halves the shadow work. */}
-      <Voxels boxes={world.terrain} cast={false} />
-      <Voxels boxes={world.props} />
+      <Voxels boxes={world.terrain} cast={false} grain />
+      <Voxels boxes={world.props} grain />
       <Voxels boxes={world.plants} cast={false} />
       <Voxels boxes={world.glow} glow />
       <Water />
 
-      <Character position={[1.2, lookout.h, lookout.z + 4.2]} greet={greet} />
+      <Character position={[1.2, lookout.h + 0.2, lookout.z + 4.2]} greet={greet} />
+      <Villagers />
       <Campfire />
+      <ChimneySmoke />
       <WindmillSails />
       <Boat />
       <HotAirBalloon />
+      <Birds />
       <Clouds />
+
+      <Hotspots current={current} onOpen={onOpen} />
     </>
   );
 }

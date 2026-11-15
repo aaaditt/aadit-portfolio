@@ -23,7 +23,7 @@ export function Water() {
     <mesh ref={ref} position={[0, WATER_LEVEL, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
       {/* Far wider than the land, so the lake runs out to the horizon. */}
       <planeGeometry args={[HALF * 12, HALF * 12]} />
-      <meshStandardMaterial color="#5fa8d3" roughness={0.35} transparent opacity={0.82} />
+      <meshStandardMaterial color="#4fb3d9" roughness={0.35} transparent opacity={0.84} />
     </mesh>
   );
 }
@@ -98,17 +98,21 @@ export function Boat() {
   const ref = useRef<THREE.Group>(null);
   const animate = useMotion();
   const model = useMemo(() => M.boat(), []);
-  const x = -11;
 
   useFrame(({ clock }) => {
-    if (!ref.current || !animate) return;
-    const t = clock.elapsedTime;
-    ref.current.position.y = WATER_LEVEL - 0.15 + Math.sin(t * 1.3) * 0.07;
-    ref.current.rotation.z = Math.sin(t * 1.1) * 0.05;
+    if (!ref.current) return;
+    const t = animate ? clock.elapsedTime : 0;
+    // Sail between x = -30 and x = -5, turning round at each end.
+    const lap = (t * 0.035) % 1;
+    const u = 1 - Math.abs(lap * 2 - 1);
+    const x = -30 + u * 25;
+    const heading = lap < 0.5 ? 1 : -1;
+    ref.current.position.set(x, WATER_LEVEL - 0.15 + Math.sin(t * 1.3) * 0.07, riverZ(x));
+    ref.current.rotation.set(0, Math.atan2(-(riverZ(x + heading) - riverZ(x)), heading) + (heading < 0 ? Math.PI : 0), Math.sin(t * 1.1) * 0.05);
   });
 
   return (
-    <group ref={ref} position={[x, WATER_LEVEL - 0.15, riverZ(x)]} rotation={[0, 0.25, 0]}>
+    <group ref={ref} position={[-30, WATER_LEVEL - 0.15, riverZ(-30)]}>
       <Voxels boxes={model} />
     </group>
   );

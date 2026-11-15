@@ -5,13 +5,66 @@
   pointer-events: none;
 }
 
+/* Title card shown while the world loads. It fades away to reveal the scene. */
+.cover {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  background: #0c0f14;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.overlay[data-loading="true"] .cover {
+  opacity: 1;
+  transition: none;
+}
+
+.wordmark {
+  font-family: var(--font-display), monospace;
+  font-size: clamp(3rem, 10vw, 6rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  color: #fff;
+}
+
+.loading {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.6);
+}
+
+.loading::after {
+  content: "";
+  display: inline-block;
+  width: 0.55em;
+  height: 0.55em;
+  margin-left: 0.6em;
+  background: #ffb347;
+  animation: blink 0.8s steps(2, jump-none) infinite;
+}
+
+@keyframes blink {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Cinema bars for the opening flight. */
 .bar {
   position: absolute;
   left: 0;
   right: 0;
   height: 11vh;
   background: #0c0f14;
-  transition: transform 1.1s cubic-bezier(0.7, 0, 0.2, 1);
+  transition: transform 0.7s cubic-bezier(0.7, 0, 0.2, 1);
 }
 
 .top {
@@ -27,7 +80,8 @@
   justify-content: center;
 }
 
-.overlay[data-playing="true"] .bar {
+.overlay[data-playing="true"] .bar,
+.overlay[data-loading="true"] .bar {
   transform: none;
 }
 
@@ -45,23 +99,23 @@
 
 .skip {
   position: absolute;
-  top: calc(11vh + 1rem);
-  right: 1.25rem;
+  right: clamp(1rem, 3vw, 2rem);
+  top: 50%;
+  translate: 0 -50%;
   pointer-events: auto;
   padding: 0.5rem 0.9rem;
-  border-radius: 999px;
-  border: 1px solid rgb(255 255 255 / 0.5);
-  background: rgb(12 15 20 / 0.45);
+  border: 1px solid rgb(255 255 255 / 0.4);
+  background: transparent;
   color: #fff;
-  font: inherit;
-  font-size: 0.85rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   cursor: pointer;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 }
 
 .skip:hover {
-  background: rgb(12 15 20 / 0.7);
+  background: rgb(255 255 255 / 0.12);
 }
 
 .skip:focus-visible {
@@ -69,8 +123,43 @@
   outline-offset: 3px;
 }
 
+/* District names over the opening map view, and the tag that follows the pointer. */
+.label,
+.tag {
+  position: absolute;
+  padding: 0.3rem 0.55rem 0.35rem;
+  background: #fff;
+  color: #17202b;
+  border: 3px solid #17202b;
+  box-shadow: 4px 4px 0 0 rgb(23 32 43 / 0.3);
+  font-family: var(--font-display), monospace;
+  font-size: 1rem;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.label {
+  translate: -50% -50%;
+}
+
+.tag {
+  translate: 14px 14px;
+  font-size: 0.85rem;
+  transition: opacity 0.15s ease;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .bar {
+  .bar,
+  .cover,
+  .label {
     transition: none;
+  }
+
+  .loading::after {
+    animation: none;
   }
 }

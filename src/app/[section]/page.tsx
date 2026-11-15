@@ -33,7 +33,9 @@ async function SectionCard({ params }: Props) {
       <p className={styles.eyebrow}>{section.label}</p>
       <h1 className={styles.title}>{section.title}</h1>
       <p className={styles.blurb}>{section.blurb}</p>
-      <p className={styles.soon}>Projects are being added here soon.</p>
+      <p className={styles.soon}>
+        {section.id === "about" ? "A short bio and contact links are coming soon." : "Projects are being added here soon."}
+      </p>
     </main>
   );
 }

@@ -3,10 +3,10 @@ import * as M from "./models";
 import { HALF, forestAt, groundAt, heightAt, isReserved, plateau, riverZ, type Ground } from "./terrain";
 
 const TOP: Record<Ground, string[]> = {
-  grass: ["#7db05f", "#74a758", "#86b866", "#7aab5c"],
+  grass: ["#86c25a", "#7ab852", "#92cc64", "#80bd56"],
   sand: ["#e3d2a0", "#dccb97"],
   path: ["#c7a878", "#bf9f70", "#cdb083"],
-  stone: ["#8f97a3", "#8a929e", "#949ca8"],
+  stone: ["#a39382", "#978877", "#9c8c7b"],
   snow: ["#f2f4f3", "#e8eef0"],
   bed: ["#c9bb8c", "#bfb183"],
 };
@@ -16,10 +16,12 @@ const BODY: Record<Ground, string> = {
   sand: "#cdbb86",
   path: "#8a6748",
   // Rock and snow use nearly the same colour on top and sides, so slopes read as solid, not striped.
-  stone: "#858d99",
+  stone: "#8e7f6f",
   snow: "#dfe6ea",
   bed: "#b3a57a",
 };
+
+const HIGH_ROCK = ["#8c8fa6", "#7d819a", "#868aa0"];
 
 export type World = {
   /** Ground columns. */
@@ -38,7 +40,9 @@ function buildTerrain(): Box[] {
     for (let z = -HALF; z < HALF; z++) {
       const h = heightAt(x, z);
       const ground = groundAt(x, z);
-      const tones = TOP[ground];
+      // Rock comes in two strata: warm brown low down, cool blue-grey higher up.
+      const high = ground === "stone" && h >= 13;
+      const tones = high ? HIGH_ROCK : TOP[ground];
       const top = tones[Math.floor(hash(x, z, 9) * tones.length)];
       // A cap in the surface colour. Below it, earth or rock, but only as far down as a
       // lower neighbour could let you see, which skips most of the hidden blocks.
@@ -46,7 +50,7 @@ function buildTerrain(): Box[] {
       const lowest = Math.min(heightAt(x - 1, z), heightAt(x + 1, z), heightAt(x, z - 1), heightAt(x, z + 1));
       const edge = x === -HALF || x === HALF - 1 || z === -HALF || z === HALF - 1;
       const bottom = edge ? -3 : Math.max(-1, lowest - 1);
-      if (bottom < h - 1) out.push(b(x, bottom, z, 1, h - 1 - bottom, 1, BODY[ground]));
+      if (bottom < h - 1) out.push(b(x, bottom, z, 1, h - 1 - bottom, 1, high ? "#7d819a" : BODY[ground]));
     }
   }
   return out;
@@ -76,7 +80,10 @@ function scatter(props: Box[], plants: Box[]) {
         // Trees need a clear neighbour so trunks never touch.
         if (roll < density && (x + z) % 2 === 0) {
           const kind = hash(x, z, 23);
-          props.push(...place(h >= 6 || kind < 0.3 ? M.pine(x * 3 + z) : M.tree(x * 5 + z), at));
+          // A few trees are in autumn colour or blossom, to break up the green.
+          const special = hash(x, z, 27);
+          const leaves = special < 0.05 ? M.AUTUMN : special < 0.09 ? M.BLOSSOM : undefined;
+          props.push(...place(h >= 6 || kind < 0.3 ? M.pine(x * 3 + z) : M.tree(x * 5 + z, leaves), at));
           continue;
         }
         if (roll > 0.992) {

@@ -20,8 +20,8 @@ export const K = {
   leaf: "#4f9a4d",
   leafD: "#3d7f3f",
   leafL: "#66ad5b",
-  pine: "#2f6f4f",
-  pineD: "#245a41",
+  pine: "#2c6e5a",
+  pineD: "#205848",
   yellow: "#e8c15a",
   white: "#f5f3ea",
   red: "#d2493a",
@@ -35,9 +35,12 @@ export const K = {
   blue: "#4f86c6",
 } as const;
 
-export function tree(variant: number): Box[] {
+export const AUTUMN: [string, string, string] = ["#e0913a", "#c9772b", "#edb05a"];
+export const BLOSSOM: [string, string, string] = ["#f0a9b8", "#e08fa3", "#f7c6d0"];
+
+export function tree(variant: number, leaves?: [string, string, string]): Box[] {
   const h = 3 + (variant % 2);
-  const [a, c, l] = variant % 3 === 0 ? [K.leafD, K.leaf, K.leafL] : [K.leaf, K.leafD, K.leafL];
+  const [a, c, l] = leaves ?? (variant % 3 === 0 ? [K.leafD, K.leaf, K.leafL] : [K.leaf, K.leafD, K.leafL]);
   return [
     b(-0.5, 0, -0.5, 1, h, 1, K.wood),
     b(-1.5, h - 1, -1.5, 3, 2, 3, a),
@@ -131,13 +134,13 @@ export function studio(): { solid: Box[]; glow: Box[] } {
       // paint buckets
       ...paints.flatMap((c, i) => [b(-4.6 + i * 0.75, 0, 4.2 + (i % 2) * 0.4, 0.55, 0.5, 0.55, K.stoneL), b(-4.52 + i * 0.75, 0.5, 4.28 + (i % 2) * 0.4, 0.4, 0.08, 0.4, c)]),
       // giant pencil, point up
-      b(5.8, 0, -0.7, 1.4, 0.8, 1.4, K.pink),
-      b(5.75, 0.8, -0.75, 1.5, 0.4, 1.5, K.stoneL),
-      b(5.8, 1.2, -0.7, 1.4, 5.3, 1.4, K.yellow),
-      b(5.8, 1.2, -0.7, 0.3, 5.3, 1.4, K.gold),
-      b(5.95, 6.5, -0.55, 1.1, 0.6, 1.1, K.creamD),
-      b(6.15, 7.1, -0.35, 0.7, 0.5, 0.7, K.creamD),
-      b(6.3, 7.6, -0.2, 0.4, 0.6, 0.4, K.black),
+      b(5.8, 0, 2.9, 1.4, 0.8, 1.4, K.pink),
+      b(5.75, 0.8, 2.85, 1.5, 0.4, 1.5, K.stoneL),
+      b(5.8, 1.2, 2.9, 1.4, 5.3, 1.4, K.yellow),
+      b(5.8, 1.2, 2.9, 0.3, 5.3, 1.4, K.gold),
+      b(5.95, 6.5, 3.05, 1.1, 0.6, 1.1, K.creamD),
+      b(6.15, 7.1, 3.25, 0.7, 0.5, 0.7, K.creamD),
+      b(6.3, 7.6, 3.4, 0.4, 0.6, 0.4, K.black),
     ],
     glow: [],
   };
@@ -168,11 +171,11 @@ export function lab(): { solid: Box[]; glow: Box[] } {
       ...[0, 1].flatMap((i) => [b(5.2 + i * 1.5, 0, 1.2, 1.2, 2.6, 1.2, K.stoneL), b(5.2 + i * 1.5, 2.6, 1.2, 1.2, 0.15, 1.2, K.stoneD)]),
       // the </> sculpture, on a plinth
       b(-9.6, 0, 3.4, BRACKETS[0].length * px + 0.6, 0.5, 1.4, K.stoneD),
-      ...BRACKETS.flatMap((row, r) =>
-        [...row].flatMap((ch, c) => (ch === "#" ? [b(-9.3 + c * px, 0.5 + (4 - r) * px, 3.8, px, px, 0.6, K.white)] : [])),
-      ),
     ],
     glow: [
+      ...BRACKETS.flatMap((row, r) =>
+        [...row].flatMap((ch, c) => (ch === "#" ? [b(-9.3 + c * px, 0.5 + (4 - r) * px, 3.8, px, px, 0.6, "#bfe9ff")] : [])),
+      ),
       ...lines.map((c, i) => b(-3.3 + (i % 3) * 0.35, 3.05 - i * 0.37, 3.1, 1.6 + ((i * 37) % 23) / 10, 0.16, 0.06, c)),
       b(2.55, 8.8, -1.25, 0.4, 0.4, 0.4, K.red),
       ...[0, 1].flatMap((i) => [0, 1, 2].flatMap((r) => [b(5.35 + i * 1.5, 0.5 + r * 0.75, 2.4, 0.18, 0.18, 0.06, K.crop), b(5.7 + i * 1.5, 0.5 + r * 0.75, 2.4, 0.18, 0.18, 0.06, r === 1 ? K.red : K.gold)])),
@@ -180,7 +183,8 @@ export function lab(): { solid: Box[]; glow: Box[] } {
   };
 }
 
-const FACE = ["#.....#", ".#...#.", "#######", "##.#.##", "#######", "#.#.#.#"];
+// The arcade screen shows an "A", for Aadit.
+const FACE = ["..###..", ".#...#.", ".#...#.", ".#####.", ".#...#.", ".#...#."];
 
 /** The Arcade: a giant cabinet, a striped event tent, and a stage with lights. */
 export function arcade(): { solid: Box[]; glow: Box[] } {
@@ -260,6 +264,8 @@ export function camp(): Box[] {
     b(4.35, 0, -2.4, 0.3, 6, 0.3, K.stoneL),
     b(4.65, 4.6, -2.35, 2, 1.2, 0.15, K.coral),
     b(4.65, 5, -2.33, 2, 0.4, 0.17, K.white),
+    // a pale stone slab for the character to stand on
+    b(-0.2, 0, 2.8, 2.8, 0.2, 2.8, "#d9d2c0"),
     // fire ring
     b(-0.9, 0, 0.6, 1.8, 0.3, 0.4, K.stoneD),
     b(-0.9, 0, 2, 1.8, 0.3, 0.4, K.stoneD),

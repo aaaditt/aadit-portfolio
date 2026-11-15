@@ -1,11 +1,12 @@
 :root {
-  --sky-top: #8fcdf0;
-  --sky-mid: #bfe4f3;
-  --haze: #d6ecf2; /* keep in step with HAZE in src/world/Scene.tsx */
+  --sky-top: #5fb4ee;
+  --sky-mid: #a9dcf7;
+  --haze: #eef0dc; /* keep in step with HAZE in src/world/Scene.tsx */
   --ink: #17202b;
   --ink-soft: #3c4857;
   --paper: #ffffff;
   --accent: #c8553d;
+  --amber: #ffb347;
   --navy: #27374d;
   color-scheme: light;
 }

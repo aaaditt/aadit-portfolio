@@ -5,16 +5,22 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Section } from "@/content/sections";
 import { intro } from "./introStore";
+import { flight } from "./overlayState";
 
 /** How long the opening flight lasts, in seconds. */
 const INTRO_SECONDS = 9;
+/** How long a move between sections lasts, in seconds. */
+const MOVE_SECONDS = 1.8;
+const FOV = 35;
+/** The opening starts zoomed in, like a flat game map, and widens as the camera drops. */
+const MAP_FOV = 30;
 
 // The opening flight: it starts looking straight down like a game map, then swoops round the
 // west side of the valley and settles at the lookout.
 const FLIGHT = new THREE.CatmullRomCurve3(
   [
-    new THREE.Vector3(0, 76, 22),
-    new THREE.Vector3(-18, 58, 30),
+    new THREE.Vector3(0, 112, 24),
+    new THREE.Vector3(-18, 62, 30),
     new THREE.Vector3(-36, 34, 30),
     new THREE.Vector3(-28, 20, 46),
     new THREE.Vector3(-6, 14, 50),
@@ -22,7 +28,7 @@ const FLIGHT = new THREE.CatmullRomCurve3(
   false,
   "centripetal",
 );
-const FLIGHT_LOOK_FROM = new THREE.Vector3(0, 0, -8);
+const FLIGHT_LOOK_FROM = new THREE.Vector3(0, 0, 0);
 
 const goalPosition = new THREE.Vector3();
 const goalTarget = new THREE.Vector3();
@@ -34,15 +40,20 @@ const smoothstep = (a: number, c: number, t: number) => {
   return x * x * (3 - 2 * x);
 };
 
+type Move = { from: THREE.Vector3; fromTarget: THREE.Vector3; t: number };
+
 /**
- * Flies the opening shot, then glides the camera to whichever section is open.
- * Jumps straight to the section when motion is reduced.
+ * Flies the opening shot, then carries the camera between sections in a timed arc that lifts
+ * over the rooftops. Jumps straight to the section when motion is reduced.
  */
 export function CameraRig({ section, animate }: { section: Section; animate: boolean }) {
   const target = useRef<THREE.Vector3 | null>(null);
   const flown = useRef(0);
+  const shown = useRef(section.id);
+  const move = useRef<Move | null>(null);
 
-  useFrame(({ camera, size, pointer }, delta) => {
+  useFrame(({ camera, scene, size, pointer }, delta) => {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return;
     const step = Math.min(delta, 0.1);
     goalTarget.set(...section.camera.target);
     goalPosition.set(...section.camera.position);
@@ -58,31 +69,62 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
       if (intro.get() !== "playing") camera.position.copy(goalPosition);
     }
 
+    let fov = FOV;
+
     if (intro.get() === "playing") {
-      // Real time, not frame count, so a slow machine still gets a 9-second flight.
-      flown.current += Math.min(delta, 0.5) / INTRO_SECONDS;
-      const t = easeInOut(Math.min(1, flown.current));
+      // The first frames stall while the world is prepared. Do not count those, or the
+      // flight would be half over before anything has been seen.
+      if (delta < 0.12) flown.current += delta / INTRO_SECONDS;
+      flight.progress = Math.min(1, flown.current);
+      const t = easeInOut(flight.progress);
       FLIGHT.getPoint(t, flightPoint);
       // Hand over from the flight path to the real resting place over the last stretch.
       camera.position.copy(flightPoint).lerp(goalPosition, smoothstep(0.72, 1, t));
       target.current.copy(FLIGHT_LOOK_FROM).lerp(goalTarget, smoothstep(0.35, 1, t));
-      camera.lookAt(target.current);
+      fov = MAP_FOV + (FOV - MAP_FOV) * smoothstep(0.15, 0.8, t);
       if (flown.current >= 1) intro.finish();
-      return;
+    } else {
+      flight.progress = 1;
+      if (shown.current !== section.id) {
+        shown.current = section.id;
+        move.current = animate ? { from: camera.position.clone(), fromTarget: target.current.clone(), t: 0 } : null;
+      }
+
+      const m = move.current;
+      if (m) {
+        m.t += step / MOVE_SECONDS;
+        const e = easeInOut(Math.min(1, m.t));
+        // Rise in the middle of the move, so the camera clears the village instead of flying through it.
+        const lift = Math.min(12, m.from.distanceTo(goalPosition) * 0.3);
+        camera.position.lerpVectors(m.from, goalPosition, e);
+        camera.position.y += Math.sin(Math.PI * e) * lift;
+        target.current.lerpVectors(m.fromTarget, goalTarget, e);
+        if (m.t >= 1) move.current = null;
+      } else if (animate) {
+        // At rest, drift a little with the pointer so the scene feels alive.
+        goalPosition.x += pointer.x * 0.6;
+        goalPosition.y += pointer.y * 0.3;
+        const ease = 1 - Math.exp(-2.4 * step);
+        camera.position.lerp(goalPosition, ease);
+        target.current.lerp(goalTarget, ease);
+      } else {
+        camera.position.copy(goalPosition);
+        target.current.copy(goalTarget);
+      }
     }
 
-    // A little drift with the pointer makes the scene feel alive.
-    if (animate) {
-      goalPosition.x += pointer.x * 1.2;
-      goalPosition.y += pointer.y * 0.6;
-      const ease = 1 - Math.exp(-2.4 * step);
-      camera.position.lerp(goalPosition, ease);
-      target.current.lerp(goalTarget, ease);
-    } else {
-      camera.position.copy(goalPosition);
-      target.current.copy(goalTarget);
+    if (camera.fov !== fov) {
+      camera.fov = fov;
+      camera.updateProjectionMatrix();
     }
     camera.lookAt(target.current);
+
+    // Push the haze back as the camera climbs, so the map view from high up stays clear.
+    if (scene.fog instanceof THREE.Fog) {
+      const lift = Math.max(0, camera.position.y - 18) * 1.7;
+      scene.fog.near = 45 + lift;
+      scene.fog.far = 150 + lift;
+    }
   });
 
   return null;

@@ -12,16 +12,16 @@ import { Voxels } from "./Voxels";
 const SKIN = "#a9744b";
 const SKIN_D = "#93623e";
 const HAIR = "#1f1a1b";
-const HAIR_L = "#2d2526";
-const HOODIE = "#2b3759";
-const HOODIE_D = "#222c49";
+const HAIR_L = "#3b2e2a";
+const HOODIE = "#34447a";
+const HOODIE_D = "#2a3763";
 const TEE = "#f1eee6";
 const PANTS = "#2a2b33";
 const SHOE = "#ecebe6";
 const FACE = "#2a1d18";
 
-/** One model pixel, in world units. The character is about 2.6 blocks tall. */
-const U = 0.13;
+/** One model pixel, in world units. The character is about 3.4 blocks tall. */
+const U = 0.17;
 
 const LEGS: Box[] = [
   b(-3, -5, -1.5, 2.6, 5, 3, PANTS),
@@ -45,12 +45,14 @@ const HEAD: Box[] = [
   b(-3.5, 2, -0.7, 0.5, 1.5, 1.2, SKIN_D),
   b(3, 2, -0.7, 0.5, 1.5, 1.2, SKIN_D),
   // closed, smiling eyes and brows
-  b(-2.2, 3.1, 3, 1.5, 0.4, 0.12, FACE),
-  b(0.7, 3.1, 3, 1.5, 0.4, 0.12, FACE),
-  b(-2.4, 3.4, 3, 0.35, 0.3, 0.12, FACE),
-  b(2.05, 3.4, 3, 0.35, 0.3, 0.12, FACE),
-  b(-2.3, 4.2, 3, 1.6, 0.3, 0.12, HAIR),
-  b(0.7, 4.2, 3, 1.6, 0.3, 0.12, HAIR),
+  b(-2.2, 3.3, 3, 1.5, 0.5, 0.12, FACE),
+  b(0.7, 3.3, 3, 1.5, 0.5, 0.12, FACE),
+  b(-2.5, 2.9, 3, 0.4, 0.55, 0.12, FACE),
+  b(-0.8, 2.9, 3, 0.4, 0.55, 0.12, FACE),
+  b(0.4, 2.9, 3, 0.4, 0.55, 0.12, FACE),
+  b(2.1, 2.9, 3, 0.4, 0.55, 0.12, FACE),
+  b(-2.3, 4.35, 3, 1.6, 0.35, 0.12, HAIR),
+  b(0.7, 4.35, 3, 1.6, 0.35, 0.12, HAIR),
   b(-0.4, 2, 3, 0.8, 0.9, 0.35, SKIN_D),
   // smile
   b(-1.2, 1.1, 3, 2.4, 0.3, 0.12, FACE),
@@ -69,9 +71,23 @@ const HEAD: Box[] = [
   b(-3.2, 4.8, 3, 1.7, 1.3, 0.6, HAIR),
   b(-1.1, 5.2, 3, 1.9, 0.9, 0.7, HAIR_L),
   b(1.2, 4.9, 3, 2, 1.2, 0.6, HAIR),
+  b(-4.2, 5.2, -1.5, 1, 1.6, 2.4, HAIR_L),
+  b(3.3, 5.4, -0.5, 1, 1.5, 2.2, HAIR),
+  b(-0.6, 8.2, -1.2, 1.6, 0.8, 1.6, HAIR_L),
+  b(1.4, 8.1, 0.8, 1.3, 0.7, 1.3, HAIR),
+  b(-2.6, 8, -0.2, 1.3, 0.7, 1.4, HAIR),
+  b(-1.8, 6.4, 3.2, 1.4, 1.1, 0.7, HAIR_L),
+  b(0.6, 6.5, 3.3, 1.5, 1, 0.6, HAIR),
+  b(-3.9, 6.6, 1, 0.9, 1.2, 1.6, HAIR),
+  b(3.1, 6.8, -2.6, 0.9, 1.1, 1.8, HAIR_L),
+  b(-0.8, 6.2, -4.2, 2.4, 1.6, 0.9, HAIR),
 ];
 
 const anchor = new THREE.Vector3();
+
+// How far each arm swings forward and inward to fold across the chest.
+const CROSSED_X = -1.05;
+const CROSSED_Z = 0.95;
 
 const ARM: Box[] = [b(-1, -5.5, -1, 2, 6, 2, HOODIE), b(-1.1, -5.6, -1.1, 2.2, 0.8, 2.2, HOODIE_D), b(-0.8, -6.8, -0.8, 1.6, 1.2, 1.6, SKIN)];
 
@@ -90,7 +106,7 @@ export function Character({ position, greet }: { position: [number, number, numb
     // Tell the page where the speech bubble should sit: just above and beside the head.
     if (head.current) {
       head.current.getWorldPosition(anchor);
-      anchor.y += 9.5 * U;
+      anchor.y += 10.5 * U;
       anchor.project(camera);
       bubbleAnchor.x = (anchor.x * 0.5 + 0.5) * size.width;
       bubbleAnchor.y = (-anchor.y * 0.5 + 0.5) * size.height;
@@ -106,11 +122,14 @@ export function Character({ position, greet }: { position: [number, number, numb
       head.current.rotation.z = Math.sin(t * 1.1) * 0.07;
       head.current.rotation.y = Math.sin(t * 0.7) * 0.2;
     }
-    // Wave for a few seconds, rest, repeat.
-    const cycle = t % 7;
-    const up = cycle < 3.6 ? Math.min(1, cycle * 3) : Math.max(0, 1 - (cycle - 3.6) * 3);
-    if (waving.current) waving.current.rotation.z = up * (2.55 + Math.sin(t * 9) * 0.32) + (1 - up) * 0.12;
-    if (resting.current) resting.current.rotation.x = Math.sin(t * 2) * 0.06;
+    // Stand with arms crossed, as in the profile picture. Wave on arrival, then every so often.
+    const cycle = t % 13;
+    const up = cycle < 3 ? Math.min(1, cycle * 3) : Math.max(0, 1 - (cycle - 3) * 3);
+    if (waving.current) {
+      waving.current.rotation.x = CROSSED_X * (1 - up);
+      waving.current.rotation.z = up * (2.55 + Math.sin(t * 9) * 0.32) - (1 - up) * CROSSED_Z;
+    }
+    if (resting.current) resting.current.rotation.x = CROSSED_X + Math.sin(t * 2) * 0.03;
   });
 
   return (
@@ -120,10 +139,10 @@ export function Character({ position, greet }: { position: [number, number, numb
       <group ref={head} position={[0, 6.6, 0]}>
         <Voxels boxes={HEAD} />
       </group>
-      <group ref={waving} position={[4.4, 5.9, 0]} rotation={[0, 0, animate ? 0.12 : 2.5]}>
+      <group ref={waving} position={[4.4, 5.9, 0]} rotation={[CROSSED_X, 0, -CROSSED_Z]}>
         <Voxels boxes={ARM} />
       </group>
-      <group ref={resting} position={[-4.4, 5.9, 0]} rotation={[0, 0, -0.1]}>
+      <group ref={resting} position={[-4.4, 5.9, 0]} rotation={[CROSSED_X, 0, CROSSED_Z]}>
         <Voxels boxes={ARM} />
       </group>
     </group>

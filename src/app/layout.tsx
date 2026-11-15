@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Geist_Mono, Pixelify_Sans, Space_Grotesk } from "next/font/google";
+import { Geist, Geist_Mono, Pixelify_Sans } from "next/font/google";
 import { BottomBar } from "@/ui/BottomBar";
 import { IntroOverlay } from "@/ui/IntroOverlay";
 import { SpeechBubble } from "@/ui/SpeechBubble";
 import { World } from "@/world/World";
 import "./globals.css";
 
-const body = Space_Grotesk({ variable: "--font-body", subsets: ["latin"] });
+const body = Geist({ variable: "--font-body", subsets: ["latin"] });
 const mono = Geist_Mono({ variable: "--font-mono", subsets: ["latin"] });
 const display = Pixelify_Sans({ variable: "--font-display", subsets: ["latin"] });
 

@@ -10,13 +10,14 @@ export type Plateau = { id: string; x: number; z: number; r: number; h: number; 
 /** Flat places carved into the land for things to stand on. */
 export const PLATEAUS: Plateau[] = [
   { id: "lookout", x: 0, z: 23, r: 5.5, h: 7 },
-  { id: "plaza", x: 0, z: -7, r: 5, h: 3, paved: true },
   { id: "design", x: -17, z: -8, r: 7, h: 3 },
   { id: "code", x: 17, z: -8, r: 7, h: 3 },
-  { id: "play", x: 0, z: -23, r: 8, h: 4 },
-  { id: "cottage-a", x: -8, z: -15, r: 4, h: 3 },
-  { id: "cottage-b", x: 8, z: -15, r: 4, h: 3 },
-  { id: "cottage-c", x: -27, z: -4, r: 4, h: 3 },
+  { id: "play", x: 0, z: -24, r: 14, h: 4, paved: true },
+  // Listed after the arcade so the plaza keeps its own level where the two meet.
+  { id: "plaza", x: 0, z: -7, r: 5, h: 3, paved: true },
+  { id: "cottage-a", x: -7, z: -2.5, r: 3.5, h: 3 },
+  { id: "cottage-b", x: 27, z: -1, r: 4, h: 3 },
+  { id: "cottage-c", x: -31, z: -13, r: 4, h: 4 },
   { id: "farm", x: 10, z: 0, r: 4.5, h: 2 },
   { id: "windmill", x: 29, z: -20, r: 3.5, h: 6 },
 ];
@@ -29,15 +30,13 @@ const PATHS: [number, number, number, number][] = [
   [0, -7, -11, -8],
   [0, -7, 11, -8],
   [0, -7, 0, -16],
-  [-3, -11, -6, -13],
-  [3, -11, 6, -13],
 ];
 
 /** Lines of sight from each section's camera to its subject. Tall things are kept out of them. */
 const SIGHTLINES: [number, number, number, number][] = [
-  [-8, 16, -17, -8],
-  [8, 16, 17, -8],
-  [2.5, -9, 0, -23],
+  [-18, 19, -17, -8],
+  [15.5, 19, 17, -8],
+  [5, 6, 0, -23],
 ];
 
 const BLEND = 6;
@@ -85,11 +84,16 @@ export function heightAt(x: number, z: number): number {
   // A ring of mountains closes the valley in, except to the south, where it opens onto a lake.
   const r = Math.hypot(x, z);
   const south = southOpening(x, z);
-  if (r > 31) h += Math.pow(r - 31, 1.3) * 0.5 * (0.55 + 0.9 * noise(x / 9, z / 9, 3)) * (1 - south);
+  // The ring wanders in and out, so the valley is not a perfect circle.
+  const ring = 31 + (noise(x / 18, z / 18, 7) - 0.5) * 11;
+  if (r > ring) h += Math.pow(r - ring, 1.3) * 0.5 * (0.55 + 0.9 * noise(x / 9, z / 9, 3)) * (1 - south);
+  // Low foothills lead up to it.
+  else if (r > ring - 7) h += ((r - ring + 7) / 7) * 1.6 * noise(x / 6, z / 6, 9) * (1 - south);
   if (z > 30) h -= south * (z - 30) * 0.9;
 
   for (const p of PLATEAUS) {
-    const d = Math.hypot(x - p.x, z - p.z);
+    // Unpaved places get a ragged edge instead of a perfect disc.
+    const d = Math.hypot(x - p.x, z - p.z) + (p.paved ? 0 : (noise(x / 3, z / 3, 8) - 0.5) * 2.4);
     if (d < p.r) h = p.h;
     else if (d < p.r + BLEND) {
       const t = (d - p.r) / BLEND;
@@ -128,7 +132,7 @@ export function isReserved(x: number, z: number, margin = 1.5): boolean {
   // Keep the slope in front of the lookout open, so nothing stands between it and the camera.
   if (z > 20 && Math.abs(x) < 26) return true;
   if (Math.hypot(x, z - 23) < 15) return true;
-  if (SIGHTLINES.some((line) => distToSegment(x, z, line) < 6)) return true;
+  if (SIGHTLINES.some((line) => distToSegment(x, z, line) < 9)) return true;
   if (PATHS.some((p) => distToSegment(x, z, p) < 1.3 + margin)) return true;
   return PLATEAUS.some((p) => Math.hypot(x - p.x, z - p.z) < p.r + margin);
 }
