@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { MOODS, getMood } from "@/world/moods";
@@ -16,12 +17,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return { title: mood ? `${mood.name} · look study` : "Look study" };
 }
 
-export default async function StudyPage({ params }: Props) {
+export default function StudyPage({ params }: Props) {
+  // The mood comes from the URL, so it is read inside Suspense to keep navigation instant.
+  return (
+    <main className={styles.stage}>
+      <Suspense fallback={null}>
+        <Study params={params} />
+      </Suspense>
+    </main>
+  );
+}
+
+async function Study({ params }: Props) {
   const mood = getMood((await params).mood);
   if (!mood) notFound();
 
   return (
-    <main className={styles.stage}>
+    <>
       <StudyCanvas mood={mood} interactive />
       <div className={styles.overlay} style={{ color: mood.palette.text }}>
         <Link className={styles.back} href="/">
@@ -32,6 +44,6 @@ export default async function StudyPage({ params }: Props) {
           <p className={styles.hint}>Drag to look around · scroll to zoom</p>
         </div>
       </div>
-    </main>
+    </>
   );
 }

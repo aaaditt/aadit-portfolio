@@ -1,9 +1,17 @@
 "use client";
 
-import { Float, OrbitControls, Stars } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
+import { Float, OrbitControls, PerspectiveCamera, Stars } from "@react-three/drei";
 import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import type { Mood } from "../moods";
 import { Building, Character, Island, NameSign, Tree } from "./parts";
+
+/** The camera. It widens its view in tall, narrow frames so the whole island stays in shot. */
+function Framing() {
+  const aspect = useThree((s) => s.size.width / s.size.height);
+  const fov = aspect < 1 ? Math.min(35 / aspect, 62) : 35;
+  return <PerspectiveCamera makeDefault position={[9, 6.5, 11]} fov={fov} />;
+}
 
 /** The same tiny scene every time; only the mood changes how it looks. */
 export function StudyScene({
@@ -19,6 +27,7 @@ export function StudyScene({
 
   return (
     <>
+      <Framing />
       <color attach="background" args={[palette.sky]} />
       {fog && <fog attach="fog" args={[fog.color, fog.near, fog.far]} />}
 

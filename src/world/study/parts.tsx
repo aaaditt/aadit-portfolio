@@ -17,7 +17,7 @@ export function Skin({ mood, color, fill }: { mood: Mood; color: string; fill?: 
       <meshStandardMaterial
         color={dark}
         emissive={color}
-        emissiveIntensity={0.22}
+        emissiveIntensity={0.45}
         roughness={0.6}
         flatShading
       />
@@ -39,7 +39,7 @@ export function Skin({ mood, color, fill }: { mood: Mood; color: string; fill?: 
 
 /** The drawn edges of an object. Soft moods have none. */
 export function Outline({ mood, color }: { mood: Mood; color: string }) {
-  const bright = useMemo(() => new THREE.Color(color).multiplyScalar(2.2), [color]);
+  const bright = useMemo(() => new THREE.Color(color).multiplyScalar(1.25), [color]);
 
   if (mood.material === "soft") return null;
   return (

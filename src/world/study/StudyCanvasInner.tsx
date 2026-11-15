@@ -53,7 +53,6 @@ export default function StudyCanvasInner({ mood, interactive = false }: { mood: 
           shadows={mood.light.shadows}
           dpr={[1, 1.5]}
           frameloop={visible ? "always" : "never"}
-          camera={{ position: [9, 6.5, 11], fov: 35 }}
           aria-label={`3D scene study: ${mood.name}`}
         >
           <StudyScene mood={mood} interactive={interactive} animate={!reduced} />
