@@ -1,4 +1,5 @@
-import { b, type Box } from "./box";
+import { b, place, type Box } from "./box";
+import { pixelText } from "./lettering";
 
 /** Every colour used by the models. */
 export const K = {
@@ -101,6 +102,13 @@ export function cottage(roof: string, roofD: string): Box[] {
     b(-0.5, 0, 2.5, 1, 2, 0.15, K.timber),
     b(-2.3, 1.2, 2.5, 1, 1, 0.12, K.glass),
     b(1.3, 1.2, 2.5, 1, 1, 0.12, K.glass),
+    // shutters in the roof colour, and a box of flowers under each front window
+    ...[-2.3, 1.3].flatMap((x) => [
+      b(x - 0.32, 1.15, 2.5, 0.3, 1.1, 0.16, roofD),
+      b(x + 1.02, 1.15, 2.5, 0.3, 1.1, 0.16, roofD),
+      b(x - 0.1, 0.92, 2.55, 1.2, 0.26, 0.32, K.wood),
+      ...[0, 1, 2, 3].map((i) => b(x + 0.02 + i * 0.26, 1.18, 2.65, 0.18, 0.18, 0.18, [K.pink, K.yellow, K.white, K.coral][(i + (x > 0 ? 2 : 0)) % 4])),
+    ]),
     // the back and sides, which show once the view is turned
     b(-2.3, 1.2, -2.62, 1, 1, 0.12, K.glass),
     b(1.3, 1.2, -2.62, 1, 1, 0.12, K.glass),
@@ -129,6 +137,10 @@ export function studio(): { solid: Box[]; glow: Box[] } {
       b(-3.7, 1.1, 3, 3.2, 2.1, 0.12, K.glass),
       b(-3.8, 1, 3, 3.4, 0.14, 0.2, K.timber),
       b(-2.17, 1.1, 3, 0.14, 2.1, 0.2, K.timber),
+      // a signboard over the door
+      b(0.65, 2.98, 2.98, 3.3, 0.94, 0.1, K.woodD),
+      b(0.75, 3.05, 3.0, 3.1, 0.8, 0.12, K.wood),
+      ...place(pixelText("STUDIO", 0.1, K.cream), [2.3, 3.2, 3.12]),
       // door and striped awning
       b(1.6, 0, 3, 1.4, 2.5, 0.15, K.teal),
       b(2.7, 1.2, 3.1, 0.15, 0.15, 0.1, K.gold),
@@ -177,6 +189,7 @@ export function lab(): { solid: Box[]; glow: Box[] } {
       b(-2.6, 5.2, -2.12, 3.2, 1.4, 0.12, K.glass),
       ...[-4.62, 4.5].map((x) => b(x, 1.2, -1.5, 0.12, 1.5, 2, K.glass)),
       b(2.4, 0, 3, 1.4, 2.5, 0.15, K.orange),
+      b(2.0, 2.65, 3.0, 2.2, 0.75, 0.12, K.navyD),
       // aerial and dish
       b(2.6, 4.4, -1.2, 0.3, 4.4, 0.3, K.stoneL),
       b(2.3, 6.8, -1.2, 0.9, 0.15, 0.3, K.stoneL),
@@ -193,6 +206,7 @@ export function lab(): { solid: Box[]; glow: Box[] } {
       ),
       ...lines.map((c, i) => b(-3.3 + (i % 3) * 0.35, 3.05 - i * 0.37, 3.1, 1.6 + ((i * 37) % 23) / 10, 0.16, 0.06, c)),
       b(2.55, 8.8, -1.25, 0.4, 0.4, 0.4, K.red),
+      ...place(pixelText("LAB", 0.12, "#bfe9ff"), [3.1, 2.73, 3.12]),
       ...[0, 1].flatMap((i) => [0, 1, 2].flatMap((r) => [b(5.35 + i * 1.5, 0.5 + r * 0.75, 2.4, 0.18, 0.18, 0.06, K.crop), b(5.7 + i * 1.5, 0.5 + r * 0.75, 2.4, 0.18, 0.18, 0.06, r === 1 ? K.red : K.gold)])),
     ],
   };
@@ -227,7 +241,8 @@ export function arcade(): { solid: Box[]; glow: Box[] } {
       ...[0, 1, 2, 3].map((k) => b(-13.5 + k, 3 + k, -4 + k, 8 - 2 * k, 1, 8 - 2 * k, k % 2 ? K.cream : K.orange)),
       b(-9.65, 7, -0.15, 0.3, 2, 0.3, K.woodD),
       b(-9.35, 8.2, -0.1, 1.2, 0.7, 0.15, K.teal),
-      b(-10.2, 0, 3.5, 1.4, 2.4, 0.15, K.navyD),
+      b(-10.2, 0, 3.5, 1.4, 1.85, 0.15, K.navyD),
+      b(-10.95, 1.95, 3.5, 2.9, 0.8, 0.12, K.navyD),
       // stage
       b(6, 0, -4, 8, 1, 5, K.wood),
       b(6, 1, -4, 8, 0.15, 5, K.woodD),
@@ -250,6 +265,7 @@ export function arcade(): { solid: Box[]; glow: Box[] } {
     ],
     glow: [
       b(-2, 6.3, -1.5, 4, 0.9, 0.3, K.gold),
+      ...place(pixelText("PLAY", 0.12, K.yellow), [-9.5, 2.05, 3.62]),
       b(-1.6, 6.5, -4.72, 3.2, 0.5, 0.1, K.gold),
       ...FACE.flatMap((row, r) =>
         [...row].flatMap((ch, c) => (ch === "#" ? [b(-1.05 + c * 0.3, 5.6 - r * 0.3, -1.42, 0.3, 0.3, 0.06, K.crop)] : [])),
