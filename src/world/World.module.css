@@ -3,5 +3,33 @@
   position: fixed;
   inset: 0;
   z-index: 0;
-  background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 38%, var(--haze) 62%);
+  /* Day colours written out, not taken from the theme, so night can fade in over them. */
+  background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 38%, #eef0dc 62%);
+}
+
+/* Behind the canvas: the night sky, then its stars, faded in over the day sky. */
+.world::before,
+.world::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--theme-fade) ease;
+}
+
+.world::before {
+  background: linear-gradient(to bottom, #070b22 0%, #18214d 40%, #1a2140 62%);
+}
+
+/* Square pixel stars on a few repeating tiles, thinning out towards the horizon. */
+.world::after {
+  background: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' shape-rendering='crispEdges'><rect x='23' y='31' width='2' height='2' fill='%23fff'/><rect x='141' y='12' width='2' height='2' fill='%23fff'/><rect x='87' y='77' width='2' height='2' fill='%23cfd8ff'/><rect x='199' y='103' width='3' height='3' fill='%23fff'/><rect x='57' y='141' width='2' height='2' fill='%23ffe9b8'/><rect x='168' y='162' width='2' height='2' fill='%23fff'/><rect x='12' y='96' width='2' height='2' fill='%23cfd8ff'/><rect x='228' y='48' width='2' height='2' fill='%23fff'/><rect x='110' y='188' width='2' height='2' fill='%23ffe9b8'/><rect x='33' y='205' width='3' height='3' fill='%23fff'/><rect x='185' y='222' width='2' height='2' fill='%23cfd8ff'/><rect x='76' y='18' width='2' height='2' fill='%23ffe9b8'/></svg>") repeat;
+  mask-image: linear-gradient(to bottom, #000 0%, #000 25%, transparent 58%);
+}
+
+:root[data-theme="night"] .world::before,
+:root[data-theme="night"] .world::after {
+  opacity: 1;
 }

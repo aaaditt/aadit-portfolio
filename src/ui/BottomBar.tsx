@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SECTIONS, sectionForPath, type SectionId } from "@/content/sections";
+import { ThemeToggle } from "./ThemeToggle";
 import styles from "./BottomBar.module.css";
 
 const ICONS: Record<SectionId, ReactNode> = {
@@ -75,6 +76,10 @@ export function BottomBar() {
             </li>
           );
         })}
+        <li className={styles.divider} aria-hidden="true" />
+        <li>
+          <ThemeToggle />
+        </li>
       </ul>
     </nav>
   );

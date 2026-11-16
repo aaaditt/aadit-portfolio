@@ -5,6 +5,7 @@ import { BottomBar } from "@/ui/BottomBar";
 import { IntroOverlay } from "@/ui/IntroOverlay";
 import { ResetView } from "@/ui/ResetView";
 import { SpeechBubble } from "@/ui/SpeechBubble";
+import { THEME_SCRIPT } from "@/ui/themeRule";
 import { World } from "@/world/World";
 import "./globals.css";
 
@@ -20,7 +21,17 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     // data-intro starts as "pending" so the page stays hidden until the world decides whether to play the opening.
-    <html lang="en" data-intro="pending" className={`${body.variable} ${mono.variable} ${display.variable}`}>
+    // data-theme is set by the head script before first paint, which is why hydration warnings are suppressed here.
+    <html
+      lang="en"
+      data-intro="pending"
+      data-theme="day"
+      suppressHydrationWarning
+      className={`${body.variable} ${mono.variable} ${display.variable}`}
+    >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
+      </head>
       <body>
         <noscript>
           <style>{`.reveal { opacity: 1 !important; transform: none !important; }`}</style>

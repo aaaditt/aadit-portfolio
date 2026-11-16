@@ -47,22 +47,25 @@
   font-size: clamp(1.05rem, 2.2vw, 1.3rem);
   line-height: 1.4;
   font-weight: 600;
-  color: var(--paper);
-  text-shadow: 1px 1px 0 rgb(12 18 28 / 0.9);
+  color: var(--panel-ink);
 }
 
 .hint {
   margin-top: 0.35rem;
   font-size: 0.95rem;
-  color: rgb(255 255 255 / 0.92);
-  text-shadow: 1px 1px 0 rgb(12 18 28 / 0.9);
+  color: var(--panel-soft);
 }
 
-/* A dark plate behind the smaller text, so it reads over any part of the world. */
+/* A plate in the theme's panel colour behind the smaller text, so it reads over any part of the world. */
 .plate {
   display: inline-block;
   max-width: 24rem;
   padding: 0.9rem 1rem 1rem;
-  background: rgb(12 18 28 / 0.62);
-  border: 1px solid rgb(255 255 255 / 0.14);
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition:
+    background-color var(--theme-fade) ease,
+    border-color var(--theme-fade) ease;
 }

@@ -1,9 +1,9 @@
 .button {
   margin-top: 0.8rem;
   padding: 0.45rem 0.8rem;
-  border: 1px solid rgb(255 255 255 / 0.5);
+  border: 1px solid var(--panel-line);
   background: transparent;
-  color: #fff;
+  color: var(--panel-ink);
   font-family: var(--font-mono), monospace;
   font-size: 0.7rem;
   letter-spacing: 0.1em;
@@ -12,11 +12,11 @@
 }
 
 .button:hover {
-  background: rgb(255 255 255 / 0.12);
+  background: var(--panel-hover);
 }
 
 .button:focus-visible {
-  outline: 2px solid #fff;
+  outline: 2px solid var(--focus);
   outline-offset: 3px;
 }
 
