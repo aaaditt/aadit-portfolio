@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { SECTIONS, type SectionId } from "@/content/sections";
+import { wasDrag } from "./orbit";
 import { intro } from "./introStore";
 import { flight, hover, mapLabels } from "./overlayState";
 import { plateau } from "./voxel/terrain";
@@ -69,6 +70,8 @@ export function Hotspots({ current, onOpen }: { current: SectionId; onOpen: (hre
             }}
             onClick={(event) => {
               event.stopPropagation();
+              // Letting go after turning the view is not a click.
+              if (wasDrag()) return;
               if (intro.get() !== "done") return;
               hover.text = "";
               document.body.style.cursor = "";

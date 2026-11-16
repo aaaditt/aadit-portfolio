@@ -6,6 +6,7 @@ import type { Section } from "@/content/sections";
 import { CameraRig } from "./CameraRig";
 import { intro, useIntro } from "./introStore";
 import { MotionContext } from "./motion";
+import { OrbitInput } from "./OrbitInput";
 import { Scene } from "./Scene";
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
@@ -66,12 +67,14 @@ export default function WorldInner({ section, onOpen }: { section: Section; onOp
       dpr={dpr}
       gl={{ antialias: false, alpha: true }}
       camera={{ position: [0, 112, 24], fov: 30, near: 0.5, far: 400 }}
-      style={{ imageRendering: "pixelated" }}
+      // touchAction: a finger dragged over the world turns it, not the page.
+      style={{ imageRendering: "pixelated", touchAction: "none" }}
       // The page's own headings and links describe the content; the scene is decoration.
       aria-hidden="true"
     >
       <MotionContext.Provider value={!reduced}>
         <CameraRig section={section} animate={!reduced} />
+        <OrbitInput />
         <Scene
           greet={introState === "done" && (section.id === "home" || section.id === "about")}
           current={section.id}

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type * as THREE from "three";
 import { SECTIONS, type SectionId } from "@/content/sections";
+import { wasDrag } from "../orbit";
 import { intro } from "../introStore";
 import { useMotion } from "../motion";
 import { hover } from "../overlayState";
@@ -120,6 +121,8 @@ export function Exhibits({ current, onOpen }: { current: SectionId; onOpen: (hre
             }}
             onClick={(event) => {
               event.stopPropagation();
+              // Letting go after turning the view is not a click.
+              if (wasDrag()) return;
               if (intro.get() !== "done" || item.section.id === current) return;
               hover.text = "";
               document.body.style.cursor = "";

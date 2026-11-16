@@ -60,8 +60,11 @@ export function Clouds() {
   const ref = useRef<THREE.Group>(null);
 
   // Seen from high above in the opening map view, clouds are just white slabs in the way.
+  // And one the camera is about to pass through, now that the view can be turned, would fill the screen.
   useFrame(({ camera }) => {
-    if (ref.current) ref.current.visible = camera.position.y < 60;
+    if (!ref.current) return;
+    ref.current.visible = camera.position.y < 60;
+    for (const cloud of ref.current.children) cloud.visible = cloud.position.distanceTo(camera.position) > 16;
   });
 
   return (

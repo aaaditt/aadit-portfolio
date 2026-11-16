@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono, Pixelify_Sans } from "next/font/google";
 import { BottomBar } from "@/ui/BottomBar";
 import { IntroOverlay } from "@/ui/IntroOverlay";
+import { ResetView } from "@/ui/ResetView";
 import { SpeechBubble } from "@/ui/SpeechBubble";
 import { World } from "@/world/World";
 import "./globals.css";
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}>
           <BottomBar />
         </Suspense>
+        <ResetView />
         <IntroOverlay />
       </body>
     </html>
