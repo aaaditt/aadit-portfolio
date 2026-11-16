@@ -123,6 +123,26 @@
     margin: 0 0.1rem;
   }
 
+  .item {
+    min-width: 50px;
+  }
+
+  /* The day/night and sound switches show just their icons on a phone, so the bar fits. */
+  .toggle {
+    min-width: 38px;
+    padding-inline: 0.4rem;
+    justify-content: center;
+  }
+
+  .toggle .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   .bar {
     border-radius: 24px;
   }

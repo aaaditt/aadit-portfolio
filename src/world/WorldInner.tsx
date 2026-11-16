@@ -9,6 +9,7 @@ import { MotionContext } from "./motion";
 import { OrbitInput } from "./OrbitInput";
 import { Outlines } from "./Outlines";
 import { Scene } from "./Scene";
+import { SoundEvents } from "./SoundEvents";
 
 const REDUCED = "(prefers-reduced-motion: reduce)";
 
@@ -77,6 +78,7 @@ export default function WorldInner({ section, onOpen }: { section: Section; onOp
         <CameraRig section={section} animate={!reduced} />
         <OrbitInput />
         <Outlines />
+        <SoundEvents />
         <Scene
           greet={introState === "done" && (section.id === "home" || section.id === "about")}
           current={section.id}

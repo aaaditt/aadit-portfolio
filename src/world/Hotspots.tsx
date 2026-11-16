@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { SECTIONS, type SectionId } from "@/content/sections";
+import { sfx } from "@/audio/engine";
 import { wasDrag } from "./orbit";
 import { intro } from "./introStore";
 import { flight, hover, mapLabels } from "./overlayState";
@@ -75,6 +76,7 @@ export function Hotspots({ current, onOpen }: { current: SectionId; onOpen: (hre
               if (intro.get() !== "done") return;
               hover.text = "";
               document.body.style.cursor = "";
+              sfx.click();
               onOpen(section.href);
             }}
           >

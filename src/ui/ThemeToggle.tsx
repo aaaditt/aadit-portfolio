@@ -1,5 +1,6 @@
 "use client";
 
+import { sfx } from "@/audio/engine";
 import { ICON_ROWS, pixels } from "./pixelArt";
 import { theme, useTheme } from "./themeStore";
 import styles from "./BottomBar.module.css";
@@ -13,7 +14,10 @@ export function ThemeToggle() {
   const next = current === "night" ? "Day" : "Night";
 
   return (
-    <button type="button" className={styles.item} title={`Switch to ${next.toLowerCase()}`} onClick={() => theme.toggle()}>
+    <button type="button" className={`${styles.item} ${styles.toggle}`} title={`Switch to ${next.toLowerCase()}`} onClick={() => {
+        sfx.click();
+        theme.toggle();
+      }}>
       <svg className={styles.icon} viewBox="0 0 9 9" fill="currentColor" shapeRendering="crispEdges" aria-hidden="true">
         {pixels(current === "night" ? ICON_ROWS.sun : ICON_ROWS.moon)}
       </svg>

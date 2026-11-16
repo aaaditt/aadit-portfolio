@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type * as THREE from "three";
 import { SECTIONS, type SectionId } from "@/content/sections";
+import { sfx } from "@/audio/engine";
 import { wasDrag } from "../orbit";
 import { intro } from "../introStore";
 import { useMotion } from "../motion";
@@ -126,6 +127,7 @@ export function Exhibits({ current, onOpen }: { current: SectionId; onOpen: (hre
               if (intro.get() !== "done" || item.section.id === current) return;
               hover.text = "";
               document.body.style.cursor = "";
+              sfx.click();
               onOpen(item.section.href);
             }}
           >
