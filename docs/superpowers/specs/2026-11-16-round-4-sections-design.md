@@ -1,5 +1,9 @@
 # Round 4: make each place show its content as well as the home page does
 
+## Status
+
+Stage 1 (ready to share) built and pushed on 2026-11-16. Next: stage 2, the Light Table proof slice.
+
 ## Context
 
 The home page is strong: an opening flight, music, day and night. The section and project pages are not. All three sections are the same card with a different colour, what the character does at an exhibit is random and unrelated to the project, nothing happens on arrival, and About says "coming soon". Aadit's words: "the character is doing something on the side but that is just not it."
