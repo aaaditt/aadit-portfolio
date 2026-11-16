@@ -8,7 +8,7 @@ export function pixels(rows: string[], size = 1) {
 }
 
 /** Seven-pixel-tall capitals for the name, with strokes two pixels thick. */
-const LETTERS: Record<string, string[]> = {
+export const LETTERS: Record<string, string[]> = {
   A: [".####.", "##..##", "##..##", "######", "##..##", "##..##", "##..##"],
   D: ["#####.", "##..##", "##..##", "##..##", "##..##", "##..##", "#####."],
   I: ["####", ".##.", ".##.", ".##.", ".##.", ".##.", "####"],

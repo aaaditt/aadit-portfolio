@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono, Pixelify_Sans } from "next/font/google";
 import { BottomBar } from "@/ui/BottomBar";
 import { IntroOverlay } from "@/ui/IntroOverlay";
+import { ListLink } from "@/ui/ListLink";
 import { ResetView } from "@/ui/ResetView";
 import { SpeechBubble } from "@/ui/SpeechBubble";
 import { THEME_SCRIPT } from "@/ui/themeRule";
@@ -13,9 +14,16 @@ const body = Geist({ variable: "--font-body", subsets: ["latin"] });
 const mono = Geist_Mono({ variable: "--font-mono", subsets: ["latin"] });
 const display = Pixelify_Sans({ variable: "--font-display", subsets: ["latin"] });
 
+const DESCRIPTION = "Aadit's portfolio: design, code, games and events, in a small pixel world.";
+
 export const metadata: Metadata = {
+  // Where the site lives, so the link preview picture gets a full address.
+  metadataBase: new URL("https://aadit-portfolio-one.vercel.app"),
   title: { default: "Aadit · portfolio", template: "%s · Aadit" },
-  description: "Aadit's portfolio: design, code, games and events, in a small pixel world.",
+  description: DESCRIPTION,
+  openGraph: { type: "website", siteName: "Aadit · portfolio", title: "Aadit · portfolio", description: DESCRIPTION },
+  // A large picture card; the picture itself comes from opengraph-image.tsx.
+  twitter: { card: "summary_large_image", title: "Aadit · portfolio", description: DESCRIPTION },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -46,7 +54,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <BottomBar />
         </Suspense>
         <ResetView />
-        <IntroOverlay />
+        {/* These two read the URL as well. */}
+        <Suspense fallback={null}>
+          <ListLink />
+          <IntroOverlay />
+        </Suspense>
       </body>
     </html>
   );

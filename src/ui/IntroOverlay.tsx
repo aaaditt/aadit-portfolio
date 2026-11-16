@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { intro, useIntro } from "@/world/introStore";
 import { flight, hover, mapLabels } from "@/world/overlayState";
+import { isListPage } from "./listPage";
 import { PixelLetter } from "./pixelArt";
 import styles from "./IntroOverlay.module.css";
 
@@ -18,6 +20,8 @@ const GIVE_UP_MS = 8000;
  */
 export function IntroOverlay() {
   const state = useIntro();
+  /** On the plain list page there is no world to wait for, so nothing is covered or timed. */
+  const plain = isListPage(usePathname());
   const labels = useRef<(HTMLSpanElement | null)[]>([]);
   const tag = useRef<HTMLSpanElement>(null);
 
@@ -26,11 +30,12 @@ export function IntroOverlay() {
   }, [state]);
 
   useEffect(() => {
+    if (plain) return;
     const timer = window.setTimeout(() => {
       if (intro.get() === "pending") intro.finish();
     }, GIVE_UP_MS);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [plain]);
 
   useEffect(() => {
     if (state !== "playing") return;
@@ -79,8 +84,8 @@ export function IntroOverlay() {
   const playing = state === "playing";
 
   return (
-    <div className={styles.overlay} data-playing={playing} data-loading={state === "pending"}>
-      <div className={styles.cover} aria-hidden={state !== "pending"}>
+    <div className={styles.overlay} data-playing={playing} data-loading={state === "pending" && !plain}>
+      <div className={styles.cover} aria-hidden={state !== "pending" || plain}>
         <p className={styles.wordmark} aria-label="Aadit">
           {[..."AADIT"].map((letter, i) => (
             <PixelLetter key={i} letter={letter} />

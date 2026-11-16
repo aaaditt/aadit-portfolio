@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { usePathname, useRouter } from "next/navigation";
 import { projectForPath } from "@/content/projects";
 import { sectionForPath } from "@/content/sections";
+import { isListPage } from "@/ui/listPage";
 import styles from "./World.module.css";
 
 const Inner = dynamic(() => import("./WorldInner"), { ssr: false });
@@ -14,6 +15,8 @@ export function World() {
   const section = sectionForPath(pathname);
   const project = projectForPath(pathname);
   const router = useRouter();
+  // The plain list page has no world: it is never downloaded there.
+  if (isListPage(pathname)) return null;
   return (
     <div className={styles.world}>
       {/* Clicking a landmark in the world opens its section, the same as using the bar. */}
