@@ -109,8 +109,11 @@ export function fanSlot(i: number, n: number): SheetPose {
 /** Packed away: small, on the canvas they came from. */
 const PACKED: SheetPose = { x: 0, y: 1.57, z: 0.45, turn: 0, size: 0.3, shown: false };
 
-/** A picked sheet: out in front of the easel, upright and large enough to read. */
-export const FRONT: SheetPose = { x: 0.4, y: 2.9, z: 1.6, turn: 0, size: 1.7, shown: true };
+/**
+ * A picked sheet: held up above the easel, to the side away from him, and towards the visitor, upright and large enough to
+ * read, with the finished piece on the canvas still in view below it.
+ */
+export const FRONT: SheetPose = { x: 1.5, y: 4, z: 2, turn: 0, size: 2.3, shown: true };
 
 /** The first sheet leaves after this long, and each next one this long after the last. */
 const FIRST = 0.3;
@@ -129,4 +132,20 @@ export function sheetTarget(i: number, n: number, now: { open: boolean; since: n
   if (!now.open) return PACKED;
   if (now.front === i) return FRONT;
   return now.still || now.since >= FIRST + i * STAGGER ? fanSlot(i, n) : PACKED;
+}
+
+/** A picked sheet draws its picture again, patch by patch, in this many seconds. */
+export const DRAW_SECONDS = 0.7;
+/** How long one patch takes to go on. */
+const PATCH_SECONDS = 0.25;
+
+/** How much of patch `k` of `count` is drawn, `since` seconds after its sheet was picked: 0 to 1. */
+export function patchShare(k: number, count: number, since: number): number {
+  const gap = (DRAW_SECONDS - PATCH_SECONDS) / Math.max(1, count - 1);
+  return Math.max(0, Math.min(1, (since - k * gap) / PATCH_SECONDS));
+}
+
+/** A sheet's place in the order, as a row of small squares along its top edge: one for the first, two for the second. */
+export function stagePips(i: number): Patch[] {
+  return Array.from({ length: i + 1 }, (_, k) => ({ x: 0.05 + k * 0.055, y: 0.915, w: 0.035, h: 0.048, colour: "#27374d" }));
 }

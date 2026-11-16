@@ -229,12 +229,14 @@ export function Character({ greet }: { greet: boolean }) {
       // He raises whichever arm is on the camera's side of him, so the gesture is never hidden.
       const rightIsNear = Math.cos(facing.current) * (camera.position.x - walker.x) - Math.sin(facing.current) * (camera.position.z - walker.z) > 0;
       // Up and forward, towards the fan, held a little out from his head.
-      const raised = -2.5 + Math.sin(t * 1.8) * 0.1;
+      // Each sheet that comes out, or is picked, gets a quick flick of the hand, as if he dealt it.
+      const flick = animate ? Math.max(0, 1 - (clock.elapsedTime - table.flick) / 0.28) : 0;
+      const raised = -2.5 + Math.sin(t * 1.8) * 0.1 + Math.sin(flick * Math.PI) * 0.75;
       pose.armR = rightIsNear ? raised : 0.05;
       pose.armRSide = rightIsNear ? 0.35 : 0.2;
       pose.armL = rightIsNear ? 0.05 : raised;
       pose.armLSide = rightIsNear ? -0.2 : -0.35;
-      pose.lean = -0.05;
+      pose.lean = -0.05 - Math.sin(flick * Math.PI) * 0.06;
     } else if (working && place === "design") {
       // Painting: brush arm up at the canvas, making strokes.
       pose.armR = -1.4 + Math.sin(t * 3.1) * 0.22;

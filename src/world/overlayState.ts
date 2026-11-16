@@ -21,6 +21,12 @@ export const hover = { text: "" };
 export const highlight = { project: "" };
 
 /**
+ * A caption the page draws over the world, pinned to something in it: where it goes on screen in
+ * CSS pixels, and what it says. The scene moves it every frame.
+ */
+export const caption = { on: false, x: 0, y: 0, title: "", text: "" };
+
+/**
  * Something the page did that the world should answer: a note was sent, a chip was picked.
  * `at` is when, by the page's clock in milliseconds, so the world can time its answer from it.
  */

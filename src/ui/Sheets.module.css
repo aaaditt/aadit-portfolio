@@ -3,6 +3,9 @@
 }
 
 .heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 0.45rem;
   font-family: var(--font-mono), monospace;
   font-size: 0.7rem;
@@ -11,24 +14,33 @@
   color: var(--panel-accent);
 }
 
+.sample {
+  padding: 0.1rem 0.4rem;
+  border: 1px dashed var(--panel-accent);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+/* One row, however many stages, so nothing wraps or jumps. */
 .chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+  display: grid;
+  gap: 0.35rem;
 }
 
 .chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  min-height: 36px;
-  padding: 0.3rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  min-height: 44px;
+  min-width: 0;
+  padding: 0.3rem 0.4rem;
   border: 2px solid var(--card-edge);
   background: var(--panel-hover);
   color: inherit;
   font-family: var(--font-mono), monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  font-size: 0.64rem;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   cursor: pointer;
   box-shadow: 2px 2px 0 0 var(--card-shadow);

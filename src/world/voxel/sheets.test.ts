@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { FAN_SECONDS, FRONT, SHEET_KINDS, fanSlot, sheetArt, sheetTarget } from "./sheets";
+import { DRAW_SECONDS, FAN_SECONDS, FRONT, SHEET, SHEET_KINDS, fanSlot, patchShare, sheetArt, sheetTarget, stagePips } from "./sheets";
 
 const colours: [string, string, string] = ["#c8553d", "#e8c15a", "#2f7f79"];
 
@@ -70,4 +70,28 @@ test("the picked sheet comes to the front, larger and upright; the rest keep the
 
 test("picking a sheet brings it out even if the fan has not got to it yet", () => {
   expect(sheetTarget(3, 4, { open: true, since: 0, front: 3 }).shown).toBe(true);
+});
+
+test("a picked sheet draws itself: nothing at first, patch by patch in order, all there at the end", () => {
+  const at = (since: number) => [0, 1, 2, 3, 4].map((k) => patchShare(k, 5, since));
+  expect(at(0)).toEqual([0, 0, 0, 0, 0]);
+  const mid = at(DRAW_SECONDS / 2);
+  for (let k = 1; k < 5; k++) expect(mid[k]).toBeLessThanOrEqual(mid[k - 1]);
+  expect(mid[0]).toBe(1);
+  expect(mid[4]).toBeLessThan(1);
+  expect(at(DRAW_SECONDS)).toEqual([1, 1, 1, 1, 1]);
+  expect(DRAW_SECONDS).toBeLessThan(1);
+  expect(patchShare(0, 1, DRAW_SECONDS)).toBe(1);
+});
+
+test("each sheet carries its place in the order as a row of pips", () => {
+  expect(stagePips(0)).toHaveLength(1);
+  expect(stagePips(3)).toHaveLength(4);
+  for (const p of stagePips(4)) expect(p.x + p.w).toBeLessThanOrEqual(1);
+});
+
+test("the picked sheet is held above the easel, clear of the finished piece on it", () => {
+  // The canvas tops out at 2.3; the sheet's lower edge must be above that.
+  expect(FRONT.y - (SHEET.h * FRONT.size) / 2).toBeGreaterThan(2.3);
+  expect(SHEET.w * FRONT.size).toBeGreaterThan(3);
 });

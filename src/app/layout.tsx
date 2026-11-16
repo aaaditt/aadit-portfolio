@@ -5,6 +5,7 @@ import { BottomBar } from "@/ui/BottomBar";
 import { IntroOverlay } from "@/ui/IntroOverlay";
 import { ListLink } from "@/ui/ListLink";
 import { ResetView } from "@/ui/ResetView";
+import { SheetCaption } from "@/ui/SheetCaption";
 import { SpeechBubble } from "@/ui/SpeechBubble";
 import { THEME_SCRIPT } from "@/ui/themeRule";
 import { World } from "@/world/World";
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <World />
         </Suspense>
         <SpeechBubble />
+        <SheetCaption />
         <div className="content">{children}</div>
         <Suspense fallback={null}>
           <BottomBar />

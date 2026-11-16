@@ -75,9 +75,10 @@ async function ProjectCard({ params }: Props) {
         <p className={styles.factOutcome}>{project.outcome}</p>
         {main && <ProjectLink link={main} />}
       </div>
-      {project.show && <Sheets list={project.show.sheets} />}
+      {project.show && <Sheets list={project.show.sheets} sample={project.sample} />}
       <WorkingAt project={project} />
-      <div className={styles.pictureFrame}>
+      {/* A project with sheets shows its pictures in the world, so the card needs none of its own. */}
+      {!project.show && <div className={styles.pictureFrame}>
         {project.cover ? (
           // A real screenshot, once there is one.
           // eslint-disable-next-line @next/next/no-img-element
@@ -86,7 +87,7 @@ async function ProjectCard({ params }: Props) {
           <ProjectThumb project={project} className={styles.picture} />
         )}
         {project.sample && <p className={styles.badge}>Sample</p>}
-      </div>
+      </div>}
       <p className={styles.blurb}>{project.blurb}</p>
       <dl className={styles.stats}>
         <dt>Team</dt>

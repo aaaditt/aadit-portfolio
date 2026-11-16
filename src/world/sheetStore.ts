@@ -24,5 +24,8 @@ export const sheets = {
   },
 };
 
-/** The exhibit whose sheets are out at the moment, or an empty string. He points at them. */
-export const table = { exhibit: "" };
+/**
+ * The exhibit whose sheets are out at the moment, or an empty string: he points at them.
+ * `flick` is the scene-clock moment a sheet last came out or was picked: he gestures at each.
+ */
+export const table = { exhibit: "", flick: -10 };

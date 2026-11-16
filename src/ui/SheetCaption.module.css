@@ -1,0 +1,43 @@
+/* Sits just above the picked sheet: its bottom edge on the point the scene gives it. */
+.caption {
+  position: fixed;
+  z-index: 15;
+  width: max-content;
+  max-width: min(19rem, calc(100vw - 1.5rem));
+  padding: 0.5rem 0.7rem 0.55rem;
+  border: 2px solid var(--card-edge);
+  background: var(--panel);
+  color: var(--panel-ink);
+  box-shadow: 3px 3px 0 0 var(--card-shadow);
+  translate: -50% -100%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.on {
+  opacity: 1;
+  /* Wait for the sheet to arrive before naming it. */
+  transition: opacity 0.25s ease 0.3s;
+}
+
+.title {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--panel-accent);
+}
+
+.text {
+  margin-top: 0.2rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caption,
+  .on {
+    transition: none;
+  }
+}

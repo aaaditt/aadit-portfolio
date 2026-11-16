@@ -2,7 +2,9 @@
 
 ## Status
 
-Stage 1 (ready to share) built and pushed on 2026-11-16. Next: stage 2, the Light Table proof slice.
+Stage 1 (ready to share) built and pushed on 2026-11-16. Stage 2 (the Light Table for one project, Brand refresh) built on 2026-11-17, with one critic round acted on; it waits for Aadit's verdict before stage 3.
+
+How the Light Table turned out, where it differs from the text below: the sheets fan out above the easel like a hand of cards, each on a thread of light, instead of lifting off a table. A picked sheet is held up large beside him, draws itself again, and is named by a caption on the page pinned to it. The selection lives in `src/world/sheetStore.ts` (it is state both sides set, so not a one-off cue).
 
 ## Context
 
