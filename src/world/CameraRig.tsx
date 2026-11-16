@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { exhibitFor } from "@/content/projects";
 import type { Section } from "@/content/sections";
 import { intro } from "./introStore";
 import { flight } from "./overlayState";
@@ -59,8 +60,11 @@ type Move = { from: THREE.Vector3; fromTarget: THREE.Vector3; t: number };
  * over the rooftops, while the character makes his own way there. At rest, the visitor can turn
  * the view (see orbit.ts). Jumps straight to the section when motion is reduced.
  */
-export function CameraRig({ section, animate }: { section: Section; animate: boolean }) {
+export function CameraRig({ section, project, animate }: { section: Section; project: string | null; animate: boolean }) {
   const target = useRef<THREE.Vector3 | null>(null);
+  /** The exhibit of the open project, which he goes and works at. */
+  const work = project ? (exhibitFor(project)?.id ?? null) : null;
+  const shownWork = useRef(work);
   const flown = useRef(0);
   const shown = useRef(section.id);
   const move = useRef<Move | null>(null);
@@ -89,7 +93,7 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
     if (!target.current) {
       target.current = goalTarget.clone();
       // Arriving by a direct link, he is already there.
-      walker.place(section.id);
+      walker.place(section.id, work);
       if (intro.get() !== "playing") camera.position.copy(goalPosition);
     }
 
@@ -128,13 +132,19 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
         // Each section opens on its own view, however the last one was left.
         resetOrbit();
         goalPosition.set(...section.camera.position).sub(goalTarget).multiplyScalar(pullBack).add(goalTarget);
+        shownWork.current = work;
         if (animate) {
-          walker.go(section.id);
+          walker.go(section.id, work);
           move.current = { from: camera.position.clone(), fromTarget: target.current.clone(), t: 0 };
         } else {
-          walker.place(section.id);
+          walker.place(section.id, work);
           move.current = null;
         }
+      } else if (shownWork.current !== work) {
+        // Another project in the same section: the view stays, and he steps over to its exhibit.
+        shownWork.current = work;
+        if (animate) walker.go(section.id, work);
+        else walker.place(section.id, work);
       }
 
       const m = move.current;

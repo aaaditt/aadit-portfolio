@@ -3,7 +3,11 @@
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { sfx } from "@/audio/engine";
 import { bubbleAnchor } from "../bubbleAnchor";
+import { intro } from "../introStore";
+import { wasDrag } from "../orbit";
+import { hover } from "../overlayState";
 import { useMotion } from "../motion";
 import { walker } from "../walker";
 import { b, type Box } from "./box";
@@ -95,6 +99,10 @@ const PARTS = Object.keys(FACE_PARTS) as Part[];
 
 const anchor = new THREE.Vector3();
 
+/** How long his jump lasts when clicked, in seconds, and how high it goes, in blocks. */
+const POKE_SECONDS = 0.75;
+const POKE_HEIGHT = 1.1;
+
 // How far each arm swings forward and inward to fold across the chest.
 const CROSSED_X = -1.05;
 const CROSSED_Z = 0.95;
@@ -139,6 +147,9 @@ export function Character({ greet }: { greet: boolean }) {
   const wasRunning = useRef(false);
   const landedAt = useRef(-10);
   const parts = useRef<Partial<Record<Part, THREE.Group | null>>>({});
+  /** When the visitor last clicked him, by the scene clock. */
+  const pokedAt = useRef(-10);
+  const clockNow = useRef(0);
 
   useFrame(({ clock, camera, size, pointer }, delta) => {
     const step = Math.min(delta, 0.1);
@@ -147,6 +158,11 @@ export function Character({ greet }: { greet: boolean }) {
     const place = walker.section;
     const atLookout = place === "home" || place === "about";
     const t = animate ? clock.elapsedTime : 0;
+    clockNow.current = clock.elapsedTime;
+    // Clicked: a jump and a full spin, arms up. Not while he is running somewhere.
+    const sincePoke = clock.elapsedTime - pokedAt.current;
+    const poked = sincePoke < POKE_SECONDS && !running;
+    const jump = poked && animate ? sincePoke / POKE_SECONDS : 0;
     // With motion reduced, everything snaps to a still pose.
     const ease = (rate: number) => (animate ? 1 - Math.exp(-rate * step) : 1);
 
@@ -175,6 +191,15 @@ export function Character({ greet }: { greet: boolean }) {
       pose.lean = 0.24;
       // Highest with the legs at full stretch, which is what makes it a run and not a walk.
       pose.hop = Math.abs(Math.sin(stride.current)) * 0.3;
+    } else if (jump > 0) {
+      // Both arms flung up, legs tucked at the top of the jump.
+      pose.armR = -0.3;
+      pose.armRSide = 2.5;
+      pose.armL = -0.3;
+      pose.armLSide = -2.5;
+      pose.legR = -0.5 * Math.sin(Math.PI * jump);
+      pose.legL = -0.5 * Math.sin(Math.PI * jump);
+      pose.hop = Math.sin(Math.PI * jump) * POKE_HEIGHT;
     } else if (place === "design") {
       // Painting: brush arm up at the canvas, making strokes.
       pose.armR = -1.4 + Math.sin(t * 3.1) * 0.22;
@@ -213,7 +238,7 @@ export function Character({ greet }: { greet: boolean }) {
     if (landing > 0) pose.hop = bump * 0.35;
 
     const now = shown.current;
-    const k = ease(running ? 30 : 12);
+    const k = ease(running || jump > 0 ? 30 : 12);
     for (const key of Object.keys(pose) as (keyof Pose)[]) now[key] += (pose[key] - now[key]) * k;
 
     if (root.current) {
@@ -225,7 +250,9 @@ export function Character({ greet }: { greet: boolean }) {
           : walker.heading + (atLookout && !running ? Math.sin(t * 0.5) * 0.18 : 0);
       facing.current = animate ? turn(facing.current, want, ease(running ? 14 : 7)) : want;
       root.current.position.set(walker.x, walker.y + 5.8 * U + now.hop, walker.z);
-      root.current.rotation.set(now.lean, facing.current, now.sway, "YXZ");
+      // The spin of a jump eases out, so he lands facing the way he was.
+      const spin = jump > 0 ? (1 - Math.pow(1 - jump, 3)) * Math.PI * 2 : 0;
+      root.current.rotation.set(now.lean, facing.current + spin, now.sway, "YXZ");
       root.current.scale.set(U * (1 + bump * 0.08), U * (1 - bump * 0.1), U * (1 + bump * 0.08));
     }
     if (armR.current) armR.current.rotation.set(now.armR, 0, now.armRSide);
@@ -246,7 +273,7 @@ export function Character({ greet }: { greet: boolean }) {
       h.x += (wantX - h.x) * ease(5);
 
       // His expression for the moment.
-      const face = faceFor({ place, running, waving: up > 0.5, sinceLanding: t - landedAt.current, t, pointerX: pointer.x, animate });
+      const face = faceFor({ place, running, waving: up > 0.5, sinceLanding: t - landedAt.current, t, pointerX: pointer.x, animate, poked });
       const show = (part: Part, on: boolean) => {
         const group = parts.current[part];
         if (group) group.visible = on;
@@ -274,6 +301,30 @@ export function Character({ greet }: { greet: boolean }) {
 
   return (
     <group ref={root} scale={U}>
+      {/* Something to click: a see-through box round his whole body. */}
+      <mesh
+        position={[0, 4.8, 0]}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          if (intro.get() !== "done") return;
+          hover.text = "Say hi";
+          document.body.style.cursor = "pointer";
+        }}
+        onPointerOut={() => {
+          hover.text = "";
+          document.body.style.cursor = "";
+        }}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (wasDrag() || intro.get() !== "done" || walker.moving) return;
+          if (clockNow.current - pokedAt.current < POKE_SECONDS) return;
+          pokedAt.current = clockNow.current;
+          sfx.chime();
+        }}
+      >
+        <boxGeometry args={[10, 22, 8]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+      </mesh>
       <group ref={legL}>
         <Voxels boxes={LEG_L} />
       </group>

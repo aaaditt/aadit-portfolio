@@ -1,5 +1,6 @@
 import type { SectionId } from "../../content/sections";
 import { hash } from "./box";
+import { LOOP } from "./workLoop";
 
 /** What his face is doing. */
 export type Face = {
@@ -25,6 +26,8 @@ export type Mood = {
   /** The visitor's pointer, from -1 (left of the screen) to 1. */
   pointerX: number;
   animate: boolean;
+  /** The visitor has just clicked him. */
+  poked?: boolean;
 };
 
 /** Blinks fall at a random moment in each window of this many seconds, so they never look timed. */
@@ -48,6 +51,14 @@ export function faceFor(m: Mood): Face {
   const face: Face = { eyes: "open", look: 0, mouth: "smile", brows: 0, blush: false };
   if (!m.animate) return face;
 
+  if (m.poked && !m.running) {
+    // Delighted to be noticed.
+    face.eyes = "happy";
+    face.mouth = "grin";
+    face.blush = true;
+    face.brows = 0.4;
+    return face;
+  }
   if (m.running) {
     // Puffing along, eyes fixed on where he is going.
     face.mouth = "o";
@@ -64,8 +75,8 @@ export function faceFor(m: Mood): Face {
     face.brows = 0.25;
   } else if (m.place === "design") {
     // Concentrating on the stroke, then stepping back pleased with it.
-    const p = phase(m.t, 5);
-    if (p < 3.6) {
+    const p = phase(m.t, LOOP.easel.seconds);
+    if (p < LOOP.easel.doneAt) {
       face.mouth = "flat";
       face.brows = -0.2;
       face.look = -0.5;
@@ -75,11 +86,11 @@ export function faceFor(m: Mood): Face {
     }
   } else if (m.place === "code") {
     // Steady typing, with an "aha" every so often, then a smile when it works.
-    const p = phase(m.t, 7);
-    if (p < 5) {
+    const p = phase(m.t, LOOP.terminal.seconds);
+    if (p < LOOP.terminal.doneAt) {
       face.mouth = "flat";
       face.look = Math.sin(m.t * 1.7) * 0.4;
-    } else if (p < 5.8) {
+    } else if (p < LOOP.terminal.doneAt + 0.8) {
       face.mouth = "o";
       face.brows = 0.4;
     }
@@ -87,7 +98,7 @@ export function faceFor(m: Mood): Face {
     // Having fun, with a cheer now and then.
     face.mouth = "grin";
     face.brows = 0.2;
-    if (phase(m.t, 6) > 4.8) {
+    if (phase(m.t, LOOP.cabinet.seconds) > LOOP.cabinet.doneAt) {
       face.eyes = "happy";
       face.blush = true;
     }

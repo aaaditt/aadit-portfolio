@@ -1,5 +1,6 @@
 import type { SectionId } from "@/content/sections";
-import { NODES, STANDS, lengthOf, pointAlong, route, routeFrom, smoothAlong, type NodeId, type Point } from "./voxel/routes";
+import { NODES, STANDS, lengthOf, pointAlong, route, routeFrom, smoothAlong, standAt, type NodeId, type Point, type Stand } from "./voxel/routes";
+import { exhibit } from "./voxel/exhibitData";
 import { groundY } from "./voxel/terrain";
 
 /** How fast he runs, in blocks a second, before the limits below. */
@@ -27,6 +28,19 @@ let seconds = 1;
 let elapsed = 0;
 let travelled = 0;
 let at: NodeId = "lookout";
+/** Where the current run ends. */
+let goal: Stand = STANDS.home;
+
+/**
+ * Where he should stand in a section: at the given exhibit; or, with none given, wherever he
+ * already is if that is one of the section's exhibits; or else at its middle exhibit.
+ */
+function standFor(section: SectionId, exhibitId?: string | null): Stand {
+  if (exhibitId && exhibit(exhibitId).section === section) return standAt(exhibitId);
+  const current = walker.exhibit;
+  if (current && exhibit(current).section === section) return standAt(current);
+  return STANDS[section];
+}
 
 /**
  * Where the character is and where he is going. The scene writes and reads this every frame, so
@@ -45,12 +59,18 @@ export const walker = {
   speed: 0,
   /** The section he is at, or on his way to. */
   section: "home" as SectionId,
-  /** Something he should turn to face once he has arrived, such as the open project's exhibit. */
+  /** The exhibit he is working at, or on his way to; null away from the exhibits. */
+  exhibit: null as string | null,
+  /** Something he should turn to face once he has arrived: the exhibit he is working at. */
   focus: null as null | { x: number; z: number },
 
-  /** Puts him at a section's spot at once, with no run. */
-  place(section: SectionId) {
-    const stand = STANDS[section];
+  /** Puts him at a section's spot at once, with no run: at the given exhibit, if there is one. */
+  place(section: SectionId, exhibitId?: string | null) {
+    walker.stand(section, standFor(section, exhibitId));
+  },
+
+  /** Puts him on a stand at once. */
+  stand(section: SectionId, stand: Stand) {
     at = stand.node;
     [walker.x, walker.z] = NODES[at];
     walker.y = floor(walker.x, walker.z);
@@ -59,16 +79,24 @@ export const walker = {
     walker.progress = 1;
     walker.speed = 0;
     walker.section = section;
+    walker.exhibit = stand.exhibit;
+    const e = stand.exhibit ? exhibit(stand.exhibit) : null;
+    walker.focus = e ? { x: e.x, z: e.z } : null;
   },
 
-  /** Sends him to a section. False if he is already standing where it is. */
-  go(section: SectionId): boolean {
-    const to = STANDS[section].node;
+  /**
+   * Sends him to a section, and to one of its exhibits if given (see standFor). False if he is
+   * already standing there.
+   */
+  go(section: SectionId, exhibitId?: string | null): boolean {
+    goal = standFor(section, exhibitId);
+    const to = goal.node;
     walker.section = section;
+    walker.exhibit = goal.exhibit;
 
     if (!walker.moving) {
       if (at === to) {
-        walker.heading = STANDS[section].facing;
+        walker.stand(section, goal);
         return false;
       }
       stops = route(at, to);
@@ -88,7 +116,7 @@ export const walker = {
 
     total = lengthOf(points);
     if (total < 0.01) {
-      walker.place(section);
+      walker.stand(section, goal);
       return false;
     }
     seconds = Math.min(LONGEST, Math.max(SHORTEST, total / PACE));
@@ -116,7 +144,7 @@ export const walker = {
 
     if (walker.progress >= 1) {
       const last = stops[stops.length - 1]!;
-      walker.place(walker.section);
+      walker.stand(walker.section, goal);
       at = last;
     }
   },

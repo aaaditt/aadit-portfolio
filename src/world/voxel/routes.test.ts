@@ -22,7 +22,7 @@ test("every section has a place for him to stand, and every place can be reached
 
 test("the shortest way is chosen", () => {
   // Going from the studio to the arcade passes north of the well, not round its south side.
-  const path = route("design", "play");
+  const path = route("design-2", "play-2");
   expect(path).toContain("plazaNW");
   expect(path).not.toContain("plazaS");
   // Nothing is visited twice.
@@ -31,13 +31,13 @@ test("the shortest way is chosen", () => {
 });
 
 test("a route can be walked from one end to the other", () => {
-  const points = route("lookout", "code").map((id) => NODES[id]);
+  const points = route("lookout", "code-2").map((id) => NODES[id]);
   const total = lengthOf(points);
   expect(total).toBeGreaterThan(30);
   const start = pointAlong(points, 0);
   const end = pointAlong(points, total + 5);
   expect([start.x, start.z]).toEqual(NODES.lookout);
-  expect([end.x, end.z]).toEqual(NODES.code);
+  expect([end.x, end.z]).toEqual(NODES["code-2"]);
   // Halfway there he is somewhere between the two, heading roughly north.
   const mid = pointAlong(points, total / 2);
   expect(mid.z).toBeLessThan(NODES.lookout[1]);
@@ -52,7 +52,7 @@ test("changing his mind part-way sets off from where he is, by the nearer end of
   expect(back[1]).toEqual(NODES.bridge);
   expect(back[back.length - 1]).toEqual(NODES.lookout);
   // Same spot, told to go to the arcade: he carries on.
-  const on = routeFrom([0, 4], "bridge", "plazaS", "play");
+  const on = routeFrom([0, 4], "bridge", "plazaS", "play-2");
   expect(on[1]).toEqual(NODES.plazaS);
 });
 
@@ -111,7 +111,7 @@ test("he never has to climb more than two blocks in one step", () => {
 test("with the corners rounded off, he still clears everything and ends exactly on his spot", () => {
   const solid = obstacles();
   const RADIUS = 0.4;
-  const stands: NodeId[] = ["lookout", "design", "code", "play"];
+  const stands: NodeId[] = ["lookout", "design-1", "design-2", "design-3", "code-1", "code-2", "code-3", "play-1", "play-2", "play-3"];
   for (const from of stands) {
     for (const to of stands) {
       if (from === to) continue;

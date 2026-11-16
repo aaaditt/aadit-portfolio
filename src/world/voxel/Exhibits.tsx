@@ -3,26 +3,37 @@
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import type * as THREE from "three";
-import { exhibitFor, projectFor, type Project } from "@/content/projects";
+import { projectFor, type Project } from "@/content/projects";
 import { SECTIONS } from "@/content/sections";
 import { sfx } from "@/audio/engine";
 import { wasDrag } from "../orbit";
 import { intro } from "../introStore";
 import { useMotion } from "../motion";
-import { walker } from "../walker";
 import { highlight, hover } from "../overlayState";
 import type { Box } from "./box";
 import { EXHIBITS, type Exhibit } from "./exhibitData";
 import * as M from "./models";
 import { heightAt } from "./terrain";
 import { Voxels } from "./Voxels";
+import { Sparks, Work } from "./Work";
 
-/** An exhibit's model, painted in its project's colours. */
-function model(e: Exhibit, project: Project): { solid: Box[]; glow: Box[] } {
+/**
+ * An exhibit's model, painted in its project's colours: the body, the finished piece that is
+ * swapped for live work while he works at it (see Work), and glowing parts that always show.
+ */
+function model(e: Exhibit, project: Project): { solid: Box[]; swap: Box[]; keep: Box[] } {
   const [a, b, c] = project.colours;
-  if (e.kind === "easel") return { solid: M.easel([a, b, c]), glow: [] };
-  if (e.kind === "terminal") return M.terminal(a);
-  return M.cabinet(a, b);
+  if (e.kind === "easel") {
+    const easel = M.easel([a, b, c]);
+    // The last four blocks are the paint on the canvas.
+    return { solid: easel.slice(0, -4), swap: easel.slice(-4), keep: [] };
+  }
+  if (e.kind === "terminal") {
+    const terminal = M.terminal(a);
+    return { solid: terminal.solid, swap: terminal.glow, keep: [] };
+  }
+  const cabinet = M.cabinet(a, b);
+  return { solid: cabinet.solid, swap: [], keep: cabinet.glow };
 }
 
 /** How much bigger an exhibit gets under the pointer. */
@@ -67,12 +78,6 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
 
   const selected = items.findIndex((item) => item.project.id === project);
 
-  // While a project is open, he turns to face its exhibit.
-  useEffect(() => {
-    const exhibit = project ? exhibitFor(project) : undefined;
-    walker.focus = exhibit ? { x: exhibit.x, z: exhibit.z } : null;
-  }, [project]);
-
   useFrame((_, delta) => {
     const step = Math.min(delta, 0.05);
     springs.current.forEach((spring, i) => {
@@ -97,9 +102,10 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
       const on = lit >= 0;
       if (on) {
         const item = items[lit];
-        light.current.position.set(item.x, item.y + 2.4, item.z + 1.4);
+        // Low and close in, so it lights the exhibit rather than the face of whoever is at it.
+        light.current.position.set(item.x, item.y + 1.5, item.z + 1.1);
       }
-      light.current.intensity += ((on ? 9 : 0) - light.current.intensity) * (1 - Math.exp(-14 * step));
+      light.current.intensity += ((on ? 6 : 0) - light.current.intensity) * (1 - Math.exp(-14 * step));
     }
   });
 
@@ -109,7 +115,7 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
         <group key={item.id}>
           <group ref={(el) => void (groups.current[i] = el)} position={[item.x, item.y, item.z]}>
             <Voxels boxes={item.model.solid} />
-            <Voxels boxes={item.model.glow} glow />
+            <Work exhibit={EXHIBITS[i]} y={item.y} colours={item.project.colours} swap={item.model.swap} keep={item.model.keep} />
           </group>
           <mesh
             position={[item.x, item.y + 1.3, item.z + 0.1]}
@@ -144,6 +150,7 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
           </mesh>
         </group>
       ))}
+      <Sparks />
       <pointLight ref={light} color="#fff1c4" intensity={0} distance={7} />
     </>
   );

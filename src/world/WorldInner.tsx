@@ -75,7 +75,7 @@ export default function WorldInner({ section, project, onOpen }: { section: Sect
       aria-hidden="true"
     >
       <MotionContext.Provider value={!reduced}>
-        <CameraRig section={section} animate={!reduced} />
+        <CameraRig section={section} project={project} animate={!reduced} />
         <OrbitInput />
         <Outlines />
         <SoundEvents />
