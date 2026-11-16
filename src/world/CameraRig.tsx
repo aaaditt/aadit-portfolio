@@ -39,6 +39,12 @@ const FLIGHT_LOOK_FROM = new THREE.Vector3(0, 0, 0);
 const goalPosition = new THREE.Vector3();
 const goalTarget = new THREE.Vector3();
 const flightPoint = new THREE.Vector3();
+const landingDirection = new THREE.Vector3();
+
+/** How long the camera takes to settle after the opening lands, in seconds. */
+const SETTLE_SECONDS = 1.3;
+/** How far it carries on past its resting place before springing back, in blocks. */
+const OVERSHOOT = 1.6;
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const smoothstep = (a: number, c: number, t: number) => {
@@ -59,10 +65,16 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
   const shown = useRef(section.id);
   const move = useRef<Move | null>(null);
   const flying = useRef(false);
+  /** Seconds since the opening landed, while the camera is still settling. */
+  const settling = useRef(-1);
+  /** The settling nudge added last frame, taken off again before this frame is worked out. */
+  const nudge = useRef(new THREE.Vector3());
 
   useFrame(({ camera, scene, size, pointer }, delta) => {
     if (!(camera instanceof THREE.PerspectiveCamera)) return;
     const step = Math.min(delta, 0.1);
+    camera.position.sub(nudge.current);
+    nudge.current.set(0, 0, 0);
     goalTarget.set(...section.camera.target);
     goalPosition.set(...section.camera.position);
 
@@ -106,6 +118,8 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
       fov = MAP_FOV + (FOV - MAP_FOV) * smoothstep(0.15, 0.8, t);
       if (flown.current >= 1) intro.finish();
     } else {
+      // The opening just landed: carry on a little past the resting place, then spring back.
+      if (flying.current && animate && flown.current >= 1) settling.current = 0;
       flying.current = false;
       flight.progress = 1;
       riseClock.value = 100;
@@ -146,6 +160,20 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
       } else {
         camera.position.copy(goalPosition);
         target.current.copy(goalTarget);
+      }
+    }
+
+    if (settling.current >= 0) {
+      settling.current += step;
+      const k = settling.current / SETTLE_SECONDS;
+      if (k >= 1 || move.current) settling.current = -1;
+      else {
+        // A damped swing: forward towards the subject, a little back, then still.
+        const swing = Math.sin(k * Math.PI * 1.6) * Math.exp(-k * 3.2) * OVERSHOOT;
+        landingDirection.subVectors(goalTarget, camera.position).normalize();
+        nudge.current.copy(landingDirection).multiplyScalar(swing);
+        nudge.current.y -= swing * 0.25;
+        camera.position.add(nudge.current);
       }
     }
 

@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { PixelLetter } from "@/ui/pixelArt";
 import { ReplayIntro } from "@/ui/ReplayIntro";
 import styles from "./page.module.css";
 
@@ -11,7 +12,7 @@ export default function Home() {
       <h1 className={styles.name} aria-label="Aadit">
         {[...NAME].map((letter, i) => (
           <span key={i} className="reveal" style={{ "--reveal-delay": `${0.15 + i * 0.09}s` } as CSSProperties} aria-hidden="true">
-            {letter}
+            <PixelLetter letter={letter} />
           </span>
         ))}
       </h1>

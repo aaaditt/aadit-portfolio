@@ -28,7 +28,8 @@
   font-family: var(--font-display), monospace;
   font-size: clamp(3rem, 10vw, 6rem);
   font-weight: 700;
-  letter-spacing: 0.12em;
+  display: flex;
+  gap: 0.14em;
   line-height: 1;
   color: #fff;
 }

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { intro, useIntro } from "@/world/introStore";
 import { flight, hover, mapLabels } from "@/world/overlayState";
+import { PixelLetter } from "./pixelArt";
 import styles from "./IntroOverlay.module.css";
 
 /** If the world has not loaded after this long, show the page anyway. */
@@ -80,7 +81,11 @@ export function IntroOverlay() {
   return (
     <div className={styles.overlay} data-playing={playing} data-loading={state === "pending"}>
       <div className={styles.cover} aria-hidden={state !== "pending"}>
-        <p className={styles.wordmark}>AADIT</p>
+        <p className={styles.wordmark} aria-label="Aadit">
+          {[..."AADIT"].map((letter, i) => (
+            <PixelLetter key={i} letter={letter} />
+          ))}
+        </p>
         <p className={styles.loading} role="status">
           Loading world
         </p>
