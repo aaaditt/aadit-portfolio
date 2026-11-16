@@ -32,7 +32,22 @@ export type World = {
   plants: Box[];
   /** Small lit things: screens, lamps, stage lights. Drawn at full brightness. */
   glow: Box[];
+  /** Things lit only at night: windows, torch flames, lanterns. They fade in as night falls. */
+  nightGlow: Box[];
 };
+
+/** The warm light in a window at night. */
+export const WINDOW_LIGHT = "#ffd98a";
+
+/**
+ * A lit pane over each window: the same glass, made a hair thicker on both faces so the light
+ * covers it from inside and out, whichever way the building is turned.
+ */
+function windowLights(props: Box[]): Box[] {
+  return props
+    .filter(([, , , w, , d, c]) => c === M.K.glass && Math.min(w, d) <= 0.2)
+    .map(([x, y, z, w, h, d]) => (w < d ? b(x - 0.03, y, z, w + 0.06, h, d, WINDOW_LIGHT) : b(x, y, z - 0.03, w, h, d + 0.06, WINDOW_LIGHT)));
+}
 
 function buildTerrain(): Box[] {
   const out: Box[] = [];
@@ -136,8 +151,18 @@ function buildWorld(): World {
   const mill = plateau("windmill");
   props.push(...place(M.windmillTower(), [mill.x, mill.h, mill.z]));
 
-  // The bridge carries the main path over the river.
+  // The bridge carries the main path over the river, with a lantern at each corner.
   props.push(...place(M.bridge(9), [0.5, 1.7, riverZ(0)]));
+
+  const nightGlow: Box[] = [];
+  const lit = (model: { solid: Box[]; flame: Box[] }, at: [number, number, number]) => {
+    props.push(...place(model.solid, at));
+    nightGlow.push(...place(model.flame, at));
+  };
+  for (const x of [-1.25, 1.95]) for (const z of [riverZ(0) - 4.3, riverZ(0) + 4.3]) lit(M.lantern(), [x, 3.05, z]);
+  // Torches either side of each landmark's door, and one by the signpost at the lookout.
+  const torchAt = (x: number, z: number) => lit(M.torch(), [x, heightAt(Math.floor(x), Math.floor(z)), z]);
+  for (const [x, z] of [[-15.6, -5.4], [-12.9, -5.4], [19.9, -5.4], [22.3, -5.4], [-2.8, -20.6], [2.8, -20.6], [3.6, 21.6]] as const) torchAt(x, z);
 
   // Lamps along the main path and around the plaza.
   for (const [x, z] of [[2.2, 15], [-1.8, 2], [2.2, -2], [-4, -4], [4.5, -10], [-6, -8.5], [6, -6.3], [-2.2, -13.5]] as const) {
@@ -146,7 +171,8 @@ function buildWorld(): World {
 
   const plants: Box[] = [];
   scatter(props, plants);
-  return { terrain: buildTerrain(), props, plants, glow };
+  nightGlow.push(...windowLights(props));
+  return { terrain: buildTerrain(), props, plants, glow, nightGlow };
 }
 
 let cached: World | null = null;

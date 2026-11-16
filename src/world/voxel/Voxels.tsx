@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useMemo, useRef } from "react";
+import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Box } from "./box";
 
@@ -37,11 +38,11 @@ function addRise(shader: { uniforms: Record<string, unknown>; vertexShader: stri
 }
 
 /** A full-brightness material for lit things, which can also rise with the land. */
-function glowMaterial(rise: boolean) {
-  const material = new THREE.MeshBasicMaterial({ toneMapped: false });
+function glowMaterial(rise: boolean, faded: boolean) {
+  const material = new THREE.MeshBasicMaterial({ toneMapped: false, transparent: faded });
   if (rise) {
     material.onBeforeCompile = addRise;
-    material.customProgramCacheKey = () => "glow-rise";
+    material.customProgramCacheKey = () => `glow-rise-${faded}`;
   }
   return material;
 }
@@ -106,6 +107,7 @@ export function Voxels({
   rise = false,
   shadows = true,
   cast = true,
+  fade,
 }: {
   boxes: Box[];
   glow?: boolean;
@@ -115,13 +117,21 @@ export function Voxels({
   shadows?: boolean;
   /** False to receive shadows without casting any. */
   cast?: boolean;
+  /** For glow: how lit it is, from 0 (hidden) to 1, read every frame. */
+  fade?: { night: number };
 }) {
   const ref = useRef<THREE.InstancedMesh>(null);
 
   const material = useMemo(() => {
-    if (glow) return glowMaterial(rise);
+    if (glow) return glowMaterial(rise, Boolean(fade));
     return blockMaterial(grain, rise);
-  }, [glow, grain, rise]);
+  }, [glow, grain, rise, fade]);
+
+  useFrame(() => {
+    if (!fade || !ref.current) return;
+    (ref.current.material as THREE.MeshBasicMaterial).opacity = fade.night;
+    ref.current.visible = fade.night > 0.01;
+  });
 
   useLayoutEffect(() => {
     const mesh = ref.current;

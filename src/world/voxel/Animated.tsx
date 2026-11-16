@@ -2,7 +2,8 @@
 
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
-import type * as THREE from "three";
+import * as THREE from "three";
+import { daylight } from "../daylight";
 import { useMotion } from "../motion";
 import { b } from "./box";
 import * as M from "./models";
@@ -10,13 +11,17 @@ import { HALF, plateau, riverZ } from "./terrain";
 import { Voxels } from "./Voxels";
 
 export const WATER_LEVEL = 0.72;
+const WATER_DAY = new THREE.Color("#4fb3d9");
+const WATER_NIGHT = new THREE.Color("#24477a");
 
 export function Water() {
   const ref = useRef<THREE.Mesh>(null);
   const animate = useMotion();
 
   useFrame(({ clock }) => {
-    if (ref.current && animate) ref.current.position.y = WATER_LEVEL + Math.sin(clock.elapsedTime * 0.9) * 0.05;
+    if (!ref.current) return;
+    if (animate) ref.current.position.y = WATER_LEVEL + Math.sin(clock.elapsedTime * 0.9) * 0.05;
+    (ref.current.material as THREE.MeshStandardMaterial).color.lerpColors(WATER_DAY, WATER_NIGHT, daylight.night);
   });
 
   return (
@@ -132,10 +137,12 @@ const FLAMES = [b(-0.3, 0, -0.3, 0.6, 0.7, 0.6, "#ff8a3c"), b(-0.18, 0.5, -0.18,
 
 export function Campfire() {
   const ref = useRef<THREE.Group>(null);
+  const glow = useRef<THREE.PointLight>(null);
   const animate = useMotion();
   const lookout = plateau("lookout");
 
   useFrame(({ clock }) => {
+    if (glow.current) glow.current.intensity = 6 + daylight.night * 8;
     if (!ref.current || !animate) return;
     const t = clock.elapsedTime;
     ref.current.scale.set(1 + Math.sin(t * 13) * 0.08, 1 + Math.sin(t * 9) * 0.18, 1 + Math.cos(t * 11) * 0.08);
@@ -146,7 +153,7 @@ export function Campfire() {
       <group ref={ref}>
         <Voxels boxes={FLAMES} glow />
       </group>
-      <pointLight color="#ffb347" intensity={6} distance={9} position={[0, 1, 0]} />
+      <pointLight ref={glow} color="#ffb347" intensity={6} distance={9} position={[0, 1, 0]} />
     </group>
   );
 }

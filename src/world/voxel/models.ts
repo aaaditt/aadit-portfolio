@@ -370,6 +370,26 @@ export function cloud(variant: number): Box[] {
   ];
 }
 
+/** A torch on a post. `flame` is the part that is lit at night. */
+export function torch(): { solid: Box[]; flame: Box[] } {
+  return {
+    solid: [
+      b(-0.12, 0, -0.12, 0.24, 1.7, 0.24, K.woodD),
+      b(-0.22, 1.7, -0.22, 0.44, 0.18, 0.44, K.black),
+      b(-0.18, 1.88, -0.18, 0.36, 0.12, 0.36, K.timber),
+    ],
+    flame: [b(-0.16, 2.0, -0.16, 0.32, 0.38, 0.32, K.fire), b(-0.08, 2.38, -0.08, 0.16, 0.18, 0.16, K.yellow)],
+  };
+}
+
+/** A small lantern to stand on a rail. `flame` is the part that is lit at night. */
+export function lantern(): { solid: Box[]; flame: Box[] } {
+  return {
+    solid: [b(-0.2, 0, -0.2, 0.4, 0.08, 0.4, K.navyD), b(-0.22, 0.46, -0.22, 0.44, 0.08, 0.44, K.navyD), b(-0.06, 0.54, -0.06, 0.12, 0.12, 0.12, K.navyD)],
+    flame: [b(-0.15, 0.08, -0.15, 0.3, 0.38, 0.3, K.fire)],
+  };
+}
+
 /** A free-standing easel with a small pixel painting. One per design project, later. */
 export function easel(colours: [string, string, string]): Box[] {
   return [
