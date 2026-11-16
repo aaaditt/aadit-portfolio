@@ -99,6 +99,11 @@ export function cottage(roof: string, roofD: string): Box[] {
     b(-0.5, 0, 2.5, 1, 2, 0.15, K.timber),
     b(-2.3, 1.2, 2.5, 1, 1, 0.12, K.glass),
     b(1.3, 1.2, 2.5, 1, 1, 0.12, K.glass),
+    // the back and sides, which show once the view is turned
+    b(-2.3, 1.2, -2.62, 1, 1, 0.12, K.glass),
+    b(1.3, 1.2, -2.62, 1, 1, 0.12, K.glass),
+    b(-3.12, 1.2, -0.5, 0.12, 1, 1, K.glass),
+    b(3, 1.2, -0.5, 0.12, 1, 1, K.glass),
     b(1.4, 4, -1.6, 1, 2.6, 1, K.stoneD),
   ];
 }
@@ -114,6 +119,10 @@ export function studio(): { solid: Box[]; glow: Box[] } {
       b(-4.6, 3.6, 2.7, 9.2, 0.4, 0.4, K.timber),
       ...gableRoof(9, 6, 4, K.coral, K.coralD),
       b(2.4, 5, -2, 1, 3.4, 1, K.stoneD),
+      // back and side windows, with sills, for when the view is turned
+      ...[-3.5, 1.6].flatMap((x) => [b(x, 1.3, -3.12, 1.6, 1.4, 0.12, K.glass), b(x - 0.1, 1.2, -3.2, 1.8, 0.14, 0.2, K.timber)]),
+      ...[-4.62, 4.5].flatMap((x) => [b(x, 1.3, -1, 0.12, 1.4, 1.6, K.glass), b(x === 4.5 ? 4.5 : -4.7, 1.2, -1.1, 0.2, 0.14, 1.8, K.timber)]),
+      b(-0.6, 0, -3.15, 1.2, 2.3, 0.15, K.timber),
       // the big studio window
       b(-3.7, 1.1, 3, 3.2, 2.1, 0.12, K.glass),
       b(-3.8, 1, 3, 3.4, 0.14, 0.2, K.timber),
@@ -161,6 +170,10 @@ export function lab(): { solid: Box[]; glow: Box[] } {
       b(-3.6, 7.4, -2.1, 5.2, 0.35, 4.2, K.white),
       b(-2.6, 5.2, 2, 3.2, 1.4, 0.12, K.glass),
       b(-3.6, 0.9, 3, 5.2, 2.6, 0.12, K.black),
+      // back and side windows, for when the view is turned
+      ...[-3.5, 1.2].map((x) => b(x, 1.2, -3.12, 2, 1.5, 0.12, K.glass)),
+      b(-2.6, 5.2, -2.12, 3.2, 1.4, 0.12, K.glass),
+      ...[-4.62, 4.5].map((x) => b(x, 1.2, -1.5, 0.12, 1.5, 2, K.glass)),
       b(2.4, 0, 3, 1.4, 2.5, 0.15, K.orange),
       // aerial and dish
       b(2.6, 4.4, -1.2, 0.3, 4.4, 0.3, K.stoneL),
@@ -203,6 +216,10 @@ export function arcade(): { solid: Box[]; glow: Box[] } {
       b(0.2, 3.3, -0.9, 0.45, 0.2, 0.45, K.teal),
       b(0.95, 3.3, -0.9, 0.45, 0.2, 0.45, K.yellow),
       b(-0.4, 1.2, -1.5, 0.8, 0.9, 0.1, K.black),
+      // its back: a service panel and vents
+      b(-1.4, 1, -4.62, 2.8, 3.6, 0.12, K.coralD),
+      b(-0.25, 2.6, -4.7, 0.5, 0.2, 0.1, K.gold),
+      ...[5.4, 5.9, 6.4].map((y) => b(-1.1, y, -4.62, 2.2, 0.22, 0.12, K.black)),
       // striped tent
       ...Array.from({ length: 7 }, (_, i) => b(-13 + i, 0, -3.5, 1, 3, 7, i % 2 ? K.coral : K.cream)),
       ...[0, 1, 2, 3].map((k) => b(-13.5 + k, 3 + k, -4 + k, 8 - 2 * k, 1, 8 - 2 * k, k % 2 ? K.cream : K.orange)),
