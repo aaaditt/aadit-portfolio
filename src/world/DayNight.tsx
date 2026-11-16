@@ -34,7 +34,8 @@ const POOLS: [number, number, number][] = [
   [0, 8, -18.5],
   [0, 6.5, -7],
 ];
-const POOL_POWER = 10;
+/** How strong each pool is at full night. The arcade's is softer, as the plaza there is wide and pale. */
+const POOL_POWER = [10, 10, 4.5, 8];
 
 const FILL_POWER = 4;
 const toCamera = new THREE.Vector3();
@@ -81,8 +82,8 @@ export function DayNight() {
       fill.current.position.set(walker.x + toCamera.x * 2.2, walker.y + 3.4, walker.z + toCamera.z * 2.2);
       fill.current.intensity = FILL_POWER * n;
     }
-    pools.current.forEach((light) => {
-      if (light) light.intensity = POOL_POWER * n;
+    pools.current.forEach((light, i) => {
+      if (light) light.intensity = POOL_POWER[i] * n;
     });
   });
 

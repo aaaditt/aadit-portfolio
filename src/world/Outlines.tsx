@@ -30,10 +30,10 @@ const FRAGMENT = /* glsl */ `
     gap = max(gap, distanceAt(uv - vec2(0.0, texelSize.y)) - here);
 
     // A step of most of a block close up; proportionally more far away, so distant slopes stay clean.
-    float edge = step(max(0.45, here * 0.03), gap);
+    float edge = step(max(0.7, here * 0.03), gap);
     // Fade outlines out into the distance, where they would only be noise.
-    edge *= 1.0 - smoothstep(55.0, 110.0, here);
-    outputColor = vec4(mix(inputColor.rgb, inputColor.rgb * 0.42, edge * strength), inputColor.a);
+    edge *= 1.0 - smoothstep(40.0, 90.0, here);
+    outputColor = vec4(mix(inputColor.rgb, inputColor.rgb * 0.55, edge * strength), inputColor.a);
   }
 `;
 

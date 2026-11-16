@@ -23,8 +23,8 @@ export function BottomBar() {
                 className={active ? `${styles.item} ${styles.active}` : styles.item}
                 aria-current={active ? "page" : undefined}
               >
-                <svg className={styles.icon} viewBox="0 0 24 24" fill="currentColor" shapeRendering="crispEdges" aria-hidden="true">
-                  {pixels(ICON_ROWS[section.id], 2)}
+                <svg className={styles.icon} viewBox="0 0 9 9" fill="currentColor" shapeRendering="crispEdges" aria-hidden="true">
+                  {pixels(ICON_ROWS[section.id])}
                 </svg>
                 <span className={styles.label}>{section.label}</span>
               </Link>

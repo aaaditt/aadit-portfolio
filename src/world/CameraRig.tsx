@@ -42,9 +42,9 @@ const flightPoint = new THREE.Vector3();
 const landingDirection = new THREE.Vector3();
 
 /** How long the camera takes to settle after the opening lands, in seconds. */
-const SETTLE_SECONDS = 1.3;
-/** How far it carries on past its resting place before springing back, in blocks. */
-const OVERSHOOT = 1.6;
+const SETTLE_SECONDS = 1.1;
+/** How far it carries on past its resting place before springing back, as a share of its distance. */
+const OVERSHOOT = 0.075;
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const smoothstep = (a: number, c: number, t: number) => {
@@ -169,7 +169,8 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
       if (k >= 1 || move.current) settling.current = -1;
       else {
         // A damped swing: forward towards the subject, a little back, then still.
-        const swing = Math.sin(k * Math.PI * 1.6) * Math.exp(-k * 3.2) * OVERSHOOT;
+        const reach = camera.position.distanceTo(goalTarget) * OVERSHOOT;
+        const swing = Math.sin(k * Math.PI * 1.5) * Math.exp(-k * 2.6) * reach;
         landingDirection.subVectors(goalTarget, camera.position).normalize();
         nudge.current.copy(landingDirection).multiplyScalar(swing);
         nudge.current.y -= swing * 0.25;

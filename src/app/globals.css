@@ -22,13 +22,16 @@
   --bubble: #ffffff;
   --bubble-ink: #17202b;
   --focus: #27374d;
+  /* The hard edge and offset shadow on cards, like a pixel game's dialog boxes. */
+  --card-edge: #27374d;
+  --card-shadow: rgb(23 32 43 / 0.35);
   --theme-fade: 1.2s;
   color-scheme: light;
 }
 
 :root[data-theme="night"] {
   --haze: #1a2140; /* keep in step with the night haze in src/world/daylight.ts */
-  --panel: rgb(13 19 34 / 0.76);
+  --panel: rgb(13 19 34 / 0.84);
   --panel-ink: #f4f1e8;
   --panel-soft: rgb(244 241 232 / 0.76);
   --panel-line: rgb(255 255 255 / 0.16);
@@ -40,6 +43,8 @@
   --bubble: #1d2640;
   --bubble-ink: #f4f1e8;
   --focus: #ffd27a;
+  --card-edge: rgb(244 241 232 / 0.55);
+  --card-shadow: rgb(0 0 0 / 0.55);
   color-scheme: dark;
 }
 

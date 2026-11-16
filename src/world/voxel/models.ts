@@ -174,7 +174,8 @@ const BRACKETS = ["..#...#.#..", ".#...#...#.", "#....#....#", ".#..#....#.", ".
 /** The Code Lab: a two-storey block with a wall of code, an aerial, servers and a `</>` sculpture. */
 export function lab(): { solid: Box[]; glow: Box[] } {
   const lines = [K.yellow, K.glass, K.pink, K.crop, K.glass, K.yellow];
-  const px = 0.62;
+  // Small enough that the sculpture stays to the side of the lab's code board.
+  const px = 0.5;
   return {
     solid: [
       b(-4.5, 0, -3, 9, 4, 6, K.navy),
@@ -292,7 +293,6 @@ export function camp(): Box[] {
     b(4.4, 0, -0.5, 0.3, 3.2, 0.3, K.woodD),
     b(4.6, 2.5, -0.55, 1.6, 0.5, 0.2, K.teal),
     b(3, 1.8, -0.55, 1.5, 0.5, 0.2, K.coral),
-    b(4.6, 1.1, -0.55, 1.3, 0.5, 0.2, K.yellow),
     // mailbox
     b(-4.4, 0, 3.4, 0.3, 1.4, 0.3, K.wood),
     b(-4.75, 1.4, 3.1, 1, 0.8, 0.9, K.red),

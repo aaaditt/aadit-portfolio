@@ -180,7 +180,7 @@ function buildWorld(): World {
   for (const [x, z] of [[-15.6, -5.4], [-12.9, -5.4], [19.9, -5.4], [22.3, -5.4], [-2.8, -20.6], [2.8, -20.6], [3.6, 21.6]] as const) torchAt(x, z);
 
   // Lamps along the main path and around the plaza.
-  for (const [x, z] of [[2.2, 15], [-1.8, 2], [2.2, -2], [-4, -4], [4.5, -10], [-6, -8.5], [6, -6.3], [-2.2, -13.5]] as const) {
+  for (const [x, z] of [[2.2, 15], [-1.8, 2], [-4, -4], [4.5, -10], [-2.2, -13.5]] as const) {
     add(M.lamp(), [x, heightAt(Math.floor(x), Math.floor(z)), z]);
   }
 
