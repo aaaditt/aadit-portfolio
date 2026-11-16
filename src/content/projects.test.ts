@@ -82,3 +82,21 @@ test("links that are not ready are left out, and the first ready one is the main
   expect(liveLinks(base)).toEqual([]);
   expect(mainLink(base)).toBeUndefined();
 });
+
+test("a project with a show has a few named sheets, each with something to say, ending on the final piece", () => {
+  const shows = PROJECTS.filter((p) => p.show);
+  expect(shows.length).toBeGreaterThan(0);
+  for (const p of shows) {
+    const sheets = p.show!.sheets;
+    expect(p.section, p.id).toBe("design");
+    expect(sheets.length, p.id).toBeGreaterThanOrEqual(3);
+    expect(sheets.length, p.id).toBeLessThanOrEqual(5);
+    expect(new Set(sheets.map((s) => s.kind)).size, p.id).toBe(sheets.length);
+    expect(sheets.at(-1)!.kind, p.id).toBe("final");
+    for (const s of sheets) {
+      expect(s.label.length, p.id).toBeGreaterThan(0);
+      expect(s.note.length, p.id).toBeGreaterThan(10);
+      if (p.sample) expect(s.note, p.id).toMatch(/^A placeholder/);
+    }
+  }
+});

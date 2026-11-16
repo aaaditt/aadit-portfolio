@@ -1,0 +1,70 @@
+.sheets {
+  margin-bottom: 0.9rem;
+}
+
+.heading {
+  margin-bottom: 0.45rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--panel-accent);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  min-height: 36px;
+  padding: 0.3rem 0.6rem;
+  border: 2px solid var(--card-edge);
+  background: var(--panel-hover);
+  color: inherit;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 0 var(--card-shadow);
+  transition:
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.chip:hover,
+.chip:focus-visible {
+  translate: -1px -1px;
+  box-shadow: 3px 3px 0 0 var(--card-shadow);
+}
+
+/* The picked stage is pressed in, like a held button. */
+.chip[aria-pressed="true"] {
+  translate: 2px 2px;
+  box-shadow: none;
+  background: var(--panel-ink);
+  color: var(--panel);
+}
+
+.number {
+  opacity: 0.6;
+}
+
+.note {
+  min-height: 2.8em;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  color: var(--panel-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip {
+    transition: none;
+  }
+}

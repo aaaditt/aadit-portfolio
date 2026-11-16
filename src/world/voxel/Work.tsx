@@ -45,6 +45,7 @@ export function Work({
   colours,
   swap,
   keep,
+  finished = false,
 }: {
   exhibit: Exhibit;
   /** The ground under the exhibit. */
@@ -54,6 +55,8 @@ export function Work({
   swap: Box[];
   /** Glowing parts that always show, such as the cabinet's screen. */
   keep: Box[];
+  /** The piece is done and stays on show: its sheets tell the story, so nothing is redrawn here. */
+  finished?: boolean;
 }) {
   const animate = useMotion();
   const still = useRef<THREE.Group>(null);
@@ -65,7 +68,7 @@ export function Work({
   const [a, b, c] = colours;
 
   useFrame(({ clock }) => {
-    const working = animate && !walker.moving && walker.exhibit === exhibit.id;
+    const working = animate && !finished && !walker.moving && walker.exhibit === exhibit.id;
     if (still.current) still.current.visible = !working;
     if (live.current) live.current.visible = working;
     const t = clock.elapsedTime;

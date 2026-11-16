@@ -10,6 +10,7 @@ import { intro } from "../introStore";
 import { wasDrag } from "../orbit";
 import { highlight, hover } from "../overlayState";
 import { poke } from "../pokeStore";
+import { table } from "../sheetStore";
 import { useMotion } from "../motion";
 import { walker } from "../walker";
 import { b, type Box } from "./box";
@@ -168,6 +169,8 @@ export function Character({ greet }: { greet: boolean }) {
     // At an exhibit, working at it; or in a section's yard, waiting for a project to be picked.
     const working = !running && walker.exhibit !== null;
     const waiting = !running && !atLookout && walker.exhibit === null;
+    // At an exhibit whose sheets are out, he presents them instead of working.
+    const presenting = working && table.exhibit !== "" && table.exhibit === walker.exhibit;
     // While waiting he looks the exhibits over, or at the one the visitor is pointing at in the list.
     const pointedAt = waiting && highlight.project ? exhibitFor(highlight.project) : undefined;
     const choices = waiting ? EXHIBITS.filter((e) => e.section === place) : [];
@@ -221,6 +224,13 @@ export function Character({ greet }: { greet: boolean }) {
       pose.armRSide = 0.05;
       pose.armL = CROSSED_X;
       pose.armLSide = CROSSED_Z;
+    } else if (presenting) {
+      // Showing the sheets fanned out above the easel: one arm raised towards them, open-handed.
+      pose.armR = -2.55 + Math.sin(t * 1.8) * 0.08;
+      pose.armRSide = -0.25 + Math.sin(t * 1.1) * 0.06;
+      pose.armL = 0.05;
+      pose.armLSide = -0.2;
+      pose.lean = -0.05;
     } else if (working && place === "design") {
       // Painting: brush arm up at the canvas, making strokes.
       pose.armR = -1.4 + Math.sin(t * 3.1) * 0.22;
@@ -284,7 +294,7 @@ export function Character({ greet }: { greet: boolean }) {
     if (armL.current) armL.current.rotation.set(now.armL, 0, now.armLSide);
     if (legR.current) legR.current.rotation.x = now.legR;
     if (legL.current) legL.current.rotation.x = now.legL;
-    if (brush.current) brush.current.visible = working && place === "design";
+    if (brush.current) brush.current.visible = working && place === "design" && !presenting;
 
     if (head.current) {
       // At the lookout he looks towards the visitor's pointer. At work he watches what he is doing.

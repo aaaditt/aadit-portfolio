@@ -6,6 +6,7 @@ import { getProject, liveLinks, neighbours, projectsIn } from "@/content/project
 import { getSection } from "@/content/sections";
 import { Card } from "@/ui/Card";
 import { ProjectThumb } from "@/ui/ProjectThumb";
+import { Sheets } from "@/ui/Sheets";
 import { WorkingAt } from "@/ui/WorkingAt";
 import styles from "../page.module.css";
 
@@ -74,6 +75,7 @@ async function ProjectCard({ params }: Props) {
         <p className={styles.factOutcome}>{project.outcome}</p>
         {main && <ProjectLink link={main} />}
       </div>
+      {project.show && <Sheets list={project.show.sheets} />}
       <WorkingAt project={project} />
       <div className={styles.pictureFrame}>
         {project.cover ? (

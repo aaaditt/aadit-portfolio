@@ -14,6 +14,7 @@ import { highlight, hover } from "../overlayState";
 import { walker } from "../walker";
 import type { Box } from "./box";
 import { EXHIBITS, type Exhibit } from "./exhibitData";
+import { LightTable } from "./LightTable";
 import * as M from "./models";
 import { heightAt } from "./terrain";
 import { Voxels } from "./Voxels";
@@ -130,8 +131,9 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
         <group key={item.id}>
           <group ref={(el) => void (groups.current[i] = el)} position={[item.x, item.y, item.z]}>
             <Voxels boxes={item.model.solid} />
-            <Work exhibit={EXHIBITS[i]} y={item.y} colours={item.project.colours} swap={item.model.swap} keep={item.model.keep} />
+            <Work exhibit={EXHIBITS[i]} y={item.y} colours={item.project.colours} swap={item.model.swap} keep={item.model.keep} finished={Boolean(item.project.show)} />
           </group>
+          {item.project.show && <LightTable exhibit={EXHIBITS[i]} y={item.y} project={item.project} open={selected === i} />}
           <mesh
             position={[item.x, item.y + 1.3, item.z + 0.1]}
             onPointerOver={(event) => {

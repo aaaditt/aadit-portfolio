@@ -1,7 +1,17 @@
 import { EXHIBITS } from "../world/voxel/exhibitData";
+import type { SheetKind } from "../world/voxel/sheets";
 
 /** The sections that have projects in them. */
 export type WorkSection = "design" | "code" | "play";
+
+/** One stage of a design project: a sheet above its easel, and a line about it in the card. */
+export type Sheet = {
+  kind: SheetKind;
+  /** The chip's name. */
+  label: string;
+  /** What happened at this stage, in a sentence or two. */
+  note: string;
+};
 
 export type Project = {
   /** Used in the address: /design/<id>. Lower case words joined by hyphens. */
@@ -26,6 +36,11 @@ export type Project = {
   colours: [string, string, string];
   /** True for the placeholders. Replace them with real work and drop this flag. */
   sample?: boolean;
+  /**
+   * How the world shows this project when it is opened. A design project lists the stages it went
+   * through, in order, ending on the final piece. Without it, he simply works at the exhibit.
+   */
+  show?: { sheets: Sheet[] };
 };
 
 /**
@@ -50,6 +65,14 @@ export const PROJECTS: Project[] = [
     ],
     colours: ["#c8553d", "#e8c15a", "#2f7f79"],
     sample: true,
+    show: {
+      sheets: [
+        { kind: "sketch", label: "Sketch", note: "A placeholder note: first ideas on paper, working out what the mark should say." },
+        { kind: "wireframe", label: "Layout", note: "A placeholder note: the layout in grey boxes, before any colour got involved." },
+        { kind: "palette", label: "Colours", note: "A placeholder note: three colours chosen to feel warm, and to stay readable in print." },
+        { kind: "final", label: "Final", note: "A placeholder note: the finished identity, as it went out to the studio." },
+      ],
+    },
   },
   {
     id: "app-redesign",
