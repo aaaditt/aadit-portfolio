@@ -7,6 +7,7 @@ import { bubbleAnchor } from "../bubbleAnchor";
 import { useMotion } from "../motion";
 import { walker } from "../walker";
 import { b, type Box } from "./box";
+import { faceFor } from "./expression";
 import { Voxels } from "./Voxels";
 
 // Colours taken from Aadit's profile picture: curly dark hair, navy hoodie.
@@ -41,20 +42,8 @@ const HEAD: Box[] = [
   b(-3, 0, -3, 6, 6, 6, SKIN),
   b(-3.5, 2, -0.7, 0.5, 1.5, 1.2, SKIN_D),
   b(3, 2, -0.7, 0.5, 1.5, 1.2, SKIN_D),
-  // closed, smiling eyes and brows
-  b(-2.2, 3.3, 3, 1.5, 0.5, 0.12, FACE),
-  b(0.7, 3.3, 3, 1.5, 0.5, 0.12, FACE),
-  b(-2.5, 2.9, 3, 0.4, 0.55, 0.12, FACE),
-  b(-0.8, 2.9, 3, 0.4, 0.55, 0.12, FACE),
-  b(0.4, 2.9, 3, 0.4, 0.55, 0.12, FACE),
-  b(2.1, 2.9, 3, 0.4, 0.55, 0.12, FACE),
-  b(-2.3, 4.35, 3, 1.6, 0.35, 0.12, HAIR),
-  b(0.7, 4.35, 3, 1.6, 0.35, 0.12, HAIR),
+  // nose; the eyes, brows and mouth change with his mood and are drawn separately (FACE_PARTS)
   b(-0.4, 2, 3, 0.8, 0.9, 0.35, SKIN_D),
-  // smile
-  b(-1.2, 1.1, 3, 2.4, 0.3, 0.12, FACE),
-  b(-1.6, 1.35, 3, 0.4, 0.3, 0.12, FACE),
-  b(1.2, 1.35, 3, 0.4, 0.3, 0.12, FACE),
   // hair: a cap, the back and sides, then uneven curls on top and a fringe
   b(-3.5, 5.4, -3.5, 7, 2, 7, HAIR),
   b(-3.5, 1.8, -3.7, 7, 4, 1.2, HAIR),
@@ -79,6 +68,30 @@ const HEAD: Box[] = [
   b(3.1, 6.8, -2.6, 0.9, 1.1, 1.8, HAIR_L),
   b(-0.8, 6.2, -4.2, 2.4, 1.6, 0.9, HAIR),
 ];
+
+/** The two eyes' left edges, in model pixels across the face. */
+const EYE_X = [-2.2, 0.7];
+const WHITE = "#f4efe6";
+const MOUTH_IN = "#5a2a22";
+
+/** Every changeable feature on the face. Only one eye shape and one mouth show at a time. */
+const FACE_PARTS = {
+  // open eyes: the whites, with the pupils drawn separately so they can look around
+  open: EYE_X.map((x) => b(x, 2.65, 3, 1.5, 1.15, 0.1, WHITE)),
+  pupils: EYE_X.map((x) => b(x + 0.45, 2.65, 3.02, 0.62, 0.95, 0.12, FACE)),
+  // mid-blink: a short line
+  shut: EYE_X.map((x) => b(x, 3.05, 3, 1.5, 0.3, 0.12, FACE)),
+  // the closed, smiling eyes from his profile picture
+  happy: EYE_X.flatMap((x) => [b(x, 3.3, 3, 1.5, 0.5, 0.12, FACE), b(x - 0.3, 2.9, 3, 0.4, 0.55, 0.12, FACE), b(x + 1.4, 2.9, 3, 0.4, 0.55, 0.12, FACE)]),
+  brows: EYE_X.map((x) => b(x - 0.1, 4.25, 3, 1.6, 0.35, 0.12, HAIR)),
+  smile: [b(-1.2, 1.1, 3, 2.4, 0.3, 0.12, FACE), b(-1.6, 1.35, 3, 0.4, 0.3, 0.12, FACE), b(1.2, 1.35, 3, 0.4, 0.3, 0.12, FACE)],
+  grin: [b(-1.3, 0.7, 3, 2.6, 0.85, 0.1, MOUTH_IN), b(-1.1, 1.25, 3.02, 2.2, 0.28, 0.12, WHITE), b(-1.7, 1.3, 3, 0.4, 0.35, 0.12, MOUTH_IN), b(1.3, 1.3, 3, 0.4, 0.35, 0.12, MOUTH_IN)],
+  flat: [b(-0.9, 1.15, 3, 1.8, 0.28, 0.12, FACE)],
+  o: [b(-0.45, 0.8, 3, 0.9, 0.85, 0.12, MOUTH_IN)],
+  blush: [-2.9, 1.9].map((x) => b(x, 1.75, 3, 1, 0.45, 0.06, "#c46f55")),
+};
+type Part = keyof typeof FACE_PARTS;
+const PARTS = Object.keys(FACE_PARTS) as Part[];
 
 const anchor = new THREE.Vector3();
 
@@ -125,6 +138,7 @@ export function Character({ greet }: { greet: boolean }) {
   const facing = useRef(walker.heading);
   const wasRunning = useRef(false);
   const landedAt = useRef(-10);
+  const parts = useRef<Partial<Record<Part, THREE.Group | null>>>({});
 
   useFrame(({ clock, camera, size, pointer }, delta) => {
     const step = Math.min(delta, 0.1);
@@ -227,6 +241,23 @@ export function Character({ greet }: { greet: boolean }) {
       h.y += (wantY - h.y) * ease(5);
       h.x += (wantX - h.x) * ease(5);
 
+      // His expression for the moment.
+      const face = faceFor({ place, running, waving: up > 0.5, sinceLanding: t - landedAt.current, t, pointerX: pointer.x, animate });
+      const show = (part: Part, on: boolean) => {
+        const group = parts.current[part];
+        if (group) group.visible = on;
+      };
+      show("open", face.eyes === "open");
+      show("pupils", face.eyes === "open");
+      show("shut", face.eyes === "shut");
+      show("happy", face.eyes === "happy");
+      show("blush", face.blush);
+      for (const mouth of ["smile", "grin", "flat", "o"] as const) show(mouth, face.mouth === mouth);
+      const pupils = parts.current.pupils;
+      if (pupils) pupils.position.x += (face.look * 0.4 - pupils.position.x) * ease(14);
+      const brows = parts.current.brows;
+      if (brows) brows.position.y += (face.brows - brows.position.y) * ease(12);
+
       // Tell the page where the speech bubble should sit: just above and beside the head.
       head.current.getWorldPosition(anchor);
       anchor.y += 10.5 * U;
@@ -248,6 +279,11 @@ export function Character({ greet }: { greet: boolean }) {
       <Voxels boxes={TORSO} />
       <group ref={head} position={[0, 6.6, 0]}>
         <Voxels boxes={HEAD} />
+        {PARTS.map((part) => (
+          <group key={part} ref={(el) => void (parts.current[part] = el)} visible={part === "open" || part === "pupils" || part === "brows" || part === "smile"}>
+            <Voxels boxes={FACE_PARTS[part]} shadows={false} />
+          </group>
+        ))}
       </group>
       <group ref={armR} position={[4.4, 5.9, 0]} rotation={[CROSSED_X, 0, -CROSSED_Z]}>
         <Voxels boxes={ARM} />

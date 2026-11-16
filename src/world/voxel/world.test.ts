@@ -11,11 +11,14 @@ test("the world is built once and stays a sensible size", () => {
   expect(total).toBeLessThan(40000);
 });
 
-test("at night every window lights up, and there are torches and lanterns", () => {
+test("at night most windows light up, and there are torches and lanterns", () => {
   const world = getWorld();
   const windows = world.props.filter(([, , , w, , d, c]) => c === K.glass && Math.min(w, d) <= 0.2).length;
   expect(windows).toBeGreaterThanOrEqual(9);
-  expect(world.nightGlow.filter(([, , , , , , c]) => c === WINDOW_LIGHT).length).toBe(windows);
+  // Not every window: some rooms are dark, so the houses look lived in.
+  const lit = world.nightGlow.filter(([, , , , , , c]) => c === WINDOW_LIGHT).length;
+  expect(lit).toBeGreaterThanOrEqual(Math.round(windows * 0.5));
+  expect(lit).toBeLessThanOrEqual(Math.round(windows * 0.85));
   expect(world.nightGlow.filter(([, , , , , , c]) => c === K.fire).length).toBeGreaterThanOrEqual(11);
 });
 

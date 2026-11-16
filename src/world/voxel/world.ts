@@ -37,16 +37,31 @@ export type World = {
 };
 
 /** The warm light in a window at night. */
-export const WINDOW_LIGHT = "#ffd98a";
+export const WINDOW_LIGHT = "#ffc070";
+
+/** How many rooms have a light on at night. */
+const LIT_SHARE = 0.68;
 
 /**
- * A lit pane over each window: the same glass, made a hair thicker on both faces so the light
- * covers it from inside and out, whichever way the building is turned.
+ * Gives every window a cross of glazing bars, and lights about two in three of them at night
+ * with a pane made a hair thicker than the glass on both faces, so the light covers it from
+ * inside and out whichever way the building is turned. The bars sit in front of the light.
  */
 function windowLights(props: Box[]): Box[] {
-  return props
-    .filter(([, , , w, , d, c]) => c === M.K.glass && Math.min(w, d) <= 0.2)
-    .map(([x, y, z, w, h, d]) => (w < d ? b(x - 0.03, y, z, w + 0.06, h, d, WINDOW_LIGHT) : b(x, y, z - 0.03, w, h, d + 0.06, WINDOW_LIGHT)));
+  const panes = props.filter(([, , , w, , d, c]) => c === M.K.glass && Math.min(w, d) <= 0.2);
+  const lights: Box[] = [];
+  for (const [x, y, z, w, h, d] of panes) {
+    const across = w < d; // true when the window faces east or west
+    const cx = x + w / 2;
+    const cy = y + h / 2;
+    const cz = z + d / 2;
+    const bar = 0.09;
+    if (across) props.push(b(x - 0.05, y, cz - bar / 2, w + 0.1, h, bar, M.K.timber), b(x - 0.05, cy - bar / 2, z, w + 0.1, bar, d, M.K.timber));
+    else props.push(b(cx - bar / 2, y, z - 0.05, bar, h, d + 0.1, M.K.timber), b(x, cy - bar / 2, z - 0.05, w, bar, d + 0.1, M.K.timber));
+    if (hash(Math.round(cx * 10), Math.round(cz * 10), Math.round(cy * 10)) > LIT_SHARE) continue;
+    lights.push(across ? b(x - 0.03, y, z, w + 0.06, h, d, WINDOW_LIGHT) : b(x, y, z - 0.03, w, h, d + 0.06, WINDOW_LIGHT));
+  }
+  return lights;
 }
 
 function buildTerrain(): Box[] {

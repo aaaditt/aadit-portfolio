@@ -43,7 +43,7 @@ export function ThemeToggle() {
   const next = current === "night" ? "Day" : "Night";
 
   return (
-    <button type="button" className={styles.item} onClick={() => theme.toggle()}>
+    <button type="button" className={styles.item} title={`Switch to ${next.toLowerCase()}`} onClick={() => theme.toggle()}>
       <svg className={styles.icon} viewBox="0 0 24 24" fill="currentColor" shapeRendering="crispEdges" aria-hidden="true">
         {current === "night" ? SUN : MOON}
       </svg>

@@ -14,6 +14,8 @@ export const K = {
   navy: "#27374d",
   navyD: "#1c2838",
   glass: "#9fd3e6",
+  /** The Code Lab's big upper window, which reads as a screen rather than a room. */
+  screen: "#8fcfe4",
   stone: "#9aa0a6",
   stoneD: "#7d848b",
   stoneL: "#c3c7c9",
@@ -168,7 +170,7 @@ export function lab(): { solid: Box[]; glow: Box[] } {
       b(-4.7, 4, -3.2, 9.4, 0.4, 6.4, K.white),
       b(-3.5, 4.4, -2, 5, 3, 4, K.teal),
       b(-3.6, 7.4, -2.1, 5.2, 0.35, 4.2, K.white),
-      b(-2.6, 5.2, 2, 3.2, 1.4, 0.12, K.glass),
+      b(-2.6, 5.2, 2, 3.2, 1.4, 0.12, K.screen),
       b(-3.6, 0.9, 3, 5.2, 2.6, 0.12, K.black),
       // back and side windows, for when the view is turned
       ...[-3.5, 1.2].map((x) => b(x, 1.2, -3.12, 2, 1.5, 0.12, K.glass)),
@@ -248,6 +250,7 @@ export function arcade(): { solid: Box[]; glow: Box[] } {
     ],
     glow: [
       b(-2, 6.3, -1.5, 4, 0.9, 0.3, K.gold),
+      b(-1.6, 6.5, -4.72, 3.2, 0.5, 0.1, K.gold),
       ...FACE.flatMap((row, r) =>
         [...row].flatMap((ch, c) => (ch === "#" ? [b(-1.05 + c * 0.3, 5.6 - r * 0.3, -1.42, 0.3, 0.3, 0.06, K.crop)] : [])),
       ),

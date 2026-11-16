@@ -12,7 +12,7 @@ import { Voxels } from "./Voxels";
 
 export const WATER_LEVEL = 0.72;
 const WATER_DAY = new THREE.Color("#4fb3d9");
-const WATER_NIGHT = new THREE.Color("#24477a");
+const WATER_NIGHT = new THREE.Color("#2f5c96");
 
 export function Water() {
   const ref = useRef<THREE.Mesh>(null);

@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { useTheme } from "@/ui/themeStore";
 import { DAY_HAZE, NIGHT_HAZE, daylight } from "./daylight";
 import { useMotion } from "./motion";
+import { walker } from "./walker";
 
 const DAY = {
   haze: new THREE.Color(DAY_HAZE),
@@ -18,21 +19,25 @@ const DAY = {
 
 const NIGHT = {
   haze: new THREE.Color(NIGHT_HAZE),
-  sky: new THREE.Color("#5a6cb0"),
-  ground: new THREE.Color("#1f2a48"),
-  ambient: 1.05,
+  sky: new THREE.Color("#4656a0"),
+  ground: new THREE.Color("#1b2440"),
+  ambient: 0.85,
   // The same light, now the moon: cool and dim, still casting soft shadows.
   sun: new THREE.Color("#a9bcff"),
-  sunPower: 0.85,
+  sunPower: 1.05,
 };
 
-/** Warm pools of light by the well, in front of the arcade, and on the bridge. Off by day. */
+/** Warm light on the fronts of the studio, the lab and the arcade, and round the well. Off by day. */
 const POOLS: [number, number, number][] = [
+  [-14.3, 6.5, -4],
+  [21, 6.5, -4],
+  [0, 8, -18.5],
   [0, 6.5, -7],
-  [0, 8, -19],
-  [0.5, 4.5, 8],
 ];
-const POOL_POWER = 7;
+const POOL_POWER = 10;
+
+const FILL_POWER = 4;
+const toCamera = new THREE.Vector3();
 
 /** How quickly day turns to night, per second. About a second and a half end to end. */
 const RATE = 3.2;
@@ -48,10 +53,11 @@ export function DayNight() {
   const sun = useRef<THREE.DirectionalLight>(null);
   const pools = useRef<(THREE.PointLight | null)[]>([]);
   const fog = useRef<THREE.Fog>(null);
+  const fill = useRef<THREE.PointLight>(null);
   /** False until the first frame, so the world opens in the right light with no fade. */
   const started = useRef(false);
 
-  useFrame((_, delta) => {
+  useFrame(({ camera }, delta) => {
     const goal = night ? 1 : 0;
     if (!started.current || !animate) daylight.night = goal;
     else daylight.night += (goal - daylight.night) * (1 - Math.exp(-RATE * Math.min(delta, 0.1)));
@@ -68,6 +74,12 @@ export function DayNight() {
     if (sun.current) {
       sun.current.color.lerpColors(DAY.sun, NIGHT.sun, n);
       sun.current.intensity = DAY.sunPower + (NIGHT.sunPower - DAY.sunPower) * n;
+    }
+    // A soft warm light on the camera's side of the character, so his face reads at night, so he never becomes a silhouette.
+    if (fill.current) {
+      toCamera.set(camera.position.x - walker.x, 0, camera.position.z - walker.z).normalize();
+      fill.current.position.set(walker.x + toCamera.x * 2.2, walker.y + 3.4, walker.z + toCamera.z * 2.2);
+      fill.current.intensity = FILL_POWER * n;
     }
     pools.current.forEach((light) => {
       if (light) light.intensity = POOL_POWER * n;
@@ -96,8 +108,9 @@ export function DayNight() {
         shadow-normalBias={0.06}
       />
       {POOLS.map((at, i) => (
-        <pointLight key={i} ref={(el) => void (pools.current[i] = el)} position={at} color="#ffb85c" intensity={0} distance={15} decay={1} />
+        <pointLight key={i} ref={(el) => void (pools.current[i] = el)} position={at} color="#ffb85c" intensity={0} distance={10} decay={1} />
       ))}
+      <pointLight ref={fill} color="#ffe7cf" intensity={0} distance={8} decay={1} />
     </>
   );
 }
