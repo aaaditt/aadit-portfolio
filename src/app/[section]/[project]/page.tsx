@@ -12,8 +12,9 @@ import styles from "../page.module.css";
 type Props = { params: Promise<{ section: string; project: string }> };
 
 /**
- * One page per project, for each section the parent route generates. A section with no projects
- * (About) still has to name one page, so it names a placeholder, which shows "not found".
+ * One page per project, for each section the parent route generates. The build also asks about
+ * sections with no projects and insists on at least one page, so those name a placeholder, which
+ * shows "not found".
  */
 export function generateStaticParams({ params: { section } }: { params: { section: string } }) {
   const pages = projectsIn(section).map((p) => ({ project: p.id }));

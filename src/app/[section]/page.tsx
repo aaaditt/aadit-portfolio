@@ -11,7 +11,8 @@ import styles from "./page.module.css";
 type Props = { params: Promise<{ section: string }> };
 
 export function generateStaticParams() {
-  return SECTIONS.filter((s) => s.id !== "home").map((s) => ({ section: s.id }));
+  // Home and About have pages of their own.
+  return SECTIONS.filter((s) => s.id !== "home" && s.id !== "about").map((s) => ({ section: s.id }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -30,8 +31,8 @@ export default function SectionPage({ params }: Props) {
 
 async function SectionCard({ params }: Props) {
   const section = getSection((await params).section);
-  if (!section || section.id === "home") notFound();
-  const projects = projectsIn(section.id);
+  const projects = section ? projectsIn(section.id) : [];
+  if (!section || projects.length === 0) notFound();
 
   return (
     <Card>
@@ -40,11 +41,7 @@ async function SectionCard({ params }: Props) {
       </Link>
       <h1 className={styles.title}>{section.title}</h1>
       <p className={styles.blurb}>{section.blurb}</p>
-      {projects.length > 0 ? (
-        <Inventory projects={projects} base={section.href} />
-      ) : (
-        <p className={styles.soon}>A short bio and contact links are coming soon.</p>
-      )}
+      <Inventory projects={projects} base={section.href} />
       {projects.some((p) => p.sample) && <p className={styles.note}>Pick one, or click its exhibit in the world. Samples for now; real projects are on the way.</p>}
     </Card>
   );

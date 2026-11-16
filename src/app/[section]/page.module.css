@@ -40,14 +40,6 @@
   line-height: 1.5;
 }
 
-.soon {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px dashed var(--panel-line);
-  font-size: 0.92rem;
-  color: var(--panel-soft);
-}
-
 /* The projects, as a row of inventory slots. */
 .inventory {
   list-style: none;
@@ -246,6 +238,11 @@
   padding-top: 0.9rem;
   border-top: 1px dashed var(--panel-line);
   font-size: 0.9rem;
+}
+
+/* A label and its value kept as one pair, laid out on the list's own two columns. */
+.statRow {
+  display: contents;
 }
 
 .stats dt {

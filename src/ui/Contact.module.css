@@ -1,0 +1,108 @@
+.contact {
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--panel-line);
+}
+
+.heading {
+  margin-bottom: 0.6rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--panel-accent);
+}
+
+.quiet {
+  font-size: 0.92rem;
+  color: var(--panel-soft);
+}
+
+.links {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.link {
+  display: inline-block;
+  padding: 0.45rem 0.8rem;
+  border: 2px solid var(--card-edge);
+  background: none;
+  color: inherit;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.link:hover,
+.link:focus-visible {
+  background: var(--panel-hover);
+}
+
+.link:disabled {
+  color: var(--panel-soft);
+  cursor: default;
+}
+
+/* The note to send. */
+.form {
+  display: grid;
+  gap: 0.6rem;
+  margin-top: 0.9rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.field span {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--panel-soft);
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: 2px solid var(--card-edge);
+  background: var(--panel-hover);
+  color: inherit;
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.field textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.field [aria-invalid="true"] {
+  border-color: var(--panel-accent);
+}
+
+.error {
+  font-size: 0.8rem;
+  color: var(--panel-accent);
+}
+
+/* A field people never see. Bots fill it in, which is how they are told apart. */
+.trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.result {
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
