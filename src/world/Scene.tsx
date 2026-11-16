@@ -18,10 +18,13 @@ import { getWorld } from "./voxel/world";
 export function Scene({
   greet,
   current,
+  project,
   onOpen,
 }: {
   greet: boolean;
   current: SectionId;
+  /** The project page that is open, if any. */
+  project: string | null;
   onOpen: (href: string) => void;
 }) {
   const world = useMemo(() => getWorld(), []);
@@ -45,7 +48,7 @@ export function Scene({
         <Campfire />
       </Appear>
       <Appear distance={20}>
-        <Exhibits current={current} onOpen={onOpen} />
+        <Exhibits project={project} onOpen={onOpen} />
       </Appear>
       <Appear distance={22}>
         <Villagers />

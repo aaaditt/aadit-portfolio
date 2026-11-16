@@ -218,7 +218,11 @@ export function Character({ greet }: { greet: boolean }) {
 
     if (root.current) {
       // Look around a little at the lookout; face the work everywhere else.
-      const want = walker.heading + (atLookout && !running ? Math.sin(t * 0.5) * 0.18 : 0);
+      const focus = walker.focus;
+      const want =
+        focus && !running && !atLookout
+          ? Math.atan2(focus.x - walker.x, focus.z - walker.z)
+          : walker.heading + (atLookout && !running ? Math.sin(t * 0.5) * 0.18 : 0);
       facing.current = animate ? turn(facing.current, want, ease(running ? 14 : 7)) : want;
       root.current.position.set(walker.x, walker.y + 5.8 * U + now.hop, walker.z);
       root.current.rotation.set(now.lean, facing.current, now.sway, "YXZ");

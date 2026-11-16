@@ -44,3 +44,153 @@
   font-size: 0.92rem;
   color: var(--panel-soft);
 }
+
+/* The projects, as a row of inventory slots. */
+.inventory {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-top: 1.1rem;
+}
+
+.slot {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  height: 100%;
+  padding: 0.4rem 0.4rem 0.5rem;
+  border: 2px solid var(--card-edge);
+  background: var(--panel-hover);
+  transition:
+    translate 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.slot:hover {
+  translate: -2px -2px;
+  box-shadow: 3px 3px 0 0 var(--card-shadow);
+  background: var(--panel-active);
+}
+
+.slot:active {
+  translate: 0 0;
+  box-shadow: none;
+}
+
+.slotPicture {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--panel-line);
+}
+
+.slotName {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.note {
+  margin-top: 0.9rem;
+  font-size: 0.82rem;
+  color: var(--panel-soft);
+}
+
+/* A single project's card. */
+.back {
+  display: inline-flex;
+  gap: 0.4em;
+  align-items: center;
+  margin-bottom: 0.9rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--panel-accent);
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.picture {
+  display: block;
+  width: 100%;
+  border: 2px solid var(--card-edge);
+  margin-bottom: 0.9rem;
+}
+
+.badge {
+  display: inline-block;
+  margin-bottom: 0.6rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px dashed var(--panel-accent);
+  color: var(--panel-accent);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.itemTitle {
+  font-family: var(--font-display), monospace;
+  font-size: clamp(1.6rem, 5vw, 2.1rem);
+  line-height: 1.05;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.3rem 1rem;
+  margin-top: 1rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed var(--panel-line);
+  font-size: 0.9rem;
+}
+
+.stats dt {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--panel-soft);
+  padding-top: 0.15rem;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+
+.button {
+  padding: 0.45rem 0.8rem;
+  border: 2px solid var(--card-edge);
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.button:hover {
+  background: var(--panel-hover);
+}
+
+@media (max-height: 700px) and (max-width: 560px) {
+  .picture {
+    max-height: 22vh;
+    object-fit: cover;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slot {
+    transition: none;
+  }
+}

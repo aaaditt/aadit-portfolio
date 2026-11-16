@@ -45,6 +45,8 @@ export const walker = {
   speed: 0,
   /** The section he is at, or on his way to. */
   section: "home" as SectionId,
+  /** Something he should turn to face once he has arrived, such as the open project's exhibit. */
+  focus: null as null | { x: number; z: number },
 
   /** Puts him at a section's spot at once, with no run. */
   place(section: SectionId) {

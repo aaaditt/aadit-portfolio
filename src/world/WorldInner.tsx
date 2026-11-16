@@ -39,7 +39,7 @@ function hasWebGL() {
 }
 
 /** Only ever rendered in the browser (see World). */
-export default function WorldInner({ section, onOpen }: { section: Section; onOpen: (href: string) => void }) {
+export default function WorldInner({ section, project, onOpen }: { section: Section; project: string | null; onOpen: (href: string) => void }) {
   const [supported] = useState(hasWebGL);
   const [dpr] = useState(pixelRatio);
   const reduced = useSyncExternalStore(
@@ -82,6 +82,7 @@ export default function WorldInner({ section, onOpen }: { section: Section; onOp
         <Scene
           greet={introState === "done" && (section.id === "home" || section.id === "about")}
           current={section.id}
+          project={project}
           onOpen={onOpen}
         />
       </MotionContext.Provider>
