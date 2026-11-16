@@ -13,6 +13,14 @@ The voxel valley is built and pushed to GitHub: generated terrain, an opening wh
 
 Each stage ends with Aadit looking at it and steering before the next begins. Every change is committed and pushed to `github.com/aaaditt/aadit-portfolio`. A critic agent reviews after stages 1, 2 and 4 and its advice is implemented.
 
+## Status (2026-11-16)
+
+- Stage 1 done, then changed at Aadit's request: the camera no longer follows the run (too much "whooshing"); it moves in the earlier calm arc while he runs there himself.
+- From Stage 2, day and night is done, tied to a light/dark page theme (see `docs/superpowers/plans/2026-11-16-free-camera-and-day-night.md`). Block outlines, richer building fronts, the pixel wordmark and icons, and the landing beat are still to do.
+- Added on request: the visitor can turn the view; the character has an expressive face (blinks, moods per place).
+- The site is live at https://aadit-portfolio-one.vercel.app and redeploys on every push to `main`.
+- Stages 3 and 4 not started.
+
 ## Stage 1 — He walks there
 
 Picking a section (bar or landmark) makes the character run along the paths to that place, with the camera following him, then settle into the section view.
