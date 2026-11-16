@@ -4,8 +4,10 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { daylight } from "../daylight";
+import { cue } from "../overlayState";
 import { useMotion } from "../motion";
 import { b } from "./box";
+import { flagTurn } from "./mailFlag";
 import * as M from "./models";
 import { HALF, plateau, riverZ } from "./terrain";
 import { Voxels } from "./Voxels";
@@ -26,6 +28,32 @@ export function CodeSign() {
       <group ref={ref} position={[0, 0.08, 0]}>
         <Voxels boxes={boxes} />
       </group>
+    </group>
+  );
+}
+
+/**
+ * The mailbox's flag at the lookout camp. It lies flat until a note is sent from the About page,
+ * then swings up and stays up until the visitor leaves.
+ */
+export function MailFlag() {
+  const ref = useRef<THREE.Group>(null);
+  const animate = useMotion();
+  const boxes = useMemo(() => M.mailFlag(), []);
+  const camp = plateau("lookout");
+  const [x, y, z] = M.MAIL_FLAG_AT;
+
+  useFrame(() => {
+    if (!ref.current) return;
+    const sent = cue.kind === "mail-sent";
+    const up = !sent ? 0 : animate ? flagTurn((performance.now() - cue.at) / 1000) : 1;
+    // Flat is a quarter turn forward about the hinge, along the side of the box.
+    ref.current.rotation.x = (1 - up) * (Math.PI / 2);
+  });
+
+  return (
+    <group ref={ref} position={[camp.x + x, camp.h + y, camp.z + z]} rotation={[Math.PI / 2, 0, 0]}>
+      <Voxels boxes={boxes} />
     </group>
   );
 }

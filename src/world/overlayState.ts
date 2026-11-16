@@ -19,3 +19,16 @@ export const hover = { text: "" };
 
 /** A project the page is pointing at (a slot under the pointer), whose exhibit lights up. */
 export const highlight = { project: "" };
+
+/**
+ * Something the page did that the world should answer: a note was sent, a chip was picked.
+ * `at` is when, by the page's clock in milliseconds, so the world can time its answer from it.
+ */
+export const cue = { kind: "", id: "", at: 0 };
+
+/** Tells the world something happened. Firing an empty kind clears it. */
+export function fire(kind: string, id = "") {
+  cue.kind = kind;
+  cue.id = id;
+  cue.at = performance.now();
+}

@@ -290,7 +290,15 @@ export function arcade(): { solid: Box[]; glow: Box[] } {
   };
 }
 
-/** The lookout camp: a small tent, a log bench, a signpost, a mailbox and a flag. */
+/** Where the mailbox flag is hinged, measured from the camp's own origin. */
+export const MAIL_FLAG_AT: [number, number, number] = [-3.75, 1.7, 3.4];
+
+/** The mailbox's flag, standing upright on its hinge. It is its own piece so that it can swing. */
+export function mailFlag(): Box[] {
+  return [b(0, 0, 0, 0.12, 0.7, 0.3, K.gold)];
+}
+
+/** The lookout camp: a small tent, a log bench, a signpost and a mailbox. Its flag is `mailFlag`. */
 export function camp(): Box[] {
   // No flagpole: it used to cut across the view of the valley.
   return [
@@ -308,7 +316,6 @@ export function camp(): Box[] {
     // mailbox
     b(-4.4, 0, 3.4, 0.3, 1.4, 0.3, K.wood),
     b(-4.75, 1.4, 3.1, 1, 0.8, 0.9, K.red),
-    b(-3.75, 1.7, 3.4, 0.12, 0.7, 0.3, K.gold),
     // a pale stone slab for the character to stand on
     b(-0.2, 0, 2.8, 2.8, 0.2, 2.8, "#d9d2c0"),
     // fire ring

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { sfx } from "@/audio/engine";
 import { contactHref, contactsReady } from "@/content/about";
+import { fire } from "@/world/overlayState";
 import { MESSAGE_MAX, check, isBot, keysFrom, step, type Errors, type Fields, type Status } from "./contactRule";
 import styles from "./Contact.module.css";
 
@@ -33,7 +34,11 @@ export function Contact() {
 
   useEffect(() => {
     mounted.current = true;
-    return () => void (mounted.current = false);
+    return () => {
+      mounted.current = false;
+      // Leaving the page puts the mailbox flag back down.
+      fire("");
+    };
   }, []);
 
   const move = (event: Parameters<typeof step>[1]) => {
@@ -69,6 +74,8 @@ export function Contact() {
       setSentTo(fields.name.trim());
       setFields({ ...EMPTY, name: fields.name, email: fields.email });
       move("ok");
+      // The world answers: the mailbox flag at the camp goes up.
+      fire("mail-sent");
       sfx.chime();
     } catch {
       // Everything typed stays where it is, so nothing has to be written twice.
