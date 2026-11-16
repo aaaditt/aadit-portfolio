@@ -2,30 +2,29 @@
 export type Contact = {
   id: "email" | "linkedin" | "github";
   label: string;
-  /** The address or page. Empty until it is supplied; an empty one is not shown. */
+  /** The address or page. An empty one is not shown. */
   value: string;
 };
 
 /**
- * What the About page says. These are placeholders: replace the text with the real thing and
- * set `sample` to false.
+ * What the About page says. This is Aadit's own content, carried over from his earlier portfolio
+ * (lib/content.js there). `sample` is for placeholder text, which must then start "A placeholder".
  */
 export const ABOUT: { intro: string; facts: { label: string; text: string }[]; sample: boolean } = {
-  intro: "I design things, build them, and run events that bring people together.",
+  intro: "I design and build software, end to end.",
   facts: [
-    { label: "Based in", text: "A placeholder for where I live and work." },
-    { label: "Studying", text: "A placeholder for my course and college." },
-    { label: "Looking for", text: "A placeholder for the kind of role or project I want next." },
-    { label: "Outside work", text: "A placeholder for what I do when I am not making things." },
+    { label: "Based in", text: "Dubai, UAE" },
+    { label: "Studying", text: "B.E. Computer Science at BITS Pilani Dubai, 2024 to 2028" },
+    { label: "Roles", text: "Creative Executive at IEEE BITS Dubai, and freelance full-stack development and UI/UX design" },
+    { label: "Outside work", text: "Badminton, played competitively since I was eight" },
   ],
-  sample: true,
+  sample: false,
 };
 
-/** Fill in each `value` to make it appear on the About page and the list page. */
 export const CONTACTS: Contact[] = [
-  { id: "email", label: "Email", value: "" },
-  { id: "linkedin", label: "LinkedIn", value: "" },
-  { id: "github", label: "GitHub", value: "" },
+  { id: "email", label: "Email", value: "work.aadit@gmail.com" },
+  { id: "linkedin", label: "LinkedIn", value: "https://linkedin.com/in/aadit-chandra" },
+  { id: "github", label: "GitHub", value: "https://github.com/aaaditt" },
 ];
 
 /** The contacts that have been filled in. */
