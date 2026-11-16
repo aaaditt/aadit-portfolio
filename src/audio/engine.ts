@@ -148,30 +148,44 @@ function playNote(g: Graph, note: Note, start: number, beat: number) {
       osc.stop(start + Math.max(1.5, length * 1.7));
     }
   } else if (note.voice === "bass") {
-    const osc = ctx.createOscillator();
-    osc.type = "triangle";
-    osc.frequency.value = f;
+    // A round, soft bass: a pure tone with a little body, plucked then held quietly.
     const amp = gainNode(ctx, 0, g.music);
-    envelope(amp.gain, start, 0.2, 0.06, end, 0.4);
-    osc.connect(amp);
-    osc.start(start);
-    osc.stop(end + 0.05);
+    amp.gain.setValueAtTime(0, start);
+    amp.gain.linearRampToValueAtTime(0.24, start + 0.03);
+    amp.gain.setTargetAtTime(0.13, start + 0.03, 0.25);
+    amp.gain.setTargetAtTime(0, end - 0.25, 0.08);
+    for (const [type, level] of [
+      ["sine", 1],
+      ["triangle", 0.45],
+    ] as const) {
+      const osc = ctx.createOscillator();
+      osc.type = type;
+      osc.frequency.value = f;
+      osc.connect(gainNode(ctx, level, amp));
+      osc.start(start);
+      osc.stop(end + 0.3);
+    }
   } else {
-    // The chord: two slightly detuned soft tones per note, swelling in and out.
+    // The broken chord: each note plucked like a soft harp string and left to ring.
+    const amp = gainNode(ctx, 0, g.music);
+    const ring = Math.max(1.2, length * 1.4);
+    amp.gain.setValueAtTime(0, start);
+    amp.gain.linearRampToValueAtTime(0.085, start + 0.006);
+    amp.gain.exponentialRampToValueAtTime(0.0005, start + ring);
     const tone = ctx.createBiquadFilter();
     tone.type = "lowpass";
-    tone.frequency.value = 1000;
-    const amp = gainNode(ctx, 0, g.music);
+    tone.frequency.value = 2600;
     tone.connect(amp);
-    envelope(amp.gain, start, 0.045, Math.min(0.9, length * 0.3), end, Math.min(1, length * 0.3));
-    for (const cents of [-6, 6]) {
+    for (const [ratio, level] of [
+      [1, 1],
+      [2, 0.18],
+    ] as const) {
       const osc = ctx.createOscillator();
       osc.type = "triangle";
-      osc.frequency.value = f;
-      osc.detune.value = cents;
-      osc.connect(tone);
+      osc.frequency.value = f * ratio;
+      osc.connect(gainNode(ctx, level, tone));
       osc.start(start);
-      osc.stop(end + 0.05);
+      osc.stop(start + ring + 0.05);
     }
   }
 }

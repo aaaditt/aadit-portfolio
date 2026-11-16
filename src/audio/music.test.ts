@@ -23,11 +23,17 @@ test("the tune is the same every time and loops", () => {
   expect(bar(5, "night")).toEqual(bar(5 + LOOP_BARS * 3, "night"));
 });
 
-test("every bar has a bass and a chord under the tune", () => {
+test("every bar has a bass and a broken chord under the tune, high enough for laptop speakers", () => {
   for (const mood of ["day", "night"] as const) {
     for (const notes of loop(mood)) {
-      expect(notes.some((n) => n.voice === "bass")).toBe(true);
-      expect(notes.filter((n) => n.voice === "pad").length).toBeGreaterThanOrEqual(2);
+      const bass = notes.filter((n) => n.voice === "bass");
+      expect(bass.length).toBeGreaterThan(0);
+      // Below about 80 Hz (midi 40) small speakers play almost nothing.
+      for (const n of bass) expect(n.midi, mood).toBeGreaterThanOrEqual(40);
+      // The chord is played one note at a time, at different moments, so it can be followed.
+      const harp = notes.filter((n) => n.voice === "harp");
+      expect(harp.length).toBeGreaterThanOrEqual(2);
+      expect(new Set(harp.map((n) => n.at)).size).toBe(harp.length);
     }
   }
 });

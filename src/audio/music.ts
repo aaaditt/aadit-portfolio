@@ -1,7 +1,7 @@
 import { hash } from "../world/voxel/box";
 
 /** One note: when it starts and how long it lasts (in beats from the start of its bar), its pitch and its voice. */
-export type Note = { at: number; length: number; midi: number; voice: "lead" | "bell" | "bass" | "pad" };
+export type Note = { at: number; length: number; midi: number; voice: "lead" | "bell" | "bass" | "harp" };
 export type Mood = "day" | "night";
 
 export const BEATS_PER_BAR = 4;
@@ -48,9 +48,10 @@ export function bar(index: number, mood: Mood): Note[] {
   const notes: Note[] = [];
 
   if (mood === "day") {
-    // A long, low bass note under each half of the bar, and a soft chord held throughout.
-    notes.push({ at: 0, length: 2, midi: root - 24, voice: "bass" }, { at: 2, length: 2, midi: chord[2] - 24, voice: "bass" });
-    for (const midi of chord) notes.push({ at: 0, length: 4, midi, voice: "pad" });
+    // A bass note under each half of the bar, and the chord played as a gentle broken chord, one
+    // note a beat (low, middle, high, middle), so the harmony is easy to follow.
+    notes.push({ at: 0, length: 2, midi: root - 12, voice: "bass" }, { at: 2, length: 2, midi: chord[2] - 12, voice: "bass" });
+    [chord[0], chord[1], chord[2], chord[1]].forEach((midi, beat) => notes.push({ at: beat, length: 1, midi, voice: "harp" }));
     // A gentle, singing tune: a few long notes a bar, starting on a chord note.
     let last = 72;
     for (let beat = 0; beat < 4; ) {
@@ -66,9 +67,9 @@ export function bar(index: number, mood: Mood): Note[] {
       beat += length;
     }
   } else {
-    // Slow and low: one long bass note, a quiet low chord, and a few bell notes.
-    notes.push({ at: 0, length: 3.5, midi: root - 24, voice: "bass" });
-    for (const midi of chord) notes.push({ at: 0, length: 4, midi: midi - 12, voice: "pad" });
+    // Slow and low: one long bass note, the chord in two unhurried halves, and a few bell notes.
+    notes.push({ at: 0, length: 4, midi: root - 12, voice: "bass" });
+    notes.push({ at: 0, length: 2, midi: chord[0], voice: "harp" }, { at: 2, length: 2, midi: chord[2], voice: "harp" });
     let last = 67;
     for (let beat = 0; beat < 4; beat++) {
       if (hash(n, beat, 84) > 0.4) continue;
