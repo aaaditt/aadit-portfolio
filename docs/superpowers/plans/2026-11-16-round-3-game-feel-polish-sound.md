@@ -19,7 +19,8 @@ Each stage ends with Aadit looking at it and steering before the next begins. Ev
 - Stage 2 done: day and night tied to a light/dark page theme (see `docs/superpowers/plans/2026-11-16-free-camera-and-day-night.md`), block outlines, signs/shutters/flower boxes, pixel title and icons, pixel-style cards, and the landing beat. Critiqued once and revised.
 - Added on request: the visitor can turn the view; the character has an expressive face (blinks, moods per place).
 - The site is live at https://aadit-portfolio-one.vercel.app and redeploys on every push to `main`.
-- Stage 3 (sound) is next, after Aadit has looked at Stage 2. Stage 4 not started.
+- Stage 3 done: generated music (day and night versions), effects, ambience by camera position, and a sound button; off until turned on, choice remembered. Not yet listened to by a person: tune it by ear.
+- Stage 4 (placeholder project cards) is next, after Aadit has heard Stage 3.
 
 ## Stage 1 — He walks there
 
