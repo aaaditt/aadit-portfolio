@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { EXHIBITS } from "../world/voxel/exhibitData";
-import { PROJECTS, exhibitFor, getProject, neighbours, projectFor, projectsIn, whereIs } from "./projects";
+import { PROJECTS, exhibitFor, getProject, liveLinks, mainLink, neighbours, projectFor, projectsIn, whereIs } from "./projects";
 
 const SECTIONS = ["design", "code", "play"] as const;
 
@@ -72,4 +72,13 @@ test("exhibits and projects find each other", () => {
   expect(getProject("design", projectsIn("design")[0].id)).toBe(projectsIn("design")[0]);
   expect(getProject("code", projectsIn("design")[0].id)).toBeUndefined();
   expect(getProject("design", "nope")).toBeUndefined();
+});
+
+test("links that are not ready are left out, and the first ready one is the main link", () => {
+  const base = PROJECTS[0];
+  const p = { ...base, links: [{ label: "Case study", href: "/", soon: true }, { label: "Live", href: "https://example.com" }] };
+  expect(liveLinks(p)).toEqual([{ label: "Live", href: "https://example.com" }]);
+  expect(mainLink(p)?.label).toBe("Live");
+  expect(liveLinks(base)).toEqual([]);
+  expect(mainLink(base)).toBeUndefined();
 });

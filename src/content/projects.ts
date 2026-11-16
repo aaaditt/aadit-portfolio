@@ -201,6 +201,12 @@ export const projectsIn = (section: string) => PROJECTS.filter((p) => p.section 
 
 export const getProject = (section: string, id: string) => PROJECTS.find((p) => p.section === section && p.id === id);
 
+/** A project's links that are ready to follow. Ones marked `soon` are left out, not shown greyed. */
+export const liveLinks = (project: Project) => project.links.filter((l) => !l.soon).map(({ label, href }) => ({ label, href }));
+
+/** The one link to offer first, beside the facts. */
+export const mainLink = (project: Project) => liveLinks(project)[0];
+
 /** The project an exhibit stands for: the nth exhibit of a section is its nth project. */
 export function projectFor(exhibitId: string): Project {
   const exhibit = EXHIBITS.find((e) => e.id === exhibitId)!;

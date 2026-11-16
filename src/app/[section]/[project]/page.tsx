@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProject, neighbours, projectsIn } from "@/content/projects";
+import { getProject, liveLinks, neighbours, projectsIn } from "@/content/projects";
 import { getSection } from "@/content/sections";
 import { Card } from "@/ui/Card";
 import { ProjectThumb } from "@/ui/ProjectThumb";
@@ -35,7 +35,21 @@ export default function ProjectPage({ params }: Props) {
   );
 }
 
-/** A project, shown like an item card in a game: picture, name, one line, and its stats. */
+/** A link out of the card. Links to other sites open in a new tab, so the world keeps running. */
+function ProjectLink({ link }: { link: { label: string; href: string } }) {
+  const arrow = <span aria-hidden="true">▶</span>;
+  return link.href.startsWith("http") ? (
+    <a href={link.href} className={styles.button} target="_blank" rel="noreferrer">
+      {link.label} {arrow}
+    </a>
+  ) : (
+    <Link href={link.href} className={styles.button}>
+      {link.label} {arrow}
+    </Link>
+  );
+}
+
+/** A project, shown like an item card in a game: its facts first, then picture, one line, and its stats. */
 async function ProjectCard({ params }: Props) {
   const { section: sectionId, project: projectId } = await params;
   const section = getSection(sectionId);
@@ -43,12 +57,23 @@ async function ProjectCard({ params }: Props) {
   if (!section || !project) notFound();
 
   const { previous, next, position, count } = neighbours(project);
+  const [main, ...others] = liveLinks(project);
 
   return (
     <Card>
       <Link href={section.href} className={styles.back}>
         <span aria-hidden="true">◀</span> {section.title}
       </Link>
+      {/* The facts come first, before the picture or anything that moves: a visitor in a hurry reads these and leaves. */}
+      <h1 className={styles.itemTitle}>{project.title}</h1>
+      <div className={styles.facts}>
+        <p className={styles.factLine}>
+          {project.role} · {project.year}
+        </p>
+        <p className={styles.factOutcome}>{project.outcome}</p>
+        {main && <ProjectLink link={main} />}
+      </div>
+      <WorkingAt project={project} />
       <div className={styles.pictureFrame}>
         {project.cover ? (
           // A real screenshot, once there is one.
@@ -59,37 +84,20 @@ async function ProjectCard({ params }: Props) {
         )}
         {project.sample && <p className={styles.badge}>Sample</p>}
       </div>
-      <h1 className={styles.itemTitle}>{project.title}</h1>
-      <WorkingAt project={project} />
       <p className={styles.blurb}>{project.blurb}</p>
-      <p className={styles.outcome}>
-        <span className={styles.outcomeLabel}>Outcome</span> {project.outcome}
-      </p>
       <dl className={styles.stats}>
-        <dt>Role</dt>
-        <dd>{project.role}</dd>
         <dt>Team</dt>
         <dd>{project.team}</dd>
         <dt>Tools</dt>
         <dd>{project.tools.join(", ")}</dd>
         <dt>Status</dt>
-        <dd>
-          {project.status}, {project.year}
-        </dd>
+        <dd>{project.status}</dd>
       </dl>
-      {project.links.length > 0 && (
+      {others.length > 0 && (
         <p className={styles.links}>
-          {project.links.map((link) =>
-            link.soon ? (
-              <span key={link.label} className={`${styles.button} ${styles.soonButton}`} aria-disabled="true">
-                {link.label} <span className={styles.soonTag}>Soon</span>
-              </span>
-            ) : (
-              <Link key={link.label} href={link.href} className={styles.button}>
-                {link.label} <span aria-hidden="true">▶</span>
-              </Link>
-            ),
-          )}
+          {others.map((link) => (
+            <ProjectLink key={link.label} link={link} />
+          ))}
         </p>
       )}
       <nav className={styles.pager} aria-label="More projects">
