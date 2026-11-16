@@ -49,7 +49,14 @@ function cells(p: Project): { background: string; cells: Cell[] } {
 export function ProjectThumb({ project, className }: { project: Project; className?: string }) {
   const art = cells(project);
   return (
-    <svg className={className} viewBox={`0 0 ${W} ${H}`} shapeRendering="crispEdges" aria-hidden="true">
+    // The whole picture always shows; any spare room around it is filled with its background colour.
+    <svg
+      className={className}
+      style={{ background: art.background }}
+      viewBox={`0 0 ${W} ${H}`}
+      shapeRendering="crispEdges"
+      aria-hidden="true"
+    >
       <rect width={W} height={H} fill={art.background} />
       {art.cells.map((cell, i) => (
         <rect key={i} x={cell.x} y={cell.y} width={cell.w} height={cell.h} fill={cell.fill} />

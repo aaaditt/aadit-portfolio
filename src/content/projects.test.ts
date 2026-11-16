@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { EXHIBITS } from "../world/voxel/exhibitData";
-import { PROJECTS, exhibitFor, getProject, projectFor, projectsIn } from "./projects";
+import { PROJECTS, exhibitFor, getProject, neighbours, projectFor, projectsIn, whereIs } from "./projects";
 
 const SECTIONS = ["design", "code", "play"] as const;
 
@@ -29,13 +29,38 @@ test("every project has what its card shows", () => {
     expect(p.colours, p.id).toHaveLength(3);
     for (const c of p.colours) expect(c).toMatch(/^#[0-9a-f]{6}$/i);
     for (const link of p.links) expect(link.href, p.id).toMatch(/^(https?:\/\/|\/)/);
+    // What recruiters look for first: what came of it, who it was with, and where it got to.
+    expect(p.outcome.length, p.id).toBeGreaterThan(10);
+    expect(p.team.length, p.id).toBeGreaterThan(0);
+    expect(["Shipped", "Prototype", "In progress"]).toContain(p.status);
   }
 });
 
-test("placeholders are clearly marked as samples", () => {
+test("placeholders are clearly marked as samples, and say so in their one line", () => {
   for (const p of PROJECTS) {
-    if (p.sample) expect(p.title, p.id).toMatch(/^Sample /);
+    if (!p.sample) continue;
+    expect(p.blurb, p.id).toMatch(/^A placeholder/);
+    // The SAMPLE badge says it once; the title should not say it again.
+    expect(p.title, p.id).not.toMatch(/sample/i);
+    // Their links are shown, but as not ready yet.
+    expect(p.links.length, p.id).toBeGreaterThan(0);
+    for (const link of p.links) expect(link.soon, p.id).toBe(true);
   }
+});
+
+test("you can step from each project to the next and back, round and round", () => {
+  const [first, second, third] = projectsIn("code");
+  expect(neighbours(first)).toEqual({ previous: third, next: second, position: 1, count: 3 });
+  expect(neighbours(third).next).toBe(first);
+});
+
+test("each project says where its exhibit stands", () => {
+  const [left, middle, right] = projectsIn("design");
+  expect(whereIs(left)).toBe("the left easel");
+  expect(whereIs(middle)).toBe("the middle easel");
+  expect(whereIs(projectsIn("play")[2])).toBe("the right arcade cabinet");
+  expect(whereIs(projectsIn("code")[1])).toBe("the middle terminal");
+  expect(right.id).toBeTruthy();
 });
 
 test("exhibits and projects find each other", () => {

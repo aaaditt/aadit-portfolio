@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProject, projectsIn } from "@/content/projects";
+import { getProject, neighbours, projectsIn, whereIs } from "@/content/projects";
 import { getSection } from "@/content/sections";
 import { ProjectThumb } from "@/ui/ProjectThumb";
 import styles from "../page.module.css";
@@ -40,32 +40,65 @@ async function ProjectCard({ params }: Props) {
   const project = getProject(sectionId, projectId);
   if (!section || !project) notFound();
 
+  const { previous, next, position, count } = neighbours(project);
+
   return (
     <main className={`${styles.card} reveal`}>
       <Link href={section.href} className={styles.back}>
         <span aria-hidden="true">◀</span> {section.title}
       </Link>
-      <ProjectThumb project={project} className={styles.picture} />
-      {project.sample && <p className={styles.badge}>Sample · real project coming soon</p>}
+      {project.cover ? (
+        // A real screenshot, once there is one.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={project.cover} alt="" className={styles.cover} />
+      ) : (
+        <ProjectThumb project={project} className={styles.picture} />
+      )}
+      {project.sample && <p className={styles.badge}>Sample</p>}
       <h1 className={styles.itemTitle}>{project.title}</h1>
       <p className={styles.blurb}>{project.blurb}</p>
+      <p className={styles.outcome}>
+        <span className={styles.outcomeLabel}>Outcome</span> {project.outcome}
+      </p>
       <dl className={styles.stats}>
         <dt>Role</dt>
         <dd>{project.role}</dd>
+        <dt>Team</dt>
+        <dd>{project.team}</dd>
         <dt>Tools</dt>
         <dd>{project.tools.join(", ")}</dd>
-        <dt>Year</dt>
-        <dd>{project.year}</dd>
+        <dt>Status</dt>
+        <dd>
+          {project.status}, {project.year}
+        </dd>
       </dl>
       {project.links.length > 0 && (
         <p className={styles.links}>
-          {project.links.map((link) => (
-            <Link key={link.href} href={link.href} className={styles.button}>
-              {link.label} <span aria-hidden="true">▶</span>
-            </Link>
-          ))}
+          {project.links.map((link) =>
+            link.soon ? (
+              <span key={link.label} className={`${styles.button} ${styles.soonButton}`} aria-disabled="true" title="Coming soon">
+                {link.label}
+              </span>
+            ) : (
+              <Link key={link.label} href={link.href} className={styles.button}>
+                {link.label} <span aria-hidden="true">▶</span>
+              </Link>
+            ),
+          )}
         </p>
       )}
+      <p className={styles.where}>In the world: {whereIs(project)}.</p>
+      <nav className={styles.pager} aria-label="More projects">
+        <Link href={`${section.href}/${previous.id}`} className={styles.pageLink}>
+          <span aria-hidden="true">◀</span> Prev
+        </Link>
+        <span className={styles.position}>
+          {position} / {count}
+        </span>
+        <Link href={`${section.href}/${next.id}`} className={styles.pageLink}>
+          Next <span aria-hidden="true">▶</span>
+        </Link>
+      </nav>
     </main>
   );
 }

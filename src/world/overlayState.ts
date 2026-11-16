@@ -16,3 +16,6 @@ export const mapLabels: { text: string; x: number; y: number }[] = [
 
 /** The name of the place under the pointer, or an empty string. */
 export const hover = { text: "" };
+
+/** A project the page is pointing at (a slot under the pointer), whose exhibit lights up. */
+export const highlight = { project: "" };

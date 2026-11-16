@@ -10,7 +10,7 @@ import { wasDrag } from "../orbit";
 import { intro } from "../introStore";
 import { useMotion } from "../motion";
 import { walker } from "../walker";
-import { hover } from "../overlayState";
+import { highlight, hover } from "../overlayState";
 import type { Box } from "./box";
 import { EXHIBITS, type Exhibit } from "./exhibitData";
 import * as M from "./models";
@@ -78,7 +78,8 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
     springs.current.forEach((spring, i) => {
       const group = groups.current[i];
       if (!group) return;
-      const want = hovered.current === i ? 1 + SWELL : selected === i ? 1 + SWELL * 0.5 : 1;
+      const pointed = hovered.current === i || items[i].project.id === highlight.project;
+      const want = pointed ? 1 + SWELL : selected === i ? 1 + SWELL * 0.5 : 1;
       if (animate) {
         // A loose spring, so it overshoots and wobbles once before settling.
         spring.speed += ((want - spring.size) * 260 - spring.speed * 11) * step;
@@ -91,7 +92,8 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
     });
 
     if (light.current) {
-      const lit = hovered.current >= 0 ? hovered.current : selected;
+      const fromPage = items.findIndex((item) => item.project.id === highlight.project);
+      const lit = hovered.current >= 0 ? hovered.current : fromPage >= 0 ? fromPage : selected;
       const on = lit >= 0;
       if (on) {
         const item = items[lit];
