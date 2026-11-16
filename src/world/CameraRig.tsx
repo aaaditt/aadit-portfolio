@@ -10,6 +10,7 @@ import { flight } from "./overlayState";
 import { riseClock } from "./voxel/Voxels";
 import { groundY } from "./voxel/terrain";
 import { walker } from "./walker";
+import { exhibit } from "./voxel/exhibitData";
 import { orbit, orbited, resetOrbit } from "./orbit";
 
 /** How long the opening flight lasts, in seconds. */
@@ -47,6 +48,18 @@ const SETTLE_SECONDS = 1.1;
 /** How far it carries on past its resting place before springing back, as a share of its distance. */
 const OVERSHOOT = 0.075;
 
+/**
+ * With a project open, the camera comes in this much closer to its exhibit than the section's
+ * own view, and sits this much lower, so the work he is doing can be seen.
+ */
+const CLOSER = 0.7;
+const LOWER = 1.5;
+const aimOffset = new THREE.Vector3();
+/** The screen wider than this has the card down its left side; the action is moved right of it. */
+const WIDE = 900;
+/** The screen narrower than this has the card along the bottom; the action is moved above it. */
+const NARROW = 560;
+
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const smoothstep = (a: number, c: number, t: number) => {
   const x = Math.min(1, Math.max(0, (t - a) / (c - a)));
@@ -73,21 +86,33 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
   const settling = useRef(-1);
   /** The settling nudge added last frame, taken off again before this frame is worked out. */
   const nudge = useRef(new THREE.Vector3());
+  /** How far the picture is shifted, in pixels, to keep the action clear of the card. */
+  const shift = useRef({ x: 0, y: 0 });
 
   useFrame(({ camera, scene, size, pointer }, delta) => {
     if (!(camera instanceof THREE.PerspectiveCamera)) return;
     const step = Math.min(delta, 0.1);
     camera.position.sub(nudge.current);
     nudge.current.set(0, 0, 0);
-    goalTarget.set(...section.camera.target);
-    goalPosition.set(...section.camera.position);
-
     // On tall, narrow screens, step back so the subject still fits.
     const aspect = size.width / size.height;
     const pullBack = aspect < 1.25 ? Math.min(1.25 / aspect, 2.2) : 1;
-    goalPosition.sub(goalTarget).multiplyScalar(pullBack).add(goalTarget);
+    const piece = work ? exhibit(work) : null;
+    /** Where the camera should be, before any turning by the visitor. */
+    const aim = () => {
+      goalTarget.set(...section.camera.target);
+      goalPosition.set(...section.camera.position);
+      const offset = aimOffset.copy(goalPosition).sub(goalTarget).multiplyScalar(pullBack);
+      if (piece) {
+        // Come in on the exhibit he is working at, along the section's own line of sight.
+        goalTarget.set(piece.x, groundY(piece.x, piece.z) + 1.6, piece.z + 0.4);
+        offset.multiplyScalar(CLOSER).y -= LOWER;
+      }
+      goalPosition.copy(goalTarget).add(offset);
+    };
+    aim();
     // Then turn it however the visitor has turned the view.
-    if (orbit.turned) goalPosition.set(...orbited(goalPosition.toArray(), section.camera.target, groundY));
+    if (orbit.turned) goalPosition.set(...orbited(goalPosition.toArray(), goalTarget.toArray(), groundY));
 
     // First frame without an opening flight: start at the section, do not glide in from the sky.
     if (!target.current) {
@@ -131,7 +156,7 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
         shown.current = section.id;
         // Each section opens on its own view, however the last one was left.
         resetOrbit();
-        goalPosition.set(...section.camera.position).sub(goalTarget).multiplyScalar(pullBack).add(goalTarget);
+        aim();
         shownWork.current = work;
         if (animate) {
           walker.go(section.id, work);
@@ -141,8 +166,11 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
           move.current = null;
         }
       } else if (shownWork.current !== work) {
-        // Another project in the same section: the view stays, and he steps over to its exhibit.
+        // Another project in the same section (or back to its list): he steps over to it, and the
+        // view glides gently in on it (or back out), with no lift.
         shownWork.current = work;
+        resetOrbit();
+        aim();
         if (animate) walker.go(section.id, work);
         else walker.place(section.id, work);
       }
@@ -188,10 +216,19 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
       }
     }
 
-    if (camera.fov !== fov) {
-      camera.fov = fov;
-      camera.updateProjectionMatrix();
-    }
+    // Keep the action clear of the page's card: to its right on a wide screen, above it on a
+    // phone. Not during the opening, which has the screen to itself.
+    const opening = intro.get() === "playing";
+    const wantX = opening ? 0 : size.width >= WIDE ? -Math.min(240, size.width * 0.16) : 0;
+    const wantY = opening || section.id === "home" ? 0 : size.width <= NARROW ? size.height * 0.2 : 0;
+    const glide = animate ? 1 - Math.exp(-4 * step) : 1;
+    shift.current.x += (wantX - shift.current.x) * glide;
+    shift.current.y += (wantY - shift.current.y) * glide;
+    const shifted = Math.abs(shift.current.x) > 0.5 || Math.abs(shift.current.y) > 0.5;
+    camera.fov = fov;
+    if (shifted) camera.setViewOffset(size.width, size.height, shift.current.x, shift.current.y, size.width, size.height);
+    else if (camera.view?.enabled) camera.clearViewOffset();
+    camera.updateProjectionMatrix();
     camera.lookAt(target.current);
 
     // Push the haze back as the camera climbs, so the map view from high up stays clear.

@@ -5,7 +5,7 @@ import type { SectionId } from "@/content/sections";
 import { DayNight } from "./DayNight";
 import { daylight } from "./daylight";
 import { Hotspots } from "./Hotspots";
-import { Boat, Campfire, Clouds, HotAirBalloon, Water, WindmillSails } from "./voxel/Animated";
+import { Boat, Campfire, Clouds, CodeSign, HotAirBalloon, Water, WindmillSails } from "./voxel/Animated";
 import { Appear } from "./voxel/Appear";
 import { Character } from "./voxel/Character";
 import { Dust } from "./voxel/Dust";
@@ -46,6 +46,9 @@ export function Scene({
         <Character greet={greet} />
         <Dust />
         <Campfire />
+      </Appear>
+      <Appear distance={18}>
+        <CodeSign />
       </Appear>
       <Appear distance={20}>
         <Exhibits project={project} onOpen={onOpen} />

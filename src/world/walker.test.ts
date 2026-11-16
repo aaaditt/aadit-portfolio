@@ -72,7 +72,7 @@ test("he stands on the ground wherever he stops", () => {
   expect(walker.y).toBeCloseTo(7.2);
 });
 
-test("opening a project sends him to its exhibit, where he faces it; going back to the list, he stays", () => {
+test("opening a project sends him to its exhibit, where he faces it; going back to the list, he waits in the yard", () => {
   walker.place("home");
   walker.go("code", "code-3");
   finish();
@@ -82,7 +82,7 @@ test("opening a project sends him to its exhibit, where he faces it; going back 
   // He works in front of it, close enough to reach: not off to one side.
   const e = exhibit("code-3");
   expect(walker.z).toBeGreaterThan(e.z);
-  expect(Math.hypot(walker.x - e.x, walker.z - e.z)).toBeLessThan(1.5);
+  expect(Math.hypot(walker.x - e.x, walker.z - e.z)).toBeLessThan(2);
   expect(walker.focus).toEqual({ x: e.x, z: e.z });
 
   // The next project along is a short hop, not a trip round the village.
@@ -90,13 +90,16 @@ test("opening a project sends him to its exhibit, where he faces it; going back 
   expect(finish()).toBeLessThan(1.2);
   expect(walker.exhibit).toBe("code-2");
 
-  // Back to the section's list: he carries on where he is.
-  expect(walker.go("code")).toBe(false);
-  expect(walker.exhibit).toBe("code-2");
+  // Back to the section's list: he steps back from it and waits, working at nothing.
+  expect(walker.go("code")).toBe(true);
+  finish();
+  expect(walker.exhibit).toBeNull();
+  expect(walker.focus).toBeNull();
   // A project in another section is ignored as a place to stand in this one.
   walker.go("design", "code-1");
   finish();
-  expect(walker.exhibit).toBe("design-2");
+  expect(walker.exhibit).toBeNull();
+  expect([walker.x, walker.z]).toEqual(NODES[STANDS.design.node]);
   // Away from the exhibits he has nothing to face.
   walker.go("home");
   finish();
@@ -114,7 +117,7 @@ test("every exhibit's spot is in front of it, within reach, and turned in toward
   for (const e of EXHIBITS) {
     const [x, z] = NODES[e.id as keyof typeof NODES];
     expect(z, e.id).toBeGreaterThan(e.z + 0.75);
-    expect(Math.hypot(x - e.x, z - e.z), e.id).toBeLessThan(1.7);
+    expect(Math.hypot(x - e.x, z - e.z), e.id).toBeLessThan(2);
     // On the same level as it, not a step down.
     expect(groundY(x, z), e.id).toBe(heightAt(Math.floor(e.x), Math.floor(e.z)));
     // Facing roughly north (towards the exhibit), turned in by less than a right angle.

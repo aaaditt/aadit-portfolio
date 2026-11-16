@@ -9,7 +9,9 @@ import { sfx } from "@/audio/engine";
 import { wasDrag } from "../orbit";
 import { intro } from "../introStore";
 import { useMotion } from "../motion";
+import { daylight } from "../daylight";
 import { highlight, hover } from "../overlayState";
+import { walker } from "../walker";
 import type { Box } from "./box";
 import { EXHIBITS, type Exhibit } from "./exhibitData";
 import * as M from "./models";
@@ -51,6 +53,8 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
   const hovered = useRef(-1);
   /** Each exhibit's size and how fast it is changing, for the bounce. */
   const springs = useRef(EXHIBITS.map(() => ({ size: 1, speed: 0 })));
+  /** The exhibit he was last seen working at, to notice the moment he gets to a new one. */
+  const workedAt = useRef<string | null>(null);
 
   const items = useMemo(
     () =>
@@ -80,6 +84,13 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
 
   useFrame((_, delta) => {
     const step = Math.min(delta, 0.05);
+    // He has just got to an exhibit and starts work: it gives a little hop of welcome.
+    const at = walker.moving ? null : walker.exhibit;
+    if (at !== workedAt.current) {
+      const i = items.findIndex((item) => item.id === at);
+      if (i >= 0 && animate) springs.current[i].speed += 2.4;
+      workedAt.current = at;
+    }
     springs.current.forEach((spring, i) => {
       const group = groups.current[i];
       if (!group) return;
@@ -105,7 +116,11 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
         // Low and close in, so it lights the exhibit rather than the face of whoever is at it.
         light.current.position.set(item.x, item.y + 1.5, item.z + 1.1);
       }
-      light.current.intensity += ((on ? 6 : 0) - light.current.intensity) * (1 - Math.exp(-14 * step));
+      // Softer on the exhibit he is working at, where it would only wash out his work and his
+      // face, and softer again at night, when the lanterns are lit.
+      const busy = on && items[lit].id === walker.exhibit;
+      const strength = (busy ? 0.8 : 6) * (1 - daylight.night * 0.4);
+      light.current.intensity += ((on ? strength : 0) - light.current.intensity) * (1 - Math.exp(-14 * step));
     }
   });
 

@@ -21,7 +21,8 @@ export const SECTIONS: Section[] = [
     href: "/",
     title: "Aadit",
     blurb: "Design, code, games and events.",
-    camera: { position: [9, 14.5, 50], target: [0, 9.5, 10] },
+    // About a quarter closer than the whole valley, so he is not lost in it.
+    camera: { position: [6.75, 13.25, 40], target: [0, 9.5, 10] },
   },
   {
     id: "design",

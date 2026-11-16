@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProject, neighbours, projectsIn, whereIs } from "@/content/projects";
+import { getProject, neighbours, projectsIn } from "@/content/projects";
 import { getSection } from "@/content/sections";
+import { Card } from "@/ui/Card";
 import { ProjectThumb } from "@/ui/ProjectThumb";
+import { WorkingAt } from "@/ui/WorkingAt";
 import styles from "../page.module.css";
 
 type Props = { params: Promise<{ section: string; project: string }> };
@@ -43,19 +45,22 @@ async function ProjectCard({ params }: Props) {
   const { previous, next, position, count } = neighbours(project);
 
   return (
-    <main className={`${styles.card} reveal`}>
+    <Card>
       <Link href={section.href} className={styles.back}>
         <span aria-hidden="true">◀</span> {section.title}
       </Link>
-      {project.cover ? (
-        // A real screenshot, once there is one.
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={project.cover} alt="" className={styles.cover} />
-      ) : (
-        <ProjectThumb project={project} className={styles.picture} />
-      )}
-      {project.sample && <p className={styles.badge}>Sample</p>}
+      <div className={styles.pictureFrame}>
+        {project.cover ? (
+          // A real screenshot, once there is one.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={project.cover} alt="" className={styles.cover} />
+        ) : (
+          <ProjectThumb project={project} className={styles.picture} />
+        )}
+        {project.sample && <p className={styles.badge}>Sample</p>}
+      </div>
       <h1 className={styles.itemTitle}>{project.title}</h1>
+      <WorkingAt project={project} />
       <p className={styles.blurb}>{project.blurb}</p>
       <p className={styles.outcome}>
         <span className={styles.outcomeLabel}>Outcome</span> {project.outcome}
@@ -76,8 +81,8 @@ async function ProjectCard({ params }: Props) {
         <p className={styles.links}>
           {project.links.map((link) =>
             link.soon ? (
-              <span key={link.label} className={`${styles.button} ${styles.soonButton}`} aria-disabled="true" title="Coming soon">
-                {link.label}
+              <span key={link.label} className={`${styles.button} ${styles.soonButton}`} aria-disabled="true">
+                {link.label} <span className={styles.soonTag}>Soon</span>
               </span>
             ) : (
               <Link key={link.label} href={link.href} className={styles.button}>
@@ -87,7 +92,6 @@ async function ProjectCard({ params }: Props) {
           )}
         </p>
       )}
-      <p className={styles.where}>In the world: {whereIs(project)}.</p>
       <nav className={styles.pager} aria-label="More projects">
         <Link href={`${section.href}/${previous.id}`} className={styles.pageLink}>
           <span aria-hidden="true">◀</span> Prev
@@ -99,6 +103,6 @@ async function ProjectCard({ params }: Props) {
           Next <span aria-hidden="true">▶</span>
         </Link>
       </nav>
-    </main>
+    </Card>
   );
 }

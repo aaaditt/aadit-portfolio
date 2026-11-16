@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { projectsIn } from "@/content/projects";
 import { SECTIONS, getSection } from "@/content/sections";
+import Link from "next/link";
+import { Card } from "@/ui/Card";
 import { Inventory } from "@/ui/Inventory";
 import styles from "./page.module.css";
 
@@ -32,8 +34,10 @@ async function SectionCard({ params }: Props) {
   const projects = projectsIn(section.id);
 
   return (
-    <main className={`${styles.card} reveal`}>
-      <p className={styles.eyebrow}>{section.label}</p>
+    <Card>
+      <Link href="/" className={styles.back}>
+        <span aria-hidden="true">◀</span> Home
+      </Link>
       <h1 className={styles.title}>{section.title}</h1>
       <p className={styles.blurb}>{section.blurb}</p>
       {projects.length > 0 ? (
@@ -42,6 +46,6 @@ async function SectionCard({ params }: Props) {
         <p className={styles.soon}>A short bio and contact links are coming soon.</p>
       )}
       {projects.some((p) => p.sample) && <p className={styles.note}>Pick one, or click its exhibit in the world. Samples for now; real projects are on the way.</p>}
-    </main>
+    </Card>
   );
 }

@@ -12,8 +12,8 @@ export type Point = [x: number, z: number];
  * - `aside`: how far to the side: just clear of its edge.
  */
 const REACH: Record<Exhibit["kind"], { ahead: number; aside: number }> = {
-  easel: { ahead: 0.95, aside: 1.35 },
-  terminal: { ahead: 0.8, aside: 1.25 },
+  easel: { ahead: 0.95, aside: 1.65 },
+  terminal: { ahead: 0.8, aside: 1.55 },
   cabinet: { ahead: 1.15, aside: 1.15 },
 };
 
@@ -72,6 +72,8 @@ export const NODES = {
   codeLane: [16, -3.6],
   codeFront: [15.9, -0.2],
   codeRow: [19.2, 0],
+  // Where he waits in front of the lab, between the terminals, until a project is picked.
+  codeWait: [17.6, 0.6],
   playRow: [0, -13.4],
   // Under the lamp that stands between the row and the left cabinet.
   playWest: [-1.1, -15.0],
@@ -110,6 +112,8 @@ const EDGES: [NodeId, NodeId][] = [
   ["codeFront", "codeRow"],
   ["codeRow", "code-2"],
   ["codeRow", "code-3"],
+  ["codeFront", "codeWait"],
+  ["codeWait", "codeRow"],
   ["plazaN", "playRow"],
   ["playRow", "playWest"],
   ["playWest", "playCorner"],
@@ -129,16 +133,23 @@ export function standAt(exhibitId: string): Stand {
   return { node, facing: facing(NODES[node], workFace(e)), exhibit: e.id };
 }
 
+/** A spot in a section's yard where he waits, turned towards the section's camera. */
+function waitAt(node: NodeId, section: SectionId): Stand {
+  const [x, , z] = SECTIONS.find((s) => s.id === section)!.camera.position;
+  return { node, facing: facing(NODES[node], [x, z]), exhibit: null };
+}
+
 /**
  * Where he ends up for each section when no particular project is open, and which way he turns
- * once there (0 faces south, to the camera). In a section with exhibits, that is the middle one.
+ * once there (0 faces south, to the camera). Until a project is picked he works at nothing: he
+ * waits in front of the exhibits and looks them over.
  */
 export const STANDS: Record<SectionId, Stand> = {
   home: { node: "lookout", facing: 0, exhibit: null },
   about: { node: "lookout", facing: 0, exhibit: null },
-  design: standAt("design-2"),
-  code: standAt("code-2"),
-  play: standAt("play-2"),
+  design: waitAt("designRow", "design"),
+  code: waitAt("codeWait", "code"),
+  play: waitAt("playRow", "play"),
 };
 
 const distance = (a: Point, c: Point) => Math.hypot(c[0] - a[0], c[1] - a[1]);

@@ -136,6 +136,21 @@ html:not([data-intro="done"]) .reveal {
   transition-delay: 0.9s;
 }
 
+/* A second, smaller line suggesting a click, shown until the visitor has clicked him once. */
+.bubble-tip {
+  display: none;
+  margin-top: 0.3rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.bubble-hint .bubble-tip {
+  display: block;
+}
+
 .bubble::after {
   content: "";
   position: absolute;

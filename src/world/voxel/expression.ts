@@ -28,6 +28,8 @@ export type Mood = {
   animate: boolean;
   /** The visitor has just clicked him. */
   poked?: boolean;
+  /** False while he waits in a section's yard, not yet at an exhibit. Taken as true if left out. */
+  working?: boolean;
 };
 
 /** Blinks fall at a random moment in each window of this many seconds, so they never look timed. */
@@ -73,6 +75,9 @@ export function faceFor(m: Mood): Face {
     face.mouth = "grin";
     face.blush = true;
     face.brows = 0.25;
+  } else if (m.working === false) {
+    // Waiting for a project to be picked: friendly, eyes on the visitor's pointer.
+    face.look = Math.max(-1, Math.min(1, m.pointerX * 1.2));
   } else if (m.place === "design") {
     // Concentrating on the stroke, then stepping back pleased with it.
     const p = phase(m.t, LOOP.easel.seconds);

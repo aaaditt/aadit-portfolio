@@ -202,15 +202,27 @@ export function lab(): { solid: Box[]; glow: Box[] } {
       b(-9.6, 0, 3.4, BRACKETS[0].length * px + 0.6, 0.5, 1.4, K.stoneD),
     ],
     glow: [
-      ...BRACKETS.flatMap((row, r) =>
-        [...row].flatMap((ch, c) => (ch === "#" ? [b(-9.3 + c * px, 0.5 + (4 - r) * px, 3.8, px, px, 0.6, "#bfe9ff")] : [])),
-      ),
       ...lines.map((c, i) => b(-3.3 + (i % 3) * 0.35, 3.05 - i * 0.37, 3.1, 1.6 + ((i * 37) % 23) / 10, 0.16, 0.06, c)),
       b(2.55, 8.8, -1.25, 0.4, 0.4, 0.4, K.red),
       ...place(pixelText("LAB", 0.12, "#bfe9ff"), [3.1, 2.73, 3.12]),
       ...[0, 1].flatMap((i) => [0, 1, 2].flatMap((r) => [b(5.35 + i * 1.5, 0.5 + r * 0.75, 2.4, 0.18, 0.18, 0.06, K.crop), b(5.7 + i * 1.5, 0.5 + r * 0.75, 2.4, 0.18, 0.18, 0.06, r === 1 ? K.red : K.gold)])),
     ],
   };
+}
+
+/**
+ * The `</>` sculpture that stands on its plinth beside the lab, drawn apart so it can bob. Solid
+ * light-blue blocks on a darker blue backing a little bigger all round, so it reads crisply
+ * against grass and sky instead of as a glow. In the lab's own units, on top of its plinth.
+ */
+export function codeSign(): Box[] {
+  const px = 0.5;
+  const edge = 0.07;
+  const cells = BRACKETS.flatMap((row, r) => [...row].flatMap((ch, c) => (ch === "#" ? [[-9.3 + c * px, 0.5 + (4 - r) * px] as const] : [])));
+  return [
+    ...cells.map(([x, y]) => b(x - edge, y - edge, 3.75, px + edge * 2, px + edge * 2, 0.3, "#2b5d8c")),
+    ...cells.map(([x, y]) => b(x, y, 3.85, px, px, 0.55, "#8fd3ff")),
+  ];
 }
 
 // The arcade screen shows an "A", for Aadit.

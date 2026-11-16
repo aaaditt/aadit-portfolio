@@ -31,14 +31,9 @@ let at: NodeId = "lookout";
 /** Where the current run ends. */
 let goal: Stand = STANDS.home;
 
-/**
- * Where he should stand in a section: at the given exhibit; or, with none given, wherever he
- * already is if that is one of the section's exhibits; or else at its middle exhibit.
- */
+/** Where he should stand in a section: at the given exhibit, or else in the section's yard. */
 function standFor(section: SectionId, exhibitId?: string | null): Stand {
   if (exhibitId && exhibit(exhibitId).section === section) return standAt(exhibitId);
-  const current = walker.exhibit;
-  if (current && exhibit(current).section === section) return standAt(current);
   return STANDS[section];
 }
 

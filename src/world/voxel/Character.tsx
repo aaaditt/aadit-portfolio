@@ -4,13 +4,16 @@ import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { sfx } from "@/audio/engine";
+import { exhibitFor } from "@/content/projects";
 import { bubbleAnchor } from "../bubbleAnchor";
 import { intro } from "../introStore";
 import { wasDrag } from "../orbit";
-import { hover } from "../overlayState";
+import { highlight, hover } from "../overlayState";
+import { poke } from "../pokeStore";
 import { useMotion } from "../motion";
 import { walker } from "../walker";
 import { b, type Box } from "./box";
+import { EXHIBITS } from "./exhibitData";
 import { faceFor } from "./expression";
 import { Voxels } from "./Voxels";
 
@@ -99,6 +102,11 @@ const PARTS = Object.keys(FACE_PARTS) as Part[];
 
 const anchor = new THREE.Vector3();
 
+/** How far he turns from his work towards the camera, so his face and hands both show. */
+const TOWARDS_CAMERA = 0.28;
+/** How long he looks at each exhibit while waiting for a project to be picked, in seconds. */
+const GLANCE_SECONDS = 2.4;
+
 /** How long his jump lasts when clicked, in seconds, and how high it goes, in blocks. */
 const POKE_SECONDS = 0.75;
 const POKE_HEIGHT = 1.1;
@@ -157,6 +165,13 @@ export function Character({ greet }: { greet: boolean }) {
     const running = walker.moving;
     const place = walker.section;
     const atLookout = place === "home" || place === "about";
+    // At an exhibit, working at it; or in a section's yard, waiting for a project to be picked.
+    const working = !running && walker.exhibit !== null;
+    const waiting = !running && !atLookout && walker.exhibit === null;
+    // While waiting he looks the exhibits over, or at the one the visitor is pointing at in the list.
+    const pointedAt = waiting && highlight.project ? exhibitFor(highlight.project) : undefined;
+    const choices = waiting ? EXHIBITS.filter((e) => e.section === place) : [];
+    const lookAt = pointedAt ?? (choices.length > 0 ? choices[Math.floor(clock.elapsedTime / GLANCE_SECONDS) % choices.length] : undefined);
     const t = animate ? clock.elapsedTime : 0;
     clockNow.current = clock.elapsedTime;
     // Clicked: a jump and a full spin, arms up. Not while he is running somewhere.
@@ -200,21 +215,27 @@ export function Character({ greet }: { greet: boolean }) {
       pose.legR = -0.5 * Math.sin(Math.PI * jump);
       pose.legL = -0.5 * Math.sin(Math.PI * jump);
       pose.hop = Math.sin(Math.PI * jump) * POKE_HEIGHT;
-    } else if (place === "design") {
+    } else if (pointedAt) {
+      // Pointing out the exhibit the visitor is looking at in the list.
+      pose.armR = -1.5;
+      pose.armRSide = 0.05;
+      pose.armL = CROSSED_X;
+      pose.armLSide = CROSSED_Z;
+    } else if (working && place === "design") {
       // Painting: brush arm up at the canvas, making strokes.
       pose.armR = -1.4 + Math.sin(t * 3.1) * 0.22;
       pose.armRSide = -0.2 + Math.sin(t * 2.3) * 0.2;
       pose.armL = 0.1;
       pose.armLSide = -0.3;
       pose.lean = 0.04;
-    } else if (place === "code") {
+    } else if (working && place === "code") {
       // Typing: both hands out in front, tapping in turn.
       pose.armR = -1.1 + Math.max(0, Math.sin(t * 11)) * 0.4;
       pose.armL = -1.1 + Math.max(0, Math.sin(t * 11 + 2)) * 0.4;
       pose.armRSide = -0.2;
       pose.armLSide = 0.2;
       pose.lean = 0.06;
-    } else if (place === "play") {
+    } else if (working && place === "play") {
       // Playing: one hand on the stick, the other hammering a button, leaning into it.
       pose.armR = -1.05;
       pose.armRSide = -0.22 + Math.sin(t * 5.2) * 0.24;
@@ -244,10 +265,14 @@ export function Character({ greet }: { greet: boolean }) {
     if (root.current) {
       // Look around a little at the lookout; face the work everywhere else.
       const focus = walker.focus;
-      const want =
-        focus && !running && !atLookout
-          ? Math.atan2(focus.x - walker.x, focus.z - walker.z)
-          : walker.heading + (atLookout && !running ? Math.sin(t * 0.5) * 0.18 : 0);
+      let want = walker.heading + (atLookout && !running ? Math.sin(t * 0.5) * 0.18 : 0);
+      if (working && focus) {
+        // Face the work, turned a little towards the camera.
+        const work = Math.atan2(focus.x - walker.x, focus.z - walker.z);
+        want = turn(work, Math.atan2(camera.position.x - walker.x, camera.position.z - walker.z), TOWARDS_CAMERA);
+      } else if (pointedAt) {
+        want = Math.atan2(pointedAt.x - walker.x, pointedAt.z - walker.z);
+      }
       facing.current = animate ? turn(facing.current, want, ease(running ? 14 : 7)) : want;
       root.current.position.set(walker.x, walker.y + 5.8 * U + now.hop, walker.z);
       // The spin of a jump eases out, so he lands facing the way he was.
@@ -259,21 +284,26 @@ export function Character({ greet }: { greet: boolean }) {
     if (armL.current) armL.current.rotation.set(now.armL, 0, now.armLSide);
     if (legR.current) legR.current.rotation.x = now.legR;
     if (legL.current) legL.current.rotation.x = now.legL;
-    if (brush.current) brush.current.visible = place === "design" && !running;
+    if (brush.current) brush.current.visible = working && place === "design";
 
     if (head.current) {
       // At the lookout he looks towards the visitor's pointer. At work he watches what he is doing.
       const h = head.current.rotation;
       const follow = atLookout && !running ? 1 : 0.15;
-      const wantY = (pointer.x * 0.6 + Math.sin(t * 0.7) * 0.08) * follow;
-      const nod = place === "code" ? Math.sin(t * 5.5) * 0.07 : Math.sin(t * 1.3) * 0.05;
-      const wantX = running ? -0.1 : atLookout ? -pointer.y * 0.3 : 0.16 + nod;
+      let wantY = (pointer.x * 0.6 + Math.sin(t * 0.7) * 0.08) * follow;
+      if (waiting && lookAt && !pointedAt) {
+        // Turn his head (not his body) to each exhibit in turn.
+        const gap = Math.atan2(lookAt.x - walker.x, lookAt.z - walker.z) - facing.current;
+        wantY = Math.max(-0.9, Math.min(0.9, Math.atan2(Math.sin(gap), Math.cos(gap))));
+      }
+      const nod = working && place === "code" ? Math.sin(t * 5.5) * 0.07 : Math.sin(t * 1.3) * 0.05;
+      const wantX = running ? -0.1 : atLookout ? -pointer.y * 0.3 : waiting ? 0.05 : 0.16 + nod;
       h.z = Math.sin(t * 1.1) * 0.06;
       h.y += (wantY - h.y) * ease(5);
       h.x += (wantX - h.x) * ease(5);
 
       // His expression for the moment.
-      const face = faceFor({ place, running, waving: up > 0.5, sinceLanding: t - landedAt.current, t, pointerX: pointer.x, animate, poked });
+      const face = faceFor({ place, running, waving: up > 0.5, sinceLanding: t - landedAt.current, t, pointerX: pointer.x, animate, poked, working });
       const show = (part: Part, on: boolean) => {
         const group = parts.current[part];
         if (group) group.visible = on;
@@ -319,6 +349,7 @@ export function Character({ greet }: { greet: boolean }) {
           if (wasDrag() || intro.get() !== "done" || walker.moving) return;
           if (clockNow.current - pokedAt.current < POKE_SECONDS) return;
           pokedAt.current = clockNow.current;
+          poke.done();
           sfx.chime();
         }}
       >

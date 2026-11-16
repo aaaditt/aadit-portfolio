@@ -98,7 +98,8 @@ export function DayNight() {
         intensity={DAY.sunPower}
         color={DAY.sun}
         castShadow
-        shadow-mapSize={[2048, 2048]}
+        // The scene is drawn at a low, pixelled resolution, so a smaller shadow map looks the same.
+        shadow-mapSize={[1024, 1024]}
         shadow-camera-left={-62}
         shadow-camera-right={62}
         shadow-camera-top={62}

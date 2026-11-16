@@ -10,6 +10,26 @@ import * as M from "./models";
 import { HALF, plateau, riverZ } from "./terrain";
 import { Voxels } from "./Voxels";
 
+/** The lab's `</>` sculpture, bobbing slowly on its plinth. Placed where world.ts puts the lab. */
+export function CodeSign() {
+  const ref = useRef<THREE.Group>(null);
+  const animate = useMotion();
+  const boxes = useMemo(() => M.codeSign(), []);
+  const lab = plateau("code");
+
+  useFrame(({ clock }) => {
+    if (ref.current && animate) ref.current.position.y = 0.08 + Math.sin((clock.elapsedTime * Math.PI * 2) / 4) * 0.12;
+  });
+
+  return (
+    <group position={[lab.x + 1, lab.h, lab.z - 1]}>
+      <group ref={ref} position={[0, 0.08, 0]}>
+        <Voxels boxes={boxes} />
+      </group>
+    </group>
+  );
+}
+
 export const WATER_LEVEL = 0.72;
 const WATER_DAY = new THREE.Color("#4fb3d9");
 const WATER_NIGHT = new THREE.Color("#2f5c96");

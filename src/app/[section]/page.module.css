@@ -8,6 +8,9 @@
   background: var(--panel);
   border: 2px solid var(--card-edge);
   box-shadow: 5px 5px 0 0 var(--card-shadow);
+  /* Never runs under the bottom bar: anything longer scrolls inside the card. */
+  max-height: calc(100dvh - clamp(1.25rem, 4vw, 3rem) - 6.5rem);
+  overflow-y: auto;
   transition:
     background-color var(--theme-fade) ease,
     color var(--theme-fade) ease,
@@ -88,6 +91,9 @@
 }
 
 .slotName {
+  /* Room for two lines in every slot, so the three line up whatever their names. */
+  min-height: 2.5em;
+  text-wrap: balance;
   font-family: var(--font-mono), monospace;
   font-size: 0.72rem;
   line-height: 1.25;
@@ -119,10 +125,14 @@
 }
 
 /* The pixel picture is kept small: it is a placeholder. A real screenshot (.cover) gets more room. */
+.pictureFrame {
+  position: relative;
+}
+
 .picture {
   display: block;
   width: 100%;
-  height: 7.5rem;
+  height: 6rem;
   border: 2px solid var(--card-edge);
   margin-bottom: 0.9rem;
 }
@@ -155,16 +165,32 @@
   color: var(--panel-accent);
 }
 
+/* A link that is not ready yet: a dashed outline and a small "soon" tag, clearly not a button. */
 .soonButton {
-  opacity: 0.5;
   border-style: dashed;
-  cursor: not-allowed;
+  color: var(--panel-soft);
+  cursor: default;
 }
 
+.soonButton:hover {
+  background: none;
+}
+
+.soonTag {
+  margin-left: 0.35em;
+  padding: 0.05rem 0.3rem;
+  background: var(--panel-hover);
+  font-size: 0.58rem;
+}
+
+/* Where to find it in the world: the link between the card and the valley. */
 .where {
-  margin-top: 0.9rem;
-  font-size: 0.82rem;
-  color: var(--panel-soft);
+  margin-bottom: 0.6rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--panel-accent);
 }
 
 /* Step through a section's projects, like pages of an item book. */
@@ -181,24 +207,29 @@
   text-transform: uppercase;
 }
 
+/* A quiet text pager, so it does not compete with the links above it. */
 .pageLink {
-  padding: 0.35rem 0.55rem;
-  border: 2px solid var(--card-edge);
+  padding: 0.3rem 0;
+  color: var(--panel-soft);
 }
 
 .pageLink:hover {
-  background: var(--panel-hover);
+  color: var(--panel-ink);
+  text-decoration: underline;
 }
 
 .position {
   color: var(--panel-soft);
 }
 
+/* Pinned to the picture's corner, out of the way of the title. */
 .badge {
-  display: inline-block;
-  margin-bottom: 0.6rem;
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
   padding: 0.2rem 0.5rem;
   border: 1px dashed var(--panel-accent);
+  background: var(--panel);
   color: var(--panel-accent);
   font-family: var(--font-mono), monospace;
   font-size: 0.66rem;
@@ -253,15 +284,64 @@
   background: var(--panel-hover);
 }
 
-/* On a phone the card scrolls inside itself, so it never runs under the bar. */
+/* The handle that pulls the card up on a phone. Not needed on a wide screen. */
+.handle {
+  display: none;
+}
+
+/* On a phone the card is a sheet along the bottom, just above the bar, kept low so the world
+   shows above it. Its handle pulls it up to read more. */
 @media (max-width: 560px) {
   .card {
-    max-height: calc(100dvh - 8.5rem);
-    overflow-y: auto;
+    top: auto;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: calc(5.9rem + env(safe-area-inset-bottom, 0px));
+    width: auto;
+    max-height: 40dvh;
+    padding: 0 1.1rem 1.2rem;
+    transition:
+      max-height 0.35s cubic-bezier(0.3, 1.2, 0.5, 1),
+      background-color var(--theme-fade) ease,
+      color var(--theme-fade) ease,
+      border-color var(--theme-fade) ease;
+  }
+
+  .card[data-open="true"] {
+    max-height: calc(100dvh - 7.5rem);
+  }
+
+  .handle {
+    display: block;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    width: calc(100% + 2.2rem);
+    height: 1.7rem;
+    margin: 0 -1.1rem 0.4rem;
+    border: 0;
+    background: var(--panel);
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .handle::before {
+    content: "";
+    position: absolute;
+    top: 0.65rem;
+    left: 50%;
+    width: 2.6rem;
+    height: 0.3rem;
+    translate: -50% 0;
+    background: var(--panel-line);
+  }
+
+  .title {
+    font-size: 1.9rem;
   }
 
   .picture {
-    height: 5.5rem;
+    height: 5rem;
   }
 }
 
