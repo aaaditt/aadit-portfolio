@@ -7,8 +7,8 @@ export type Mood = "day" | "night";
 export const BEATS_PER_BAR = 4;
 /** The tune repeats after this many bars. */
 export const LOOP_BARS = 8;
-/** Beats per minute. Night is slower and calmer. */
-export const TEMPO: Record<Mood, number> = { day: 92, night: 64 };
+/** Beats per minute: unhurried by day, slower still at night. */
+export const TEMPO: Record<Mood, number> = { day: 72, night: 58 };
 
 /** A note's frequency in hertz. */
 export const hz = (midi: number) => 440 * 2 ** ((midi - 69) / 12);
@@ -48,19 +48,22 @@ export function bar(index: number, mood: Mood): Note[] {
   const notes: Note[] = [];
 
   if (mood === "day") {
-    // Bass on the first and third beats, a soft chord held under the bar.
-    notes.push({ at: 0, length: 1.5, midi: root - 24, voice: "bass" }, { at: 2, length: 1.5, midi: chord[2] - 24, voice: "bass" });
+    // A long, low bass note under each half of the bar, and a soft chord held throughout.
+    notes.push({ at: 0, length: 2, midi: root - 24, voice: "bass" }, { at: 2, length: 2, midi: chord[2] - 24, voice: "bass" });
     for (const midi of chord) notes.push({ at: 0, length: 4, midi, voice: "pad" });
-    // A bouncy tune in eighth notes, with gaps, always landing on chord notes on the beat.
-    let last = 76;
-    for (let slot = 0; slot < 8; slot++) {
-      const strong = slot % 2 === 0;
-      if (!strong && hash(n, slot, 82) < 0.35) continue;
-      const midi = pick(n * 31 + slot, chord, last, strong);
-      const length = slot < 7 && hash(n, slot, 83) < 0.3 ? 1 : 0.5;
-      notes.push({ at: slot * 0.5, length: Math.min(length, 4 - slot * 0.5), midi, voice: "lead" });
+    // A gentle, singing tune: a few long notes a bar, starting on a chord note.
+    let last = 72;
+    for (let beat = 0; beat < 4; ) {
+      const strong = beat === 0 || beat === 2;
+      if (!strong && hash(n, beat, 82) < 0.5) {
+        beat++;
+        continue;
+      }
+      const midi = pick(n * 31 + beat, chord, last, strong);
+      const length = beat < 3 && hash(n, beat, 83) < 0.55 ? 2 : 1;
+      notes.push({ at: beat, length, midi, voice: "lead" });
       last = midi;
-      if (length === 1) slot++;
+      beat += length;
     }
   } else {
     // Slow and low: one long bass note, a quiet low chord, and a few bell notes.
@@ -68,7 +71,7 @@ export function bar(index: number, mood: Mood): Note[] {
     for (const midi of chord) notes.push({ at: 0, length: 4, midi: midi - 12, voice: "pad" });
     let last = 67;
     for (let beat = 0; beat < 4; beat++) {
-      if (hash(n, beat, 84) > 0.45) continue;
+      if (hash(n, beat, 84) > 0.4) continue;
       const midi = pick(n * 17 + beat + 500, chord, last, beat === 0);
       notes.push({ at: beat, length: 1, midi, voice: "bell" });
       last = midi;

@@ -28,6 +28,8 @@ let nextBarAt = 0;
 let barIndex = 0;
 let mood: Mood = "day";
 let mix: Ambience = { river: 0, fire: 0, birds: 0, crickets: 0 };
+/** Which foot the last step was on. */
+let left = false;
 
 /** How far ahead notes are scheduled, in seconds, and how often the scheduler wakes. */
 const LOOKAHEAD = 0.3;
@@ -54,7 +56,17 @@ function build(): Graph {
   analyser.fftSize = 256;
   limiter.connect(analyser);
 
-  const music = gainNode(ctx, 0.3, master);
+  const music = gainNode(ctx, 0.34, master);
+  // A soft echo on the music, so it sounds like it is drifting across the valley.
+  const echo = ctx.createDelay(1);
+  echo.delayTime.value = 0.42;
+  const echoTone = ctx.createBiquadFilter();
+  echoTone.type = "lowpass";
+  echoTone.frequency.value = 1600;
+  const feedback = gainNode(ctx, 0.3, echo);
+  music.connect(echo);
+  echo.connect(echoTone).connect(feedback);
+  echoTone.connect(gainNode(ctx, 0.28, master));
   const sfx = gainNode(ctx, 0.55, master);
   const ambience = gainNode(ctx, 0.5, master);
 
@@ -98,17 +110,27 @@ function playNote(g: Graph, note: Note, start: number, beat: number) {
   const f = hz(note.midi);
 
   if (note.voice === "lead") {
-    const osc = ctx.createOscillator();
-    osc.type = "square";
-    osc.frequency.value = f;
-    const tone = ctx.createBiquadFilter();
-    tone.type = "lowpass";
-    tone.frequency.value = 2200;
+    // A soft, breathy flute: a pure tone with a little warmth, a gentle swell and a slow vibrato.
     const amp = gainNode(ctx, 0, g.music);
-    envelope(amp.gain, start, 0.11, 0.01, end - 0.01, Math.min(0.08, length * 0.4));
-    osc.connect(tone).connect(amp);
-    osc.start(start);
-    osc.stop(end + 0.05);
+    envelope(amp.gain, start, 0.12, Math.min(0.12, length * 0.25), end, Math.min(0.35, length * 0.35));
+    const vibrato = ctx.createOscillator();
+    vibrato.frequency.value = 4.8;
+    const depth = gainNode(ctx, 6, null);
+    vibrato.connect(depth);
+    for (const [type, level] of [
+      ["sine", 1],
+      ["triangle", 0.35],
+    ] as const) {
+      const osc = ctx.createOscillator();
+      osc.type = type;
+      osc.frequency.value = f;
+      depth.connect(osc.detune);
+      osc.connect(gainNode(ctx, level, amp));
+      osc.start(start);
+      osc.stop(end + 0.05);
+    }
+    vibrato.start(start);
+    vibrato.stop(end + 0.05);
   } else if (note.voice === "bell") {
     // A soft bell: a pure tone and a faint overtone, ringing away.
     for (const [ratio, level] of [
@@ -130,7 +152,7 @@ function playNote(g: Graph, note: Note, start: number, beat: number) {
     osc.type = "triangle";
     osc.frequency.value = f;
     const amp = gainNode(ctx, 0, g.music);
-    envelope(amp.gain, start, 0.26, 0.02, end, 0.12);
+    envelope(amp.gain, start, 0.2, 0.06, end, 0.4);
     osc.connect(amp);
     osc.start(start);
     osc.stop(end + 0.05);
@@ -138,10 +160,10 @@ function playNote(g: Graph, note: Note, start: number, beat: number) {
     // The chord: two slightly detuned soft tones per note, swelling in and out.
     const tone = ctx.createBiquadFilter();
     tone.type = "lowpass";
-    tone.frequency.value = 1300;
+    tone.frequency.value = 1000;
     const amp = gainNode(ctx, 0, g.music);
     tone.connect(amp);
-    envelope(amp.gain, start, 0.035, Math.min(0.5, length * 0.3), end, Math.min(0.6, length * 0.3));
+    envelope(amp.gain, start, 0.045, Math.min(0.9, length * 0.3), end, Math.min(1, length * 0.3));
     for (const cents of [-6, 6]) {
       const osc = ctx.createOscillator();
       osc.type = "triangle";
@@ -287,11 +309,15 @@ export const sfx = {
     if (!g || !playing) return;
     tone(g, g.sfx, g.ctx.currentTime, 1300, 700, 0.05, 0.08, 0.09, "square");
   },
-  /** One footstep on grass or path. */
+  /** One footstep: a low, soft "dhoom", the feet taking turns a touch higher and lower. */
   step() {
     const g = graph;
     if (!g || !playing) return;
-    noiseBurst(g, g.sfx, g.ctx.currentTime, 0.055, "bandpass", 650 + Math.random() * 350, 0.32, 1.4);
+    const now = g.ctx.currentTime;
+    left = !left;
+    const pitch = (left ? 92 : 80) + Math.random() * 6;
+    tone(g, g.sfx, now, pitch, pitch * 0.55, 0.12, 0.2, 0.32);
+    noiseBurst(g, g.sfx, now, 0.06, "lowpass", 260, 0.1);
   },
   /** A rising three-note chime: he has arrived. */
   chime() {

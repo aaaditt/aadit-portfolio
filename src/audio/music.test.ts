@@ -40,6 +40,13 @@ test("night is slower, lower and sparser than day", () => {
   expect(average(loop("night").flat())).toBeLessThan(average(loop("day").flat()));
 });
 
+test("it stays peaceful: unhurried tempo and no quick notes", () => {
+  expect(TEMPO.day).toBeLessThanOrEqual(76);
+  for (const mood of ["day", "night"] as const) {
+    for (const n of loop(mood).flat()) expect(n.length, `${mood} ${n.voice}`).toBeGreaterThanOrEqual(1);
+  }
+});
+
 test("pitches convert to frequencies", () => {
   expect(hz(69)).toBeCloseTo(440);
   expect(hz(60)).toBeCloseTo(261.63, 1);
