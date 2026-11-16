@@ -77,8 +77,8 @@ const MOUTH_IN = "#5a2a22";
 /** Every changeable feature on the face. Only one eye shape and one mouth show at a time. */
 const FACE_PARTS = {
   // open eyes: the whites, with the pupils drawn separately so they can look around
-  open: EYE_X.map((x) => b(x, 2.65, 3, 1.5, 1.15, 0.1, WHITE)),
-  pupils: EYE_X.map((x) => b(x + 0.45, 2.65, 3.02, 0.62, 0.95, 0.12, FACE)),
+  open: EYE_X.map((x) => b(x + 0.15, 2.75, 3, 1.2, 0.9, 0.1, WHITE)),
+  pupils: EYE_X.map((x) => b(x + 0.5, 2.75, 3.02, 0.55, 0.8, 0.12, FACE)),
   // mid-blink: a short line
   shut: EYE_X.map((x) => b(x, 3.05, 3, 1.5, 0.3, 0.12, FACE)),
   // the closed, smiling eyes from his profile picture
@@ -254,7 +254,7 @@ export function Character({ greet }: { greet: boolean }) {
       show("blush", face.blush);
       for (const mouth of ["smile", "grin", "flat", "o"] as const) show(mouth, face.mouth === mouth);
       const pupils = parts.current.pupils;
-      if (pupils) pupils.position.x += (face.look * 0.4 - pupils.position.x) * ease(14);
+      if (pupils) pupils.position.x += (face.look * 0.3 - pupils.position.x) * ease(14);
       const brows = parts.current.brows;
       if (brows) brows.position.y += (face.brows - brows.position.y) * ease(12);
 
