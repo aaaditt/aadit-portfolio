@@ -226,10 +226,14 @@ export function Character({ greet }: { greet: boolean }) {
       pose.armLSide = CROSSED_Z;
     } else if (presenting) {
       // Showing the sheets fanned out above the easel: one arm raised towards them, open-handed.
-      pose.armR = -2.55 + Math.sin(t * 1.8) * 0.08;
-      pose.armRSide = -0.25 + Math.sin(t * 1.1) * 0.06;
-      pose.armL = 0.05;
-      pose.armLSide = -0.2;
+      // He raises whichever arm is on the camera's side of him, so the gesture is never hidden.
+      const rightIsNear = Math.cos(facing.current) * (camera.position.x - walker.x) - Math.sin(facing.current) * (camera.position.z - walker.z) > 0;
+      // Up and forward, towards the fan, held a little out from his head.
+      const raised = -2.5 + Math.sin(t * 1.8) * 0.1;
+      pose.armR = rightIsNear ? raised : 0.05;
+      pose.armRSide = rightIsNear ? 0.35 : 0.2;
+      pose.armL = rightIsNear ? 0.05 : raised;
+      pose.armLSide = rightIsNear ? -0.2 : -0.35;
       pose.lean = -0.05;
     } else if (working && place === "design") {
       // Painting: brush arm up at the canvas, making strokes.

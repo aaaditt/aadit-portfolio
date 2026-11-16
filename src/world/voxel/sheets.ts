@@ -9,7 +9,7 @@ export const SHEET_KINDS = ["sketch", "wireframe", "palette", "final"] as const;
 export type SheetKind = (typeof SHEET_KINDS)[number];
 
 /** A sheet's size in the fan. */
-export const SHEET = { w: 1, h: 0.75 };
+export const SHEET = { w: 1.5, h: 1.1 };
 
 /** The colour of each kind of paper. */
 export const PAPER: Record<SheetKind, string> = {
@@ -87,7 +87,7 @@ export type SheetPose = { x: number; y: number; z: number; turn: number; size: n
 
 /** The fan opens from a point low on the easel, like cards held at the wrist. */
 const PIVOT = { y: 0.7, z: 0.5 };
-const RADIUS = 3.2;
+const RADIUS = 4.3;
 /** The angle between neighbouring sheets. */
 const SPREAD = (22 * Math.PI) / 180;
 
@@ -110,7 +110,7 @@ export function fanSlot(i: number, n: number): SheetPose {
 const PACKED: SheetPose = { x: 0, y: 1.57, z: 0.45, turn: 0, size: 0.3, shown: false };
 
 /** A picked sheet: out in front of the easel, upright and large enough to read. */
-export const FRONT: SheetPose = { x: 0, y: 2.75, z: 1.5, turn: 0, size: 2, shown: true };
+export const FRONT: SheetPose = { x: 0.4, y: 2.9, z: 1.6, turn: 0, size: 1.7, shown: true };
 
 /** The first sheet leaves after this long, and each next one this long after the last. */
 const FIRST = 0.3;
