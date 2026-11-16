@@ -26,13 +26,15 @@ const WALKERS: Walker[] = [
   { route: [0.6, 15, 0.6, -5], speed: 1.5, phase: 0, model: person("#c8553d", "#3b2e2a", "#d9a37a") },
   { route: [-1, -7, -10.5, -8], speed: 1.3, phase: 0.4, model: person("#2f7f79", "#1f1a1b", "#a9744b") },
   { route: [1.5, -6.5, 10.5, -7.5], speed: 1.4, phase: 0.7, model: person("#e8c15a", "#6f4e37", "#e3b58e") },
-  { route: [-0.6, -9, -0.6, -15.5], speed: 1.2, phase: 0.2, model: person("#4f86c6", "#22252b", "#8b5a3c") },
+  { route: [-0.8, -9, -0.8, -13.2], speed: 1.2, phase: 0.2, model: person("#4f86c6", "#22252b", "#8b5a3c") },
   { route: [-3, -23, 4, -21.5], speed: 1, phase: 0.55, model: person("#e79aa0", "#3b2e2a", "#c98d63") },
   { route: [8, -20, 12, -21], speed: 0.6, phase: 0.1, model: person("#f5f3ea", "#1f1a1b", "#a9744b") },
 ];
 
 /** How close the character has to run past for a villager to stop and watch. */
 const NOTICE = 7;
+/** How much room they give him. */
+const CLEAR = 1.7;
 
 /**
  * Villagers strolling back and forth along the paths, slowing to a stop at each end.
@@ -59,8 +61,14 @@ export function Villagers() {
       // Ease in and out of each end, which reads as a short pause.
       const u = tri * tri * (3 - 2 * tri);
       const forward = (((lap % 1) + 1) % 1) < 0.5;
-      const x = x1 + (x2 - x1) * u;
-      const z = z1 + (z2 - z1) * u;
+      let x = x1 + (x2 - x1) * u;
+      let z = z1 + (z2 - z1) * u;
+      // Step out of his way if he comes right at them.
+      const gap = Math.hypot(x - walker.x, z - walker.z);
+      if (gap < CLEAR && gap > 0.01) {
+        x += ((x - walker.x) / gap) * (CLEAR - gap);
+        z += ((z - walker.z) / gap) * (CLEAR - gap);
+      }
       const moving = Math.sin(Math.PI * tri) * (1 - watch);
       const noticed = animate && walker.moving && Math.hypot(walker.x - x, walker.z - z) < NOTICE;
       watching.current[i] += ((noticed ? 1 : 0) - watch) * (1 - Math.exp(-(noticed ? 12 : 2.5) * step));

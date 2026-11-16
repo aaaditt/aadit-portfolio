@@ -16,7 +16,7 @@ export const EXHIBITS: Exhibit[] = [
   { id: "design-1", section: "design", kind: "easel", x: -21, z: -3.2 },
   { id: "design-2", section: "design", kind: "easel", x: -17.5, z: -2.4 },
   { id: "design-3", section: "design", kind: "easel", x: -14, z: -3.2 },
-  { id: "code-1", section: "code", kind: "terminal", x: 14.5, z: -2.6 },
+  { id: "code-1", section: "code", kind: "terminal", x: 14.2, z: -2.3 },
   { id: "code-2", section: "code", kind: "terminal", x: 17.5, z: -1.9 },
   { id: "code-3", section: "code", kind: "terminal", x: 20.5, z: -2.6 },
   { id: "play-1", section: "play", kind: "cabinet", x: -3.2, z: -17 },

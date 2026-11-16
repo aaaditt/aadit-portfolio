@@ -140,7 +140,7 @@ function buildWorld(): World {
   props.push(...place(M.bridge(9), [0.5, 1.7, riverZ(0)]));
 
   // Lamps along the main path and around the plaza.
-  for (const [x, z] of [[2.2, 15], [-1.8, 2], [2.2, -2], [-4, -4], [4.5, -10], [-6, -8.5], [7, -6.5], [-2.2, -13.5]] as const) {
+  for (const [x, z] of [[2.2, 15], [-1.8, 2], [2.2, -2], [-4, -4], [4.5, -10], [-6, -8.5], [6, -6.3], [-2.2, -13.5]] as const) {
     add(M.lamp(), [x, heightAt(Math.floor(x), Math.floor(z)), z]);
   }
 

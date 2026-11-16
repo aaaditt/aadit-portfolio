@@ -45,7 +45,7 @@ export const SECTIONS: Section[] = [
     href: "/play",
     title: "Arcade",
     blurb: "Games and events I've made or run.",
-    camera: { position: [5, 23, 10], target: [1, 6.5, -23] },
+    camera: { position: [4.2, 19.5, 3.5], target: [1, 5, -20] },
   },
   {
     id: "about",

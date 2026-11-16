@@ -29,11 +29,14 @@ export const NODES = {
   design: [easel.x + 1.15, easel.z + 1.5],
   // The lab's sculpture and the farm leave one lane between them, which comes out between two terminals.
   codeGate: [7.9, -7.7],
-  codeYard: [7.9, -3.68],
-  codeLane: [16, -3.68],
-  codeFront: [16, -0.9],
-  code: [terminal.x + 1.1, terminal.z + 1.45],
-  play: [cabinet.x + 0.9, cabinet.z + 1.9],
+  // A little past the corner, because rounding it off cuts back in towards the sculpture.
+  codeYard: [7.25, -3.45],
+  codeLane: [16, -3.6],
+  codeFront: [15.9, -0.2],
+  codeTurn: [terminal.x + 1.85, terminal.z + 1.5],
+  // He stands side-on to what he is working at, so the camera sees his arms, not his back.
+  code: [terminal.x + 1.7, terminal.z + 0.3],
+  play: [cabinet.x + 1.6, cabinet.z + 0.6],
 } satisfies Record<string, Point>;
 
 export type NodeId = keyof typeof NODES;
@@ -58,7 +61,8 @@ const EDGES: [NodeId, NodeId][] = [
   ["codeGate", "codeYard"],
   ["codeYard", "codeLane"],
   ["codeLane", "codeFront"],
-  ["codeFront", "code"],
+  ["codeFront", "codeTurn"],
+  ["codeTurn", "code"],
   ["plazaN", "play"],
 ];
 
@@ -69,8 +73,8 @@ export const STANDS: Record<SectionId, { node: NodeId; facing: number }> = {
   home: { node: "lookout", facing: 0 },
   about: { node: "lookout", facing: 0 },
   design: { node: "design", facing: facing(NODES.design, easel.x, easel.z + 0.3) },
-  code: { node: "code", facing: facing(NODES.code, terminal.x, terminal.z) },
-  play: { node: "play", facing: facing(NODES.play, cabinet.x, cabinet.z + 0.5) },
+  code: { node: "code", facing: facing(NODES.code, terminal.x, terminal.z + 0.3) },
+  play: { node: "play", facing: facing(NODES.play, cabinet.x, cabinet.z + 0.6) },
 };
 
 const distance = (a: Point, c: Point) => Math.hypot(c[0] - a[0], c[1] - a[1]);
@@ -129,6 +133,29 @@ export function pointAlong(points: Point[], travelled: number): { x: number; z: 
   }
   const [x, z] = points[points.length - 1];
   return { x, z, heading, leg: Math.max(0, points.length - 2) };
+}
+
+/** How far either side of him the corner-rounding looks, in blocks. */
+const ROUNDING = 0.9;
+
+/**
+ * The same as pointAlong, but with the corners rounded off: he is drawn midway between a point
+ * a little behind and a point a little ahead, so he sweeps through turns instead of pivoting.
+ */
+export function smoothAlong(points: Point[], travelled: number): { x: number; z: number; heading: number } {
+  const total = lengthOf(points);
+  const d = Math.min(total, Math.max(0, travelled));
+  // The window closes at both ends, so he starts and stops exactly on his spot.
+  const reach = Math.min(ROUNDING, d, total - d);
+  const exact = pointAlong(points, d);
+  if (reach < 0.05) return exact;
+  const behind = pointAlong(points, d - reach);
+  const ahead = pointAlong(points, d + reach);
+  return {
+    x: (behind.x + ahead.x) / 2,
+    z: (behind.z + ahead.z) / 2,
+    heading: Math.atan2(ahead.x - behind.x, ahead.z - behind.z),
+  };
 }
 
 /**

@@ -15,7 +15,7 @@ const INTRO_SECONDS = 9;
 const MOVE_SECONDS = 1.8;
 const FOV = 35;
 /** Where the camera sits while following a run: how far to the side, above and south of him. */
-const CHASE = [5, 10, 16];
+const CHASE = [9, 15, 12];
 /** The opening starts zoomed in, like a flat game map, and widens as the camera drops. */
 const MAP_FOV = 30;
 /** The share of the opening spent holding the map view before the camera descends. */
@@ -126,12 +126,16 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
       if (m?.run) {
         m.t = walker.moving ? walker.progress : 1;
         // Follow from above on the valley's open south side, a little behind him to east or west.
-        lean.current += (Math.sin(walker.heading) - lean.current) * (1 - Math.exp(-3 * step));
+        let side = Math.sin(walker.heading);
+        // Running north, straight behind him shows only his back, so hold off to one side.
+        if (Math.cos(walker.heading) < -0.3 && Math.abs(side) < 0.9) side = lean.current > 0.2 ? 0.9 : -0.9;
+        lean.current += (side - lean.current) * (1 - Math.exp(-3 * step));
         chaseTarget.set(walker.x, walker.y + 2, walker.z);
         chasePosition.set(-lean.current * CHASE[0], CHASE[1], CHASE[2]).multiplyScalar(pullBack).add(chaseTarget);
-        // Swing in behind him as he sets off, and out to the section's view as he arrives.
-        const join = smoothstep(0, 0.3, m.t);
-        const leave = smoothstep(0.58, 1, m.t);
+        // Swing in behind him as he sets off. Stay with him until he is nearly there, then start
+        // out towards the section's view; the drift at rest below finishes the move.
+        const join = smoothstep(0, 0.18, m.t);
+        const leave = smoothstep(0.8, 1, m.t) * 0.5;
         camera.position.lerpVectors(m.from, chasePosition, join).lerp(goalPosition, leave);
         target.current.lerpVectors(m.fromTarget, chaseTarget, join).lerp(goalTarget, leave);
         if (m.t >= 1) move.current = null;
@@ -148,7 +152,7 @@ export function CameraRig({ section, animate }: { section: Section; animate: boo
         // At rest, drift a little with the pointer so the scene feels alive.
         goalPosition.x += pointer.x * 0.6;
         goalPosition.y += pointer.y * 0.3;
-        const ease = 1 - Math.exp(-2.4 * step);
+        const ease = 1 - Math.exp(-3.2 * step);
         camera.position.lerp(goalPosition, ease);
         target.current.lerp(goalTarget, ease);
       } else {

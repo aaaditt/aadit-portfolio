@@ -1,11 +1,11 @@
 import type { SectionId } from "@/content/sections";
-import { NODES, STANDS, lengthOf, pointAlong, route, routeFrom, type NodeId, type Point } from "./voxel/routes";
+import { NODES, STANDS, lengthOf, pointAlong, route, routeFrom, smoothAlong, type NodeId, type Point } from "./voxel/routes";
 import { groundY } from "./voxel/terrain";
 
 /** How fast he runs, in blocks a second, before the limits below. */
-const PACE = 16;
+const PACE = 14;
 /** No run takes longer than this, however far it is. */
-const LONGEST = 3.4;
+const LONGEST = 3.6;
 const SHORTEST = 0.5;
 
 /** The stone slab he stands on at the lookout: x from, x to, z from, z to, and its thickness. */
@@ -14,8 +14,8 @@ const SLAB = [-0.2, 2.6, 25.8, 28.6, 0.2];
 const floor = (x: number, z: number) =>
   groundY(x, z) + (x > SLAB[0] && x < SLAB[1] && z > SLAB[2] && z < SLAB[3] ? SLAB[4] : 0);
 
-/** Soft at both ends, steady in the middle. */
-const ease = (p: number) => 0.6 * p + 0.2 * (1 - Math.cos(Math.PI * p));
+/** Off at a dash, fastest a third of the way there, and slowing to a stop on arrival. */
+const ease = (p: number) => p + p * p - p * p * p;
 
 let points: Point[] = [NODES.lookout];
 /** The place each point is, or null for a point part-way along a stretch. */
@@ -105,7 +105,7 @@ export const walker = {
     const now = total * ease(walker.progress);
     walker.speed = delta > 0 ? (now - travelled) / delta : 0;
     travelled = now;
-    const point = pointAlong(points, travelled);
+    const point = smoothAlong(points, travelled);
     walker.x = point.x;
     walker.z = point.z;
     walker.heading = point.heading;

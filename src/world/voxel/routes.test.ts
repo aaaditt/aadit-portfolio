@@ -3,7 +3,7 @@ import { SECTIONS } from "../../content/sections";
 import { EXHIBITS } from "./exhibitData";
 import * as M from "./models";
 import { place, type Box } from "./box";
-import { NODES, STANDS, lengthOf, pointAlong, route, routeFrom, type NodeId } from "./routes";
+import { NODES, STANDS, lengthOf, pointAlong, route, routeFrom, smoothAlong, type NodeId } from "./routes";
 import { groundY, heightAt } from "./terrain";
 import { getWorld } from "./world";
 
@@ -104,6 +104,32 @@ test("he never has to climb more than two blocks in one step", () => {
       const y = groundY(x, z);
       expect(Math.abs(y - last), `${to} at ${x.toFixed(1)}, ${z.toFixed(1)}`).toBeLessThanOrEqual(2);
       last = y;
+    }
+  }
+});
+
+test("with the corners rounded off, he still clears everything and ends exactly on his spot", () => {
+  const solid = obstacles();
+  const RADIUS = 0.4;
+  const stands: NodeId[] = ["lookout", "design", "code", "play"];
+  for (const from of stands) {
+    for (const to of stands) {
+      if (from === to) continue;
+      const points = route(from, to).map((id) => NODES[id]);
+      const total = lengthOf(points);
+      const end = smoothAlong(points, total);
+      expect(end.x).toBeCloseTo(NODES[to][0]);
+      expect(end.z).toBeCloseTo(NODES[to][1]);
+      expect(smoothAlong(points, 0).x).toBeCloseTo(NODES[from][0]);
+      for (let d = 0; d <= total; d += 0.2) {
+        const { x, z } = smoothAlong(points, d);
+        const feet = groundY(x, z);
+        const hit = solid.find(
+          ([bx, by, bz, bw, bh, bd]) =>
+            x + RADIUS > bx && x - RADIUS < bx + bw && z + RADIUS > bz && z - RADIUS < bz + bd && by < feet + 3 && by + bh > feet + 0.45,
+        );
+        expect(hit, `${from} to ${to} at ${x.toFixed(1)}, ${z.toFixed(1)}`).toBeUndefined();
+      }
     }
   }
 });

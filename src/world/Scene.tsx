@@ -6,6 +6,7 @@ import { Hotspots } from "./Hotspots";
 import { Boat, Campfire, Clouds, HotAirBalloon, Water, WindmillSails } from "./voxel/Animated";
 import { Appear } from "./voxel/Appear";
 import { Character } from "./voxel/Character";
+import { Dust } from "./voxel/Dust";
 import { Exhibits } from "./voxel/Exhibits";
 import { Birds, ChimneySmoke, Villagers } from "./voxel/Life";
 import { Voxels } from "./voxel/Voxels";
@@ -57,6 +58,7 @@ export function Scene({
       {/* Things that stand on the land wait for it to rise during the opening. */}
       <Appear distance={35}>
         <Character greet={greet} />
+        <Dust />
         <Campfire />
       </Appear>
       <Appear distance={20}>

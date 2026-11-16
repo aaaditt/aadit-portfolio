@@ -123,6 +123,8 @@ export function Character({ greet }: { greet: boolean }) {
   /** The joints as drawn, which ease towards the pose he is aiming for. */
   const shown = useRef<Pose>({ ...pose });
   const facing = useRef(walker.heading);
+  const wasRunning = useRef(false);
+  const landedAt = useRef(-10);
 
   useFrame(({ clock, camera, size, pointer }, delta) => {
     const step = Math.min(delta, 0.1);
@@ -157,7 +159,8 @@ export function Character({ greet }: { greet: boolean }) {
       pose.armRSide = 0.14;
       pose.armLSide = -0.14;
       pose.lean = 0.24;
-      pose.hop = Math.abs(Math.cos(stride.current)) * 0.2;
+      // Highest with the legs at full stretch, which is what makes it a run and not a walk.
+      pose.hop = Math.abs(Math.sin(stride.current)) * 0.3;
     } else if (place === "design") {
       // Painting: brush arm up at the canvas, making strokes.
       pose.armR = -1.4 + Math.sin(t * 3.1) * 0.22;
@@ -167,8 +170,8 @@ export function Character({ greet }: { greet: boolean }) {
       pose.lean = 0.04;
     } else if (place === "code") {
       // Typing: both hands out in front, tapping in turn.
-      pose.armR = -1 + Math.max(0, Math.sin(t * 13)) * 0.18;
-      pose.armL = -1 + Math.max(0, Math.sin(t * 13 + 2)) * 0.18;
+      pose.armR = -1.1 + Math.max(0, Math.sin(t * 11)) * 0.4;
+      pose.armL = -1.1 + Math.max(0, Math.sin(t * 11 + 2)) * 0.4;
       pose.armRSide = -0.2;
       pose.armLSide = 0.2;
       pose.lean = 0.06;
@@ -188,6 +191,13 @@ export function Character({ greet }: { greet: boolean }) {
       pose.armLSide = CROSSED_Z;
     }
 
+    // Arriving, he lands with a small hop and a squash.
+    if (wasRunning.current && !running) landedAt.current = t;
+    wasRunning.current = running;
+    const landing = animate ? Math.max(0, 1 - (t - landedAt.current) / 0.3) : 0;
+    const bump = Math.sin(Math.PI * landing);
+    if (landing > 0) pose.hop = bump * 0.35;
+
     const now = shown.current;
     const k = ease(running ? 30 : 12);
     for (const key of Object.keys(pose) as (keyof Pose)[]) now[key] += (pose[key] - now[key]) * k;
@@ -198,6 +208,7 @@ export function Character({ greet }: { greet: boolean }) {
       facing.current = animate ? turn(facing.current, want, ease(running ? 14 : 7)) : want;
       root.current.position.set(walker.x, walker.y + 5.8 * U + now.hop, walker.z);
       root.current.rotation.set(now.lean, facing.current, now.sway, "YXZ");
+      root.current.scale.set(U * (1 + bump * 0.08), U * (1 - bump * 0.1), U * (1 + bump * 0.08));
     }
     if (armR.current) armR.current.rotation.set(now.armR, 0, now.armRSide);
     if (armL.current) armL.current.rotation.set(now.armL, 0, now.armLSide);
@@ -210,7 +221,8 @@ export function Character({ greet }: { greet: boolean }) {
       const h = head.current.rotation;
       const follow = atLookout && !running ? 1 : 0.15;
       const wantY = (pointer.x * 0.6 + Math.sin(t * 0.7) * 0.08) * follow;
-      const wantX = running ? -0.1 : atLookout ? -pointer.y * 0.3 : 0.16 + Math.sin(t * 1.3) * 0.05;
+      const nod = place === "code" ? Math.sin(t * 5.5) * 0.07 : Math.sin(t * 1.3) * 0.05;
+      const wantX = running ? -0.1 : atLookout ? -pointer.y * 0.3 : 0.16 + nod;
       h.z = Math.sin(t * 1.1) * 0.06;
       h.y += (wantY - h.y) * ease(5);
       h.x += (wantX - h.x) * ease(5);
