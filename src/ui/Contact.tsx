@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { sfx } from "@/audio/engine";
 import { contactHref, contactsReady } from "@/content/about";
+import { say } from "@/world/bubbleStore";
 import { fire } from "@/world/overlayState";
 import { MESSAGE_MAX, check, isBot, keysFrom, step, type Errors, type Fields, type Status } from "./contactRule";
 import styles from "./Contact.module.css";
@@ -60,6 +60,8 @@ export function Contact() {
     if (Object.keys(found).length > 0) return;
 
     move("submit");
+    // The world answers: he folds the note into a paper plane and throws it out over the valley.
+    fire("mail-sending");
     try {
       if (!isBot(fields)) {
         const emailjs = (await import("@emailjs/browser")).default;
@@ -74,12 +76,15 @@ export function Contact() {
       setSentTo(fields.name.trim());
       setFields({ ...EMPTY, name: fields.name, email: fields.email });
       move("ok");
-      // The world answers: the mailbox flag at the camp goes up.
+      // The plane comes down into the mailbox, and only then does its flag go up, with a chime.
       fire("mail-sent");
-      sfx.chime();
+      say(`Thanks, ${fields.name.trim()}!`, 6);
     } catch {
       // Everything typed stays where it is, so nothing has to be written twice.
-      if (mounted.current) move("error");
+      if (!mounted.current) return;
+      move("error");
+      // The plane comes back to him.
+      fire("mail-failed");
     }
   }
 
@@ -98,7 +103,7 @@ export function Contact() {
   const sending = status === "sending";
 
   return (
-    <section className={styles.contact} aria-label="Contact">
+    <section id="contact" className={styles.contact} aria-label="Contact">
       <h2 className={styles.heading}>Say hello</h2>
 
       {ready.length === 0 && !KEYS && <p className={styles.quiet}>Contact details are on their way.</p>}

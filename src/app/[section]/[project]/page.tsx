@@ -6,7 +6,7 @@ import { getProject, liveLinks, neighbours, projectsIn } from "@/content/project
 import { getSection } from "@/content/sections";
 import { Card } from "@/ui/Card";
 import { ProjectThumb } from "@/ui/ProjectThumb";
-import { Sheets } from "@/ui/Sheets";
+import { Parts, Sheets } from "@/ui/Sheets";
 import { WorkingAt } from "@/ui/WorkingAt";
 import styles from "../page.module.css";
 
@@ -71,14 +71,16 @@ async function ProjectCard({ params }: Props) {
       <div className={styles.facts}>
         <p className={styles.factLine}>
           {project.role} · {project.year}
+          {project.show?.attendance ? ` · ${project.show.attendance} came` : ""}
         </p>
         <p className={styles.factOutcome}>{project.outcome}</p>
         {main && <ProjectLink link={main} />}
       </div>
-      {project.show && <Sheets list={project.show.sheets} sample={project.sample} />}
+      {project.show?.sheets && <Sheets project={project} />}
+      {project.show?.parts && <Parts project={project} />}
       <WorkingAt project={project} />
       {/* A project with sheets shows its pictures in the world, so the card needs none of its own. */}
-      {!project.show && <div className={styles.pictureFrame}>
+      {!project.show?.sheets && <div className={styles.pictureFrame}>
         {project.cover ? (
           // A real screenshot, once there is one.
           // eslint-disable-next-line @next/next/no-img-element

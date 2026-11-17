@@ -8,13 +8,13 @@ export type Point = [x: number, z: number];
  * reach it. He is a good deal taller than what he works at, so standing square in front of it
  * would hide it from the camera; from the corner, both he and his work can be seen. He takes the
  * side away from the section's camera.
- * - `ahead`: how far in front of the exhibit's middle (its controls stick out further on a cabinet).
+ * - `ahead`: how far in front of the exhibit's middle (a cart's counter sticks out further).
  * - `aside`: how far to the side: just clear of its edge.
  */
 const REACH: Record<Exhibit["kind"], { ahead: number; aside: number }> = {
   easel: { ahead: 0.95, aside: 1.65 },
   terminal: { ahead: 0.8, aside: 1.55 },
-  cabinet: { ahead: 1.15, aside: 1.15 },
+  cart: { ahead: 1.15, aside: 1.3 },
 };
 
 /**
@@ -37,10 +37,10 @@ export function workSpot(e: Exhibit): Point {
 }
 
 /** The middle point of what he works at: the canvas, the screen, or the controls. */
-const workFace = (e: Exhibit): Point => [e.x, e.z + (e.kind === "cabinet" ? 0.7 : 0.3)];
+const workFace = (e: Exhibit): Point => [e.x, e.z + (e.kind === "cart" ? 0.7 : 0.3)];
 
 const spots = Object.fromEntries(EXHIBITS.map((e) => [e.id, workSpot(e)])) as Record<
-  "design-1" | "design-2" | "design-3" | "code-1" | "code-2" | "code-3" | "play-1" | "play-2" | "play-3",
+  "design-1" | "design-2" | "design-3" | "code-1" | "code-2" | "code-3" | "events-1" | "events-2" | "events-3",
   Point
 >;
 
@@ -74,11 +74,15 @@ export const NODES = {
   codeRow: [19.2, 0],
   // Where he waits in front of the lab, between the terminals, until a project is picked.
   codeWait: [17.6, 0.6],
-  playRow: [0, -13.4],
-  // Under the lamp that stands between the row and the left cabinet.
-  playWest: [-1.1, -15.0],
-  // Then straight in to the left cabinet from the south, clear of its controls.
-  playCorner: [-4.6, -14.85],
+  eventsRow: [0, -13.4],
+  // Under the lamp that stands between the row and the left cart.
+  eventsWest: [-1.1, -15.0],
+  // Then straight in to the left cart from the south, clear of its counter.
+  eventsCorner: [-4.6, -14.85],
+  // Round the camp, where he goes to answer a question. He sits just in front of the log.
+  campLog: [-3, 25.75],
+  campSign: [2.6, 23],
+  campTent: [-1.2, 23],
   ...spots,
 } satisfies Record<string, Point>;
 
@@ -114,12 +118,16 @@ const EDGES: [NodeId, NodeId][] = [
   ["codeRow", "code-3"],
   ["codeFront", "codeWait"],
   ["codeWait", "codeRow"],
-  ["plazaN", "playRow"],
-  ["playRow", "playWest"],
-  ["playWest", "playCorner"],
-  ["playCorner", "play-1"],
-  ["playRow", "play-2"],
-  ["playRow", "play-3"],
+  ["lookout", "campLog"],
+  ["lookout", "campSign"],
+  ["camp", "campTent"],
+  ["campSign", "camp"],
+  ["plazaN", "eventsRow"],
+  ["eventsRow", "eventsWest"],
+  ["eventsWest", "eventsCorner"],
+  ["eventsCorner", "events-1"],
+  ["eventsRow", "events-2"],
+  ["eventsRow", "events-3"],
 ];
 
 const facing = (from: Point, [x, z]: Point) => Math.atan2(x - from[0], z - from[1]);
@@ -144,12 +152,18 @@ function waitAt(node: NodeId, section: SectionId): Stand {
  * once there (0 faces south, to the camera). Until a project is picked he works at nothing: he
  * waits in front of the exhibits and looks them over.
  */
+/** A spot to stand on, turned to face a point. */
+export function standFacing(node: NodeId, towards: Point): Stand {
+  return { node, facing: facing(NODES[node], towards), exhibit: null };
+}
+
 export const STANDS: Record<SectionId, Stand> = {
   home: { node: "lookout", facing: 0, exhibit: null },
-  about: { node: "lookout", facing: 0, exhibit: null },
+  // At the camp he turns a little towards the fire, ready to be asked something.
+  about: { node: "lookout", facing: -0.3, exhibit: null },
   design: waitAt("designRow", "design"),
   code: waitAt("codeWait", "code"),
-  play: waitAt("playRow", "play"),
+  events: waitAt("eventsRow", "events"),
 };
 
 const distance = (a: Point, c: Point) => Math.hypot(c[0] - a[0], c[1] - a[1]);

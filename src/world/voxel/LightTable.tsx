@@ -8,7 +8,8 @@ import { sfx } from "@/audio/engine";
 import { wasDrag } from "../orbit";
 import { intro } from "../introStore";
 import { useMotion } from "../motion";
-import { caption, hover } from "../overlayState";
+import { hover } from "../overlayState";
+import { pin, unpin } from "../show/pin";
 import { sheets, table } from "../sheetStore";
 import { b } from "./box";
 import type { Exhibit } from "./exhibitData";
@@ -30,7 +31,6 @@ const ROOT = { y: 2.32, z: 0.3 };
 
 const from = new THREE.Vector3();
 const to = new THREE.Vector3();
-const projected = new THREE.Vector3();
 
 /**
  * A design project's working sheets. When its project is opened they rise off the easel one by
@@ -39,7 +39,8 @@ const projected = new THREE.Vector3();
  */
 export function LightTable({ exhibit, y, project, open }: { exhibit: Exhibit; y: number; project: Project; open: boolean }) {
   const animate = useMotion();
-  const list = project.show!.sheets;
+  const list = project.show!.sheets!;
+  const layout = project.show!.layout;
   const groups = useRef<(THREE.Group | null)[]>([]);
   const threads = useRef<(THREE.Mesh | null)[]>([]);
   const patches = useRef<(THREE.Mesh | null)[][]>(list.map(() => []));
@@ -56,16 +57,16 @@ export function LightTable({ exhibit, y, project, open }: { exhibit: Exhibit; y:
     const { w, h } = SHEET;
     return list.map((sheet, i) => ({
       paper: [b(-w / 2 - 0.03, -h / 2 - 0.03, -0.02, w + 0.06, h + 0.06, 0.02, "#27374d"), b(-w / 2, -h / 2, 0, w, h, THICK, PAPER[sheet.kind])],
-      art: [...sheetArt(sheet.kind, project.colours), ...stagePips(i)] as Patch[],
+      art: [...sheetArt(sheet.kind, project.colours, layout), ...stagePips(i)] as Patch[],
     }));
-  }, [list, project.colours]);
+  }, [list, layout, project.colours]);
 
   // Leaving the project puts everything back, and never leaves a caption or name tag behind.
   useEffect(() => {
     if (!open) return;
     return () => {
       sheets.clear();
-      caption.on = false;
+      unpin(exhibit.id);
       hover.text = "";
       document.body.style.cursor = "";
       if (table.exhibit === exhibit.id) table.exhibit = "";
@@ -137,14 +138,11 @@ export function LightTable({ exhibit, y, project, open }: { exhibit: Exhibit; y:
     // The picked sheet is named on the page, just above it.
     if (open) {
       const group = front >= 0 ? groups.current[front] : null;
-      caption.on = Boolean(group);
       if (group) {
-        const now = shown.current[front];
-        projected.set(group.position.x, group.position.y + (SHEET.h / 2) * now.size + 0.12, group.position.z).project(camera);
-        caption.x = (projected.x * 0.5 + 0.5) * size.width;
-        caption.y = (-projected.y * 0.5 + 0.5) * size.height;
-        caption.title = `${front + 1} of ${list.length} · ${list[front].label}`;
-        caption.text = list[front].note;
+        const top = group.position.y + (SHEET.h / 2) * shown.current[front].size + 0.12;
+        pin(exhibit.id, `${front + 1} of ${list.length} · ${list[front].label}`, list[front].note, group.position.x, top, group.position.z, camera, size);
+      } else {
+        unpin(exhibit.id);
       }
     }
 

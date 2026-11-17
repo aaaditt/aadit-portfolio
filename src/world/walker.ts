@@ -84,7 +84,12 @@ export const walker = {
    * already standing there.
    */
   go(section: SectionId, exhibitId?: string | null): boolean {
-    goal = standFor(section, exhibitId);
+    return walker.to(section, standFor(section, exhibitId));
+  },
+
+  /** Sends him to a particular stand within a section. False if he is already standing there. */
+  to(section: SectionId, stand: Stand): boolean {
+    goal = stand;
     const to = goal.node;
     walker.section = section;
     walker.exhibit = goal.exhibit;

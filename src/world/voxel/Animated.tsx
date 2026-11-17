@@ -4,8 +4,9 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { daylight } from "../daylight";
-import { cue } from "../overlayState";
+import { mailbox } from "../overlayState";
 import { useMotion } from "../motion";
+import { asked } from "../pickStore";
 import { b } from "./box";
 import { flagTurn } from "./mailFlag";
 import * as M from "./models";
@@ -33,8 +34,8 @@ export function CodeSign() {
 }
 
 /**
- * The mailbox's flag at the lookout camp. It lies flat until a note is sent from the About page,
- * then swings up and stays up until the visitor leaves.
+ * The mailbox's flag at the lookout camp. It lies flat until a note sent from the About page has
+ * landed in the box as a paper plane, then swings up and stays up until the visitor leaves.
  */
 export function MailFlag() {
   const ref = useRef<THREE.Group>(null);
@@ -45,8 +46,7 @@ export function MailFlag() {
 
   useFrame(() => {
     if (!ref.current) return;
-    const sent = cue.kind === "mail-sent";
-    const up = !sent ? 0 : animate ? flagTurn((performance.now() - cue.at) / 1000) : 1;
+    const up = mailbox.flagAt === 0 ? 0 : animate ? flagTurn((performance.now() - mailbox.flagAt) / 1000) : 1;
     // Flat is a quarter turn forward about the hinge, along the side of the box.
     ref.current.rotation.x = (1 - up) * (Math.PI / 2);
   });
@@ -188,12 +188,16 @@ export function Campfire() {
   const glow = useRef<THREE.PointLight>(null);
   const animate = useMotion();
   const lookout = plateau("lookout");
+  /** How far the fire has caught: it flares up when he sits down beside it to talk. */
+  const caught = useRef(0);
 
-  useFrame(({ clock }) => {
-    if (glow.current) glow.current.intensity = 6 + daylight.night * 8;
-    if (!ref.current || !animate) return;
-    const t = clock.elapsedTime;
-    ref.current.scale.set(1 + Math.sin(t * 13) * 0.08, 1 + Math.sin(t * 9) * 0.18, 1 + Math.cos(t * 11) * 0.08);
+  useFrame(({ clock }, delta) => {
+    caught.current += ((asked.get() === "who" ? 1 : 0) - caught.current) * (animate ? 1 - Math.exp(-4 * Math.min(delta, 0.05)) : 1);
+    const flare = 1 + caught.current * 0.7;
+    if (glow.current) glow.current.intensity = (6 + daylight.night * 8) * flare;
+    if (!ref.current) return;
+    const t = animate ? clock.elapsedTime : 0;
+    ref.current.scale.set((1 + Math.sin(t * 13) * 0.08) * flare, (1 + Math.sin(t * 9) * 0.18) * flare, (1 + Math.cos(t * 11) * 0.08) * flare);
   });
 
   return (

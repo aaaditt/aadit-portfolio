@@ -4,8 +4,8 @@ import { DRAW_SECONDS, FAN_SECONDS, FRONT, SHEET, SHEET_KINDS, fanSlot, patchSha
 const colours: [string, string, string] = ["#c8553d", "#e8c15a", "#2f7f79"];
 
 test("every kind of sheet has a picture that stays on its paper", () => {
-  for (const kind of SHEET_KINDS) {
-    const art = sheetArt(kind, colours);
+  for (const layout of ["blocks", "screen", "poster"] as const) for (const kind of SHEET_KINDS) {
+    const art = sheetArt(kind, colours, layout);
     expect(art.length, kind).toBeGreaterThan(3);
     for (const r of art) {
       expect(r.x, kind).toBeGreaterThanOrEqual(0);
@@ -94,4 +94,10 @@ test("the picked sheet is held above the easel, clear of the finished piece on i
   // The canvas tops out at 2.3; the sheet's lower edge must be above that.
   expect(FRONT.y - (SHEET.h * FRONT.size) / 2).toBeGreaterThan(2.3);
   expect(SHEET.w * FRONT.size).toBeGreaterThan(3);
+});
+
+test("each layout draws a different picture from the same colours", () => {
+  const shape = (layout: "blocks" | "screen" | "poster") => JSON.stringify(sheetArt("final", colours, layout));
+  expect(shape("blocks")).not.toBe(shape("screen"));
+  expect(shape("screen")).not.toBe(shape("poster"));
 });

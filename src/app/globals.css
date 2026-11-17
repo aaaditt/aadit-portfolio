@@ -136,6 +136,11 @@ html:not([data-intro="done"]) .reveal {
   transition-delay: 0.9s;
 }
 
+/* An answer comes at once; only the greeting waits for him to settle. */
+.bubble-quick {
+  transition-delay: 0s;
+}
+
 /* A second, smaller line suggesting a click, shown until the visitor has clicked him once. */
 .bubble-tip {
   display: none;

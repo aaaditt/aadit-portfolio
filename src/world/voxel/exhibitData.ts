@@ -3,7 +3,7 @@ import type { SectionId } from "@/content/sections";
 export type Exhibit = {
   id: string;
   section: SectionId;
-  kind: "easel" | "terminal" | "cabinet";
+  kind: "easel" | "terminal" | "cart";
   x: number;
   z: number;
 };
@@ -19,9 +19,9 @@ export const EXHIBITS: Exhibit[] = [
   { id: "code-1", section: "code", kind: "terminal", x: 14.2, z: -2.3 },
   { id: "code-2", section: "code", kind: "terminal", x: 17.5, z: -1.9 },
   { id: "code-3", section: "code", kind: "terminal", x: 20.5, z: -2.6 },
-  { id: "play-1", section: "play", kind: "cabinet", x: -3.2, z: -17 },
-  { id: "play-2", section: "play", kind: "cabinet", x: 0, z: -16.2 },
-  { id: "play-3", section: "play", kind: "cabinet", x: 3.2, z: -17 },
+  { id: "events-1", section: "events", kind: "cart", x: -3.2, z: -17 },
+  { id: "events-2", section: "events", kind: "cart", x: 0, z: -16.2 },
+  { id: "events-3", section: "events", kind: "cart", x: 3.2, z: -17 },
 ];
 
 export const exhibit = (id: string) => EXHIBITS.find((e) => e.id === id)!;

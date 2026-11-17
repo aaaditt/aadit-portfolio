@@ -12,8 +12,8 @@ export const PLATEAUS: Plateau[] = [
   { id: "lookout", x: 0, z: 23, r: 5.5, h: 7 },
   { id: "design", x: -17, z: -8, r: 7, h: 3 },
   { id: "code", x: 17, z: -8, r: 7, h: 3 },
-  { id: "play", x: 0, z: -24, r: 14, h: 4, paved: true },
-  // Listed after the arcade so the plaza keeps its own level where the two meet.
+  { id: "events", x: 0, z: -24, r: 14, h: 4, paved: true },
+  // Listed after the Grounds so the plaza keeps its own level where the two meet.
   { id: "plaza", x: 0, z: -7, r: 5, h: 3, paved: true },
   { id: "cottage-a", x: -28, z: 19, r: 3.5, h: 4 },
   { id: "cottage-b", x: 27, z: -1, r: 4, h: 3 },

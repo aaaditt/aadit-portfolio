@@ -80,7 +80,7 @@ export default function WorldInner({ section, project, onOpen }: { section: Sect
         <Outlines />
         <SoundEvents />
         <Scene
-          greet={introState === "done" && (section.id === "home" || section.id === "about")}
+          greet={introState === "done" && section.id === "home"}
           current={section.id}
           project={project}
           onOpen={onOpen}

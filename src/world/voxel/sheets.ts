@@ -36,36 +36,56 @@ function outline(x: number, y: number, w: number, h: number, line: number, colou
   ];
 }
 
+/** How a project's pictures are laid out: the same four shapes at every stage. */
+export type SheetLayout = "blocks" | "screen" | "poster";
+
+type Rect = { x: number; y: number; w: number; h: number };
+
+const LAYOUTS: Record<SheetLayout, Rect[]> = {
+  // An identity: two blocks along the bottom, two above.
+  blocks: [
+    { x: 0.105, y: 0.138, w: 0.368, h: 0.379 },
+    { x: 0.474, y: 0.138, w: 0.447, h: 0.241 },
+    { x: 0.553, y: 0.483, w: 0.289, h: 0.379 },
+    { x: 0.132, y: 0.586, w: 0.263, h: 0.276 },
+  ],
+  // An app screen: a bar across the top, a side panel, a card and a button.
+  screen: [
+    { x: 0.1, y: 0.7, w: 0.8, h: 0.14 },
+    { x: 0.1, y: 0.14, w: 0.24, h: 0.5 },
+    { x: 0.4, y: 0.34, w: 0.5, h: 0.3 },
+    { x: 0.62, y: 0.14, w: 0.28, h: 0.14 },
+  ],
+  // A poster: one big shape, a band of type under it, and two smaller marks beside it.
+  poster: [
+    { x: 0.1, y: 0.36, w: 0.44, h: 0.5 },
+    { x: 0.1, y: 0.14, w: 0.8, h: 0.15 },
+    { x: 0.6, y: 0.58, w: 0.3, h: 0.28 },
+    { x: 0.6, y: 0.36, w: 0.18, h: 0.15 },
+  ],
+};
+
 /**
  * The picture on a sheet. Until a project has real images, each stage is drawn from its colours:
  * - the sketch is pencil outlines of where things will go;
  * - the wireframe is the same layout as grey boxes;
  * - the palette is the project's three colours as swatches;
- * - the final piece is the layout in those colours, the same picture that stands on the easel.
+ * - the final piece is the layout in those colours.
  */
-export function sheetArt(kind: SheetKind, [a, b, c]: [string, string, string]): Patch[] {
-  // The layout every stage shares: two blocks along the bottom, two above.
-  const blocks = [
-    { x: 0.105, y: 0.138, w: 0.368, h: 0.379 },
-    { x: 0.474, y: 0.138, w: 0.447, h: 0.241 },
-    { x: 0.553, y: 0.483, w: 0.289, h: 0.379 },
-    { x: 0.132, y: 0.586, w: 0.263, h: 0.276 },
-  ];
+export function sheetArt(kind: SheetKind, [a, b, c]: [string, string, string], layout: SheetLayout = "blocks"): Patch[] {
+  const blocks = LAYOUTS[layout];
   if (kind === "sketch") {
     return [
       ...blocks.flatMap((r) => outline(r.x, r.y, r.w, r.h, 0.03, PENCIL)),
-      // A few loose pencil strokes, as if still being worked out.
-      { x: 0.16, y: 0.3, w: 0.22, h: 0.025, colour: PENCIL },
-      { x: 0.6, y: 0.66, w: 0.18, h: 0.025, colour: PENCIL },
-      { x: 0.52, y: 0.05, w: 0.3, h: 0.025, colour: PENCIL },
+      // A loose pencil stroke inside each of the first two, as if still being worked out.
+      ...blocks.slice(0, 2).map((r) => ({ x: r.x + r.w * 0.2, y: r.y + r.h * 0.45, w: r.w * 0.55, h: 0.025, colour: PENCIL })),
     ];
   }
   if (kind === "wireframe") {
     return [
       ...blocks.map((r, i) => ({ ...r, colour: i % 2 ? PALE : GREY })),
-      // Lines of text to come.
-      { x: 0.5, y: 0.42, w: 0.3, h: 0.035, colour: GREY },
-      { x: 0.16, y: 0.05, w: 0.24, h: 0.035, colour: PALE },
+      // A line of text to come, along the bottom edge.
+      { x: 0.1, y: 0.05, w: 0.3, h: 0.035, colour: PALE },
     ];
   }
   if (kind === "palette") {

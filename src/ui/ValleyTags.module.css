@@ -1,0 +1,39 @@
+/* A name tag over a place in the valley. It is put where the scene says the place is. */
+.tag {
+  position: fixed;
+  z-index: 6;
+  translate: -50% -50%;
+  padding: 0.35rem 0.6rem 0.4rem;
+  background: var(--bubble);
+  color: var(--bubble-ink);
+  border: 3px solid var(--bubble-ink);
+  box-shadow: 4px 4px 0 0 rgb(23 32 43 / 0.3);
+  font-family: var(--font-display), monospace;
+  font-size: 1rem;
+  line-height: 1;
+  text-transform: uppercase;
+  text-decoration: none;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    scale 0.15s ease;
+}
+
+.on {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tag:hover,
+.tag:focus-visible {
+  scale: 1.08;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tag {
+    transition: none;
+  }
+}

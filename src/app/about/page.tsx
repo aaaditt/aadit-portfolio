@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ABOUT } from "@/content/about";
+import { ABOUT, CREDENTIALS } from "@/content/about";
 import { getSection } from "@/content/sections";
+import { Asks, Credentials } from "@/ui/Asks";
 import { Card } from "@/ui/Card";
 import { Contact } from "@/ui/Contact";
 import styles from "../[section]/page.module.css";
@@ -19,6 +20,8 @@ export default function AboutPage() {
       </Link>
       <h1 className={styles.title}>{section.title}</h1>
       <p className={styles.blurb}>{ABOUT.intro}</p>
+      {/* Questions for him to answer at the camp. Everything they lead to is also written out below. */}
+      <Asks />
       <dl className={styles.stats}>
         {ABOUT.facts.map((fact) => (
           <div key={fact.label} className={styles.statRow}>
@@ -28,6 +31,7 @@ export default function AboutPage() {
         ))}
       </dl>
       {ABOUT.sample && <p className={styles.note}>Sample text for now; the real one is on the way.</p>}
+      <Credentials list={CREDENTIALS} />
       <Contact />
     </Card>
   );

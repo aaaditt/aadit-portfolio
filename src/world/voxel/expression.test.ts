@@ -54,7 +54,7 @@ test("each place has its own look", () => {
   expect(over("code")).toContain("open/flat");
   expect(over("code")).toContain("open/o");
   // Playing: grinning.
-  expect([...over("play")].some((f) => f.endsWith("/grin"))).toBe(true);
+  expect([...over("events")].some((f) => f.endsWith("/grin"))).toBe(true);
 });
 
 test("with motion reduced, the face holds still: no blinking, a plain smile", () => {
@@ -63,4 +63,8 @@ test("with motion reduced, the face holds still: no blinking, a plain smile", ()
     expect(f.eyes).toBe("open");
     expect(f.mouth).toBe("smile");
   }
+});
+
+test("when a note comes back to him he looks sheepish, wherever the pointer is", () => {
+  expect(faceFor({ ...base, place: "about", sheepish: true })).toMatchObject({ mouth: "flat", blush: true });
 });

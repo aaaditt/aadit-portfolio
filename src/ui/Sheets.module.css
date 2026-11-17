@@ -75,6 +75,50 @@
   color: var(--panel-soft);
 }
 
+.swatches,
+.result {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.swatchLabel {
+  margin-right: 0.3rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--panel-soft);
+}
+
+.swatch {
+  width: 1.5rem;
+  height: 1rem;
+  border: 2px solid var(--card-edge);
+}
+
+.run {
+  margin-top: 0.6rem;
+  min-height: 40px;
+  padding: 0.3rem 0.7rem;
+  border: 2px solid var(--card-edge);
+  background: var(--panel-hover);
+  color: inherit;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 0 var(--card-shadow);
+}
+
+.run:active {
+  translate: 2px 2px;
+  box-shadow: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .chip {
     transition: none;

@@ -14,6 +14,8 @@ import { highlight, hover } from "../overlayState";
 import { walker } from "../walker";
 import type { Box } from "./box";
 import { EXHIBITS, type Exhibit } from "./exhibitData";
+import { Fair } from "../show/Fair";
+import { Machine } from "../show/Machine";
 import { LightTable } from "./LightTable";
 import * as M from "./models";
 import { heightAt } from "./terrain";
@@ -35,15 +37,15 @@ function model(e: Exhibit, project: Project): { solid: Box[]; swap: Box[]; keep:
     const terminal = M.terminal(a);
     return { solid: terminal.solid, swap: terminal.glow, keep: [] };
   }
-  const cabinet = M.cabinet(a, b);
-  return { solid: cabinet.solid, swap: [], keep: cabinet.glow };
+  const cart = M.cart(a, b);
+  return { solid: cart.solid, swap: [], keep: cart.glow };
 }
 
 /** How much bigger an exhibit gets under the pointer. */
 const SWELL = 0.14;
 
 /**
- * The easels, terminals and cabinets in front of each landmark, one per project. Each bounces and
+ * The easels, terminals and carts in front of each landmark, one per project. Each bounces and
  * lights up under the pointer, clicking one opens its project, and the open project's stays lit.
  */
 export function Exhibits({ project, onOpen }: { project: string | null; onOpen: (href: string) => void }) {
@@ -133,7 +135,10 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
             <Voxels boxes={item.model.solid} />
             <Work exhibit={EXHIBITS[i]} y={item.y} colours={item.project.colours} swap={item.model.swap} keep={item.model.keep} finished={Boolean(item.project.show)} />
           </group>
-          {item.project.show && <LightTable exhibit={EXHIBITS[i]} y={item.y} project={item.project} open={selected === i} />}
+          {/* Whatever the project has to show is built here from its own facts when it is opened. */}
+          {item.project.show?.sheets && <LightTable exhibit={EXHIBITS[i]} y={item.y} project={item.project} open={selected === i} />}
+          {item.project.show?.parts && <Machine exhibit={EXHIBITS[i]} y={item.y} project={item.project} open={selected === i} />}
+          {item.project.show?.attendance && <Fair exhibit={EXHIBITS[i]} y={item.y} project={item.project} open={selected === i} />}
           <mesh
             position={[item.x, item.y + 1.3, item.z + 0.1]}
             onPointerOver={(event) => {

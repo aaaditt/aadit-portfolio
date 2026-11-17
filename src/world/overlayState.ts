@@ -10,7 +10,7 @@ export const flight = { progress: 0 };
 export const mapLabels: { text: string; x: number; y: number }[] = [
   { text: "Design", x: 0, y: 0 },
   { text: "Code", x: 0, y: 0 },
-  { text: "Play", x: 0, y: 0 },
+  { text: "Events", x: 0, y: 0 },
   { text: "About", x: 0, y: 0 },
 ];
 
@@ -31,6 +31,13 @@ export const caption = { on: false, x: 0, y: 0, title: "", text: "" };
  * `at` is when, by the page's clock in milliseconds, so the world can time its answer from it.
  */
 export const cue = { kind: "", id: "", at: 0 };
+
+/**
+ * The mailbox at the camp, as the scene leaves it. Times are the page's clock, in milliseconds.
+ * - `flagAt`: when a note landed in it and its flag began to go up; 0 while the flag is down.
+ * - `backAt`: when a note that did not send last came back to him.
+ */
+export const mailbox = { flagAt: 0, backAt: -1e9 };
 
 /** Tells the world something happened. Firing an empty kind clears it. */
 export function fire(kind: string, id = "") {

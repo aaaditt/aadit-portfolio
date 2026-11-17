@@ -28,6 +28,8 @@ export type Mood = {
   animate: boolean;
   /** The visitor has just clicked him. */
   poked?: boolean;
+  /** A note he threw has come back to him. */
+  sheepish?: boolean;
   /** False while he waits in a section's yard, not yet at an exhibit. Taken as true if left out. */
   working?: boolean;
 };
@@ -59,6 +61,13 @@ export function faceFor(m: Mood): Face {
     face.mouth = "grin";
     face.blush = true;
     face.brows = 0.4;
+    return face;
+  }
+  if (m.sheepish && !m.running) {
+    // Oops.
+    face.mouth = "flat";
+    face.brows = 0.35;
+    face.blush = true;
     return face;
   }
   if (m.running) {
@@ -99,11 +108,11 @@ export function faceFor(m: Mood): Face {
       face.mouth = "o";
       face.brows = 0.4;
     }
-  } else if (m.place === "play") {
-    // Having fun, with a cheer now and then.
+  } else if (m.place === "events") {
+    // In front of a crowd: having fun, with a cheer now and then.
     face.mouth = "grin";
     face.brows = 0.2;
-    if (phase(m.t, LOOP.cabinet.seconds) > LOOP.cabinet.doneAt) {
+    if (phase(m.t, 6) > 4.8) {
       face.eyes = "happy";
       face.blush = true;
     }

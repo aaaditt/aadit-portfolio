@@ -8,6 +8,7 @@ import { ResetView } from "@/ui/ResetView";
 import { SheetCaption } from "@/ui/SheetCaption";
 import { SpeechBubble } from "@/ui/SpeechBubble";
 import { THEME_SCRIPT } from "@/ui/themeRule";
+import { ValleyTags } from "@/ui/ValleyTags";
 import { World } from "@/world/World";
 import "./globals.css";
 
@@ -15,7 +16,7 @@ const body = Geist({ variable: "--font-body", subsets: ["latin"] });
 const mono = Geist_Mono({ variable: "--font-mono", subsets: ["latin"] });
 const display = Pixelify_Sans({ variable: "--font-display", subsets: ["latin"] });
 
-const DESCRIPTION = "Aadit's portfolio: design, code, games and events, in a small pixel world.";
+const DESCRIPTION = "Aadit's portfolio: design, code and events, in a small pixel world.";
 
 export const metadata: Metadata = {
   // Where the site lives, so the link preview picture gets a full address.
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </Suspense>
         <SpeechBubble />
         <SheetCaption />
+        <ValleyTags />
         <div className="content">{children}</div>
         <Suspense fallback={null}>
           <BottomBar />

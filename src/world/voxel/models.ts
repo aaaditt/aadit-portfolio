@@ -118,9 +118,14 @@ export function cottage(roof: string, roofD: string): Box[] {
   ];
 }
 
+/** The paint in the studio's four buckets when no project is open. */
+export const PAINTS = [K.coral, K.yellow, K.teal, K.blue];
+
+/** The middle of the paint in bucket `i`, in the studio's own units. */
+export const paintAt = (i: number): [number, number, number] => [-4.32 + i * 0.75, 0.54, 4.48 + (i % 2) * 0.4];
+
 /** The Design Studio: a timber-framed workshop with an easel outside and a giant pencil beside it. */
 export function studio(): { solid: Box[]; glow: Box[] } {
-  const paints = [K.coral, K.yellow, K.teal, K.blue];
   return {
     solid: [
       b(-4.5, 0, -3, 9, 4, 6, K.cream),
@@ -155,7 +160,8 @@ export function studio(): { solid: Box[]; glow: Box[] } {
       b(-5.9, 1.7, 3.87, 0.45, 0.45, 0.05, K.yellow),
       b(-6.7, 1.6, 3.87, 0.5, 0.6, 0.05, K.coral),
       // paint buckets
-      ...paints.flatMap((c, i) => [b(-4.6 + i * 0.75, 0, 4.2 + (i % 2) * 0.4, 0.55, 0.5, 0.55, K.stoneL), b(-4.52 + i * 0.75, 0.5, 4.28 + (i % 2) * 0.4, 0.4, 0.08, 0.4, c)]),
+      // paint buckets; the paint in them is drawn apart (see PAINTS), as it takes the open project's colours
+      ...PAINTS.map((_, i) => b(-4.6 + i * 0.75, 0, 4.2 + (i % 2) * 0.4, 0.55, 0.5, 0.55, K.stoneL)),
       // giant pencil, point up
       b(5.8, 0, 2.9, 1.4, 0.8, 1.4, K.pink),
       b(5.75, 0.8, 2.85, 1.5, 0.4, 1.5, K.stoneL),
@@ -171,44 +177,63 @@ export function studio(): { solid: Box[]; glow: Box[] } {
 
 const BRACKETS = ["..#...#.#..", ".#...#...#.", "#....#....#", ".#..#....#.", "..#.#...#.."];
 
-/** The Code Lab: a two-storey block with a wall of code, an aerial, servers and a `</>` sculpture. */
+/** The Code Lab: a block with a wall listing the projects, an aerial, servers and a `</>` sculpture. Its upper storey is `labHood`. */
 export function lab(): { solid: Box[]; glow: Box[] } {
-  const lines = [K.yellow, K.glass, K.pink, K.crop, K.glass, K.yellow];
-  // Small enough that the sculpture stays to the side of the lab's code board.
+  // Small enough that the sculpture stays to the side of the lab's project board.
   const px = 0.5;
   return {
     solid: [
       b(-4.5, 0, -3, 9, 4, 6, K.navy),
       b(-4.6, 0, -3.1, 9.2, 0.5, 6.2, K.navyD),
       b(-4.7, 4, -3.2, 9.4, 0.4, 6.4, K.white),
-      b(-3.5, 4.4, -2, 5, 3, 4, K.teal),
-      b(-3.6, 7.4, -2.1, 5.2, 0.35, 4.2, K.white),
-      b(-2.6, 5.2, 2, 3.2, 1.4, 0.12, K.screen),
+      // the works under the hood: a bed for the three cores (see LAB_CORES)
+      b(-3.2, 4.4, -1.4, 4.4, 0.35, 2.8, K.navyD),
       b(-3.6, 0.9, 3, 5.2, 2.6, 0.12, K.black),
       // back and side windows, for when the view is turned
       ...[-3.5, 1.2].map((x) => b(x, 1.2, -3.12, 2, 1.5, 0.12, K.glass)),
-      b(-2.6, 5.2, -2.12, 3.2, 1.4, 0.12, K.glass),
       ...[-4.62, 4.5].map((x) => b(x, 1.2, -1.5, 0.12, 1.5, 2, K.glass)),
       b(2.4, 0, 3, 1.4, 2.5, 0.15, K.orange),
       b(2.0, 2.65, 3.0, 2.2, 0.75, 0.12, K.navyD),
-      // aerial and dish
+      // aerial
       b(2.6, 4.4, -1.2, 0.3, 4.4, 0.3, K.stoneL),
       b(2.3, 6.8, -1.2, 0.9, 0.15, 0.3, K.stoneL),
-      b(0.3, 7.75, 0.2, 1.6, 0.3, 1.6, K.stoneL),
-      b(0.5, 8.05, 0.4, 1.2, 0.3, 1.2, K.white),
       // server racks outside
       ...[0, 1].flatMap((i) => [b(5.2 + i * 1.5, 0, 1.2, 1.2, 2.6, 1.2, K.stoneL), b(5.2 + i * 1.5, 2.6, 1.2, 1.2, 0.15, 1.2, K.stoneD)]),
       // the </> sculpture, on a plinth
       b(-9.6, 0, 3.4, BRACKETS[0].length * px + 0.6, 0.5, 1.4, K.stoneD),
     ],
     glow: [
-      ...lines.map((c, i) => b(-3.3 + (i % 3) * 0.35, 3.05 - i * 0.37, 3.1, 1.6 + ((i * 37) % 23) / 10, 0.16, 0.06, c)),
       b(2.55, 8.8, -1.25, 0.4, 0.4, 0.4, K.red),
       ...place(pixelText("LAB", 0.12, "#bfe9ff"), [3.1, 2.73, 3.12]),
       ...[0, 1].flatMap((i) => [0, 1, 2].flatMap((r) => [b(5.35 + i * 1.5, 0.5 + r * 0.75, 2.4, 0.18, 0.18, 0.06, K.crop), b(5.7 + i * 1.5, 0.5 + r * 0.75, 2.4, 0.18, 0.18, 0.06, r === 1 ? K.red : K.gold)])),
     ],
   };
 }
+
+/** Where the hood is hinged: along the back of the lab's flat roof, in the lab's own units. */
+export const LAB_HINGE: [number, number, number] = [0, 4.4, -2];
+
+/**
+ * The lab's upper storey, with its dish: the hood. It is its own piece so that it can lift, hinged
+ * along its back edge like a car's. Measured from the hinge.
+ */
+export function labHood(): Box[] {
+  return [
+    b(-3.5, 0, 0, 5, 3, 4, K.teal),
+    b(-3.6, 3, -0.1, 5.2, 0.35, 4.2, K.white),
+    b(-2.6, 0.8, 4, 3.2, 1.4, 0.12, K.screen),
+    b(-2.6, 0.8, -0.12, 3.2, 1.4, 0.12, K.glass),
+    // dish
+    b(0.3, 3.35, 2.2, 1.6, 0.3, 1.6, K.stoneL),
+    b(0.5, 3.65, 2.4, 1.2, 0.3, 1.2, K.white),
+  ];
+}
+
+/** The middles of the three cores under the hood, one per code project, in the lab's own units. */
+export const LAB_CORES: [number, number, number][] = [-2.4, -1, 0.4].map((x) => [x, 5.35, 0]);
+
+/** The rows of the project board on the lab's front wall, top first: the left end of each, in the lab's own units. */
+export const LAB_ROWS: [number, number, number][] = [2.75, 2.05, 1.35].map((y) => [-3.3, y, 3.12]);
 
 /**
  * The `</>` sculpture that stands on its plinth beside the lab, drawn apart so it can bob. Solid
@@ -225,30 +250,35 @@ export function codeSign(): Box[] {
   ];
 }
 
-// The arcade screen shows an "A", for Aadit.
-const FACE = ["..###..", ".#...#.", ".#...#.", ".#####.", ".#...#.", ".#...#."];
+/** The colours of the stage lights, left to right. */
+export const STAGE_LIGHTS = [K.red, K.gold, K.glass, K.pink, K.crop];
 
-/** The Arcade: a giant cabinet, a striped event tent, and a stage with lights. */
-export function arcade(): { solid: Box[]; glow: Box[] } {
+/** The middle of stage light `i`, in the Grounds' own units. */
+export const stageLightAt = (i: number): [number, number, number] => [7.2 + i * 1.45, 5.62, -3.5];
+
+/** Where club banner `i` stands, in front of the stage, in the Grounds' own units. */
+export const bannerAt = (i: number): [number, number] => [6.2 + i * 1.6, 2.7];
+
+/** A banner pole. The banner itself is drawn apart, as it runs up and down. */
+export function bannerPole(): Box[] {
+  return [b(-0.2, 0, -0.2, 0.4, 0.25, 0.4, K.stoneD), b(-0.08, 0.25, -0.08, 0.16, 4.2, 0.16, K.woodD), b(-0.14, 4.45, -0.14, 0.28, 0.2, 0.28, K.gold)];
+}
+
+/** The Grounds: a marquee gate, a striped event tent, and a stage. Its lights are drawn apart (see STAGE_LIGHTS). */
+export function grounds(): { solid: Box[]; glow: Box[] } {
   const bunting = [K.coral, K.yellow, K.teal, K.orange, K.pink];
-  const lights = [K.red, K.gold, K.glass, K.pink, K.crop];
   return {
     solid: [
-      // giant cabinet
-      b(-2, 0, -4.5, 4, 7.5, 3, K.red),
-      b(-2.2, 0, -4.5, 0.2, 7.5, 3.2, K.coralD),
-      b(2, 0, -4.5, 0.2, 7.5, 3.2, K.coralD),
-      b(-1.6, 3.6, -1.5, 3.2, 2.5, 0.12, K.black),
-      b(-2, 2.7, -1.5, 4, 0.6, 1.2, K.white),
-      b(-1.3, 3.3, -0.9, 0.2, 0.6, 0.2, K.black),
-      b(-1.45, 3.9, -1.05, 0.5, 0.45, 0.5, K.red),
-      b(0.2, 3.3, -0.9, 0.45, 0.2, 0.45, K.teal),
-      b(0.95, 3.3, -0.9, 0.45, 0.2, 0.45, K.yellow),
-      b(-0.4, 1.2, -1.5, 0.8, 0.9, 0.1, K.black),
-      // its back: a service panel and vents
-      b(-1.4, 1, -4.62, 2.8, 3.6, 0.12, K.coralD),
-      b(-0.25, 2.6, -4.7, 0.5, 0.2, 0.1, K.gold),
-      ...[5.4, 5.9, 6.4].map((y) => b(-1.1, y, -4.62, 2.2, 0.22, 0.12, K.black)),
+      // the marquee: two striped towers with pennants, a sign board between them and a way through under it
+      ...[-3.3, 2.1].flatMap((x) => [
+        ...Array.from({ length: 6 }, (_, i) => b(x, i, -3.6, 1.2, 1, 1.2, i % 2 ? K.cream : K.red)),
+        b(x - 0.15, 6, -3.75, 1.5, 0.3, 1.5, K.gold),
+        b(x + 0.45, 6.3, -3.15, 0.3, 1.5, 0.3, K.woodD),
+        b(x + 0.75, 7.15, -3.1, 0.9, 0.55, 0.12, x < 0 ? K.teal : K.yellow),
+      ]),
+      b(-2.1, 3.9, -3.3, 4.2, 1.9, 0.6, K.navyD),
+      b(-2.25, 5.8, -3.45, 4.5, 0.25, 0.9, K.gold),
+      b(-2.25, 3.7, -3.45, 4.5, 0.2, 0.9, K.gold),
       // striped tent
       ...Array.from({ length: 7 }, (_, i) => b(-13 + i, 0, -3.5, 1, 3, 7, i % 2 ? K.coral : K.cream)),
       ...[0, 1, 2, 3].map((k) => b(-13.5 + k, 3 + k, -4 + k, 8 - 2 * k, 1, 8 - 2 * k, k % 2 ? K.cream : K.orange)),
@@ -272,18 +302,15 @@ export function arcade(): { solid: Box[]; glow: Box[] } {
         const t = (i + 0.5) / 11;
         return b(-4.7 + t * 9.4, 4 - Math.sin(t * Math.PI) * 0.9, 3.55, 0.45, 0.5, 0.12, bunting[i % bunting.length]);
       }),
-      // a dice to sit on
-      b(3.4, 0, 1.4, 1.2, 1.2, 1.2, K.white),
-      b(3.85, 0.45, 2.6, 0.3, 0.3, 0.06, K.black),
+      // a crate to sit on
+      b(3.4, 0, 1.4, 1.2, 1.1, 1.2, K.wood),
+      b(3.35, 1.1, 1.35, 1.3, 0.12, 1.3, K.woodD),
     ],
     glow: [
-      b(-2, 6.3, -1.5, 4, 0.9, 0.3, K.gold),
-      ...place(pixelText("PLAY", 0.12, K.yellow), [-9.5, 2.05, 3.62]),
-      b(-1.6, 6.5, -4.72, 3.2, 0.5, 0.1, K.gold),
-      ...FACE.flatMap((row, r) =>
-        [...row].flatMap((ch, c) => (ch === "#" ? [b(-1.05 + c * 0.3, 5.6 - r * 0.3, -1.42, 0.3, 0.3, 0.06, K.crop)] : [])),
-      ),
-      ...lights.map((c, i) => b(7 + i * 1.45, 5.45, -3.7, 0.4, 0.35, 0.4, c)),
+      ...place(pixelText("EVENTS", 0.16, K.yellow), [0, 4.45, -2.68]),
+      // bulbs along the top of the sign
+      ...Array.from({ length: 8 }, (_, i) => b(-2.07 + i * 0.56, 6.07, -2.62, 0.22, 0.22, 0.12, i % 2 ? K.fire : K.white)),
+      ...place(pixelText("OPEN", 0.12, K.yellow), [-9.5, 2.05, 3.62]),
       b(7.1, 2.2, -2, 0.7, 0.7, 0.06, K.stoneD),
       b(12.2, 2.2, -2, 0.7, 0.7, 0.06, K.stoneD),
     ],
@@ -298,21 +325,56 @@ export function mailFlag(): Box[] {
   return [b(0, 0, 0, 0.12, 0.7, 0.3, K.gold)];
 }
 
+/** The middle of the signpost's pole, in the camp's own units. */
+export const SIGNPOST_AT: [number, number] = [4.55, -0.35];
+
+/** One arm of the signpost, pointing along +x from the pole. It is its own piece so that it can swing out. */
+export function signArm(colour: string): Box[] {
+  return [b(0.1, -0.25, -0.1, 1.6, 0.5, 0.2, colour), b(1.7, -0.12, -0.1, 0.22, 0.24, 0.2, colour)];
+}
+
+/** Where the tent's door flap is hinged: its left edge, in the camp's own units. */
+export const TENT_FLAP_AT: [number, number, number] = [-4, 0, -0.2];
+
+/** The tent's door flap, hanging from its hinge edge. It is its own piece so that it can open. */
+export function tentFlap(): Box[] {
+  return [b(0, 0, 0, 1, 1.6, 0.1, K.navyD)];
+}
+
+/** One lantern for the line at the camp, hanging from the origin. `flame` is the part that lights. */
+export function hangingLantern(): { solid: Box[]; flame: Box[] } {
+  return {
+    solid: [b(-0.03, -0.18, -0.03, 0.06, 0.18, 0.06, K.navyD), b(-0.2, -0.26, -0.2, 0.4, 0.08, 0.4, K.navyD), b(-0.2, -0.72, -0.2, 0.4, 0.08, 0.4, K.navyD)],
+    flame: [b(-0.15, -0.64, -0.15, 0.3, 0.38, 0.3, K.fire)],
+  };
+}
+
+/** A paper plane, nose along +z, centred on the origin. */
+export function paperPlane(): Box[] {
+  return [
+    b(-0.09, -0.12, -0.6, 0.18, 0.22, 1.5, K.navy),
+    b(-0.75, 0.1, -0.6, 1.5, 0.08, 0.8, K.white),
+    b(-0.45, 0.1, 0.2, 0.9, 0.08, 0.4, K.white),
+    b(-0.18, 0.1, 0.6, 0.36, 0.08, 0.3, K.white),
+  ];
+}
+
 /** The lookout camp: a small tent, a log bench, a signpost and a mailbox. Its flag is `mailFlag`. */
 export function camp(): Box[] {
   // No flagpole: it used to cut across the view of the valley.
   return [
     // tent
     ...[0, 1, 2].map((k) => b(-5.2 + k * 0.5, k, -3.2, 3.4 - k, 1, 3, k % 2 ? K.creamD : K.orange)),
-    b(-4, 0, -0.2, 1, 1.6, 0.1, K.navyD),
+    // the dark of the doorway (its flap is `tentFlap`), and a pole for the lantern line
+    b(-4, 0, -0.26, 1, 1.6, 0.06, K.black),
+    b(-3.6, 3, -0.4, 0.2, 0.8, 0.2, K.woodD),
     // log bench
     b(-4.2, 0, 1.6, 0.5, 0.5, 0.6, K.woodD),
     b(-2.3, 0, 1.6, 0.5, 0.5, 0.6, K.woodD),
     b(-4.4, 0.5, 1.5, 2.8, 0.4, 0.8, K.wood),
     // signpost
-    b(4.4, 0, -0.5, 0.3, 3.2, 0.3, K.woodD),
-    b(4.6, 2.5, -0.55, 1.6, 0.5, 0.2, K.teal),
-    b(3, 1.8, -0.55, 1.5, 0.5, 0.2, K.coral),
+    // signpost; its arms are `signArm`
+    b(4.4, 0, -0.5, 0.3, 3.4, 0.3, K.woodD),
     // mailbox
     b(-4.4, 0, 3.4, 0.3, 1.4, 0.3, K.wood),
     b(-4.75, 1.4, 3.1, 1, 0.8, 0.9, K.red),
@@ -477,16 +539,38 @@ export function terminal(accent: string): { solid: Box[]; glow: Box[] } {
   };
 }
 
-/** A small arcade cabinet. One per game or event, later. */
-export function cabinet(colour: string, screen: string): { solid: Box[]; glow: Box[] } {
+/** An event cart, packed up: wheels, a counter with crates on it, and a striped awning. One per event. */
+export function cart(colour: string, awning: string): { solid: Box[]; glow: Box[] } {
   return {
     solid: [
-      b(-0.6, 0, -0.5, 1.2, 2.5, 1, colour),
-      b(-0.6, 1, 0.5, 1.2, 0.2, 0.4, K.white),
-      b(-0.3, 1.2, 0.6, 0.08, 0.25, 0.08, K.black),
-      b(-0.36, 1.42, 0.54, 0.2, 0.18, 0.2, K.red),
-      b(-0.5, 1.35, 0.5, 1, 0.75, 0.05, K.black),
+      b(-0.85, 0, -0.3, 0.2, 0.6, 0.6, K.black),
+      b(0.65, 0, -0.3, 0.2, 0.6, 0.6, K.black),
+      b(-0.7, 0.3, -0.45, 1.4, 0.8, 0.9, colour),
+      b(-0.8, 1.1, -0.55, 1.6, 0.12, 1.1, K.wood),
+      b(0.8, 0.9, -0.1, 0.5, 0.1, 0.1, K.woodD),
+      b(-0.72, 1.22, -0.47, 0.1, 1.1, 0.1, K.woodD),
+      b(0.62, 1.22, -0.47, 0.1, 1.1, 0.1, K.woodD),
+      ...Array.from({ length: 5 }, (_, i) => b(-0.85 + i * 0.34, 2.3, -0.6, 0.34, 0.16, 1.2, i % 2 ? K.white : awning)),
+      // crates on the counter: the event, not yet unpacked
+      b(-0.5, 1.22, -0.3, 0.5, 0.4, 0.5, K.woodD),
+      b(0.05, 1.22, -0.2, 0.4, 0.3, 0.4, K.wood),
     ],
-    glow: [b(-0.6, 2.15, 0.5, 1.2, 0.3, 0.1, K.gold), b(-0.38, 1.47, 0.54, 0.76, 0.5, 0.04, screen)],
+    glow: [b(-0.35, 0.5, 0.45, 0.7, 0.4, 0.04, awning)],
   };
+}
+
+/** A stall that pops up beside an event's cart: a table of things under a small awning. */
+export function stall(colours: [string, string, string]): Box[] {
+  const [a, c, d] = colours;
+  return [
+    b(-0.65, 0, -0.35, 0.12, 0.75, 0.12, K.woodD),
+    b(0.53, 0, -0.35, 0.12, 0.75, 0.12, K.woodD),
+    b(-0.75, 0.75, -0.45, 1.5, 0.12, 0.9, K.wood),
+    b(-0.5, 0.87, -0.2, 0.3, 0.3, 0.3, a),
+    b(-0.05, 0.87, -0.25, 0.25, 0.45, 0.25, c),
+    b(0.3, 0.87, -0.15, 0.3, 0.2, 0.3, d),
+    b(-0.7, 0.87, -0.42, 0.08, 1.05, 0.08, K.woodD),
+    b(0.62, 0.87, -0.42, 0.08, 1.05, 0.08, K.woodD),
+    ...Array.from({ length: 4 }, (_, i) => b(-0.8 + i * 0.4, 1.92, -0.5, 0.4, 0.14, 0.95, i % 2 ? K.white : c)),
+  ];
 }

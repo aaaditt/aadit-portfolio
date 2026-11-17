@@ -32,3 +32,82 @@ export const contactsReady = () => CONTACTS.filter((c) => c.value !== "");
 
 /** Where a contact leads: a new message for email, its page otherwise. */
 export const contactHref = (contact: Contact) => (contact.id === "email" ? `mailto:${contact.value}` : contact.value);
+
+/** His own words about himself, carried over from his earlier portfolio. */
+export const STORY = [
+  "I'm a second-year CS student based in Dubai. I play badminton, I think too much, and I care about people more than you'd expect from someone who spends this much time staring at a screen.",
+  "I came to Dubai for university, for a fresh start, and somewhere between late nights and half-finished ideas I found something that felt right. Not just coding: building. There's a difference.",
+  "I'm not one thing. I pick things up fast, get genuinely obsessed, build something out of it, and move to the next thing carrying everything I learned.",
+];
+
+/** A CV to hand over, as a file in /public (for example "/aadit-cv.pdf"). Empty until there is one. */
+export const CV = "";
+
+export type AskId = "who" | "where" | "done" | "study" | "reach" | "cv";
+
+/** A question a visitor can put to him at the camp. */
+export type Ask = {
+  id: AskId;
+  /** The question, as written on its chip. */
+  chip: string;
+  /** What he says in his speech bubble: a few words. */
+  says: string;
+  /** The fuller answer, shown in the card. Empty when the card shows something else instead. */
+  answer: string;
+};
+
+const ASKS: Ask[] = [
+  { id: "who", chip: "Who are you?", says: "Pull up a log.", answer: `${STORY[0]} ${STORY[2]}` },
+  { id: "where", chip: "Where are you based?", says: "Read the sign!", answer: STORY[1] },
+  {
+    id: "done",
+    chip: "What have you done?",
+    says: "It's all down there.",
+    answer: "Design, code and events. Each has its own place in the valley: pick a name tag to go and look.",
+  },
+  { id: "study", chip: "What have you studied?", says: "One lantern each.", answer: "" },
+  { id: "reach", chip: "How do I reach you?", says: "Leave me a note!", answer: "" },
+  { id: "cv", chip: "Can I see your CV?", says: "It's in the tent.", answer: "" },
+];
+
+/** The questions on offer. The CV one waits until there is a CV. */
+export const asks = () => ASKS.filter((a) => a.id !== "cv" || CV !== "");
+
+/** A course, certificate or degree: one lantern on the line at the camp. */
+export type Credential = {
+  id: string;
+  title: string;
+  /** Who gave it. */
+  from: string;
+  /** When: "2025", or "2024 to 2028". */
+  when: string;
+  /** One still being worked towards has a dim lantern. */
+  state: "done" | "in progress";
+  /** True for placeholders, whose title must then start "A placeholder". */
+  sample?: boolean;
+};
+
+export const CREDENTIALS: Credential[] = [
+  { id: "degree", title: "B.E. Computer Science", from: "BITS Pilani Dubai", when: "2024 to 2028", state: "in progress" },
+  { id: "course-1", title: "A placeholder certificate in interface design", from: "A provider", when: "2025", state: "done", sample: true },
+  { id: "course-2", title: "A placeholder course in web development", from: "A provider", when: "2025", state: "done", sample: true },
+  { id: "course-3", title: "A placeholder course in machine learning", from: "A provider", when: "2026", state: "in progress", sample: true },
+];
+
+/** A club or standing role: one banner on a pole beside the stage at the Grounds. */
+export type Club = {
+  id: string;
+  name: string;
+  role: string;
+  when: string;
+  /** The banner's colour. */
+  colour: string;
+  /** True for placeholders, whose name must then start "A placeholder". */
+  sample?: boolean;
+};
+
+export const CLUBS: Club[] = [
+  { id: "ieee", name: "IEEE BITS Dubai", role: "Creative Executive", when: "2024 to now", colour: "#4f86c6" },
+  { id: "club-2", name: "A placeholder club", role: "A role there", when: "2025", colour: "#c8553d", sample: true },
+  { id: "club-3", name: "A placeholder society", role: "A role there", when: "2024", colour: "#e8c15a", sample: true },
+];

@@ -10,8 +10,6 @@ export const LOOP = {
   easel: { seconds: 5, doneAt: 3.6 },
   /** Code: lines are typed, then "aha", it works. */
   terminal: { seconds: 7, doneAt: 5 },
-  /** A game: playing, with a cheer as a round is won. */
-  cabinet: { seconds: 6, doneAt: 4.8 },
 } as const;
 
 export type Kind = keyof typeof LOOP;
@@ -97,29 +95,4 @@ export function code(t: number, seed: number): { lines: Mark[]; cursor: { x: num
     if (w > 0.005) lines.push({ x: SCREEN.left + indent, y, w, h: SCREEN.height, colour: Math.floor(hash(n, 3, seed) * 4) });
   }
   return { lines, cursor, passed: p >= LOOP.terminal.doneAt };
-}
-
-// ---- Game ----
-
-/** The cabinet's screen: x from -0.36 to 0.36 and y from 1.49 to 1.95. */
-export const GAME = { left: -0.36, right: 0.36, bottom: 1.49, top: 1.95 };
-const FALLERS = 3;
-const FALL_SECONDS = 1.3;
-
-/** What is on the game screen at moment `t`: his ship, things falling towards it, and the score. */
-export function game(t: number, seed: number) {
-  const { p, round } = loopAt("cabinet", t);
-  // The ship follows the joystick, which his hand swings at the same rate (see Character).
-  const ship = Math.sin(t * 5.2) * 0.24;
-  const fallers: { x: number; y: number }[] = [];
-  for (let i = 0; i < FALLERS; i++) {
-    const age = t + (i * FALL_SECONDS) / FALLERS;
-    const wave = Math.floor(age / FALL_SECONDS);
-    const k = age / FALL_SECONDS - wave;
-    fallers.push({
-      x: GAME.left + 0.05 + hash(wave, i, seed) * (GAME.right - GAME.left - 0.1),
-      y: GAME.top - 0.04 - k * (GAME.top - GAME.bottom - 0.08),
-    });
-  }
-  return { ship, fallers, score: Math.min(1, p / LOOP.cabinet.doneAt), won: p >= LOOP.cabinet.doneAt, round };
 }

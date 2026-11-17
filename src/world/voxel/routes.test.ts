@@ -22,7 +22,7 @@ test("every section has a place for him to stand, and every place can be reached
 
 test("the shortest way is chosen", () => {
   // Going from the studio to the arcade passes north of the well, not round its south side.
-  const path = route("design-2", "play-2");
+  const path = route("design-2", "events-2");
   expect(path).toContain("plazaNW");
   expect(path).not.toContain("plazaS");
   // Nothing is visited twice.
@@ -52,7 +52,7 @@ test("changing his mind part-way sets off from where he is, by the nearer end of
   expect(back[1]).toEqual(NODES.bridge);
   expect(back[back.length - 1]).toEqual(NODES.lookout);
   // Same spot, told to go to the arcade: he carries on.
-  const on = routeFrom([0, 4], "bridge", "plazaS", "play-2");
+  const on = routeFrom([0, 4], "bridge", "plazaS", "events-2");
   expect(on[1]).toEqual(NODES.plazaS);
 });
 
@@ -61,7 +61,7 @@ function obstacles(): Box[] {
   const out = [...getWorld().props];
   for (const e of EXHIBITS) {
     const at: [number, number, number] = [e.x, heightAt(Math.floor(e.x), Math.floor(e.z)), e.z];
-    const model = e.kind === "easel" ? M.easel([M.K.coral, M.K.coral, M.K.coral]) : e.kind === "terminal" ? M.terminal(M.K.coral).solid : M.cabinet(M.K.coral, M.K.coral).solid;
+    const model = e.kind === "easel" ? M.easel([M.K.coral, M.K.coral, M.K.coral]) : e.kind === "terminal" ? M.terminal(M.K.coral).solid : M.cart(M.K.coral, M.K.coral).solid;
     out.push(...place(model, at));
   }
   return out;
@@ -111,7 +111,7 @@ test("he never has to climb more than two blocks in one step", () => {
 test("with the corners rounded off, he still clears everything and ends exactly on his spot", () => {
   const solid = obstacles();
   const RADIUS = 0.4;
-  const stands: NodeId[] = ["lookout", "design-1", "design-2", "design-3", "code-1", "code-2", "code-3", "play-1", "play-2", "play-3"];
+  const stands: NodeId[] = ["lookout", "design-1", "design-2", "design-3", "code-1", "code-2", "code-3", "events-1", "events-2", "events-3"];
   for (const from of stands) {
     for (const to of stands) {
       if (from === to) continue;

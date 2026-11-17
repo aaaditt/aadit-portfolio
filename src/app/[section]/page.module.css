@@ -44,9 +44,44 @@
 .inventory {
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.6rem;
   margin-top: 1.1rem;
+}
+
+/* The lead project: first, and the full width of the row. */
+.leadItem {
+  grid-column: 1 / -1;
+  order: -1;
+}
+
+.leadSlot {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.leadSlot .slotPicture {
+  flex: none;
+  width: 42%;
+}
+
+.slotText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.leadSlot .slotName {
+  min-height: 0;
+  font-size: 0.8rem;
+}
+
+.slotLine {
+  font-size: 0.82rem;
+  line-height: 1.35;
+  color: var(--panel-soft);
 }
 
 .slot {

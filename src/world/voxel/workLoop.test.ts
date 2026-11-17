@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { GAME, LOOP, SCREEN, code, finishedBetween, game, loopAt, painting } from "./workLoop";
+import { LOOP, SCREEN, code, finishedBetween, loopAt, painting } from "./workLoop";
 import { faceFor } from "./expression";
 
 test("a painting goes on stroke by stroke, stays while he admires it, then clears for the next", () => {
@@ -48,19 +48,6 @@ test("code is typed a line at a time, scrolls up, and the screen never overflows
   expect(code(1, 1).passed).toBe(false);
 });
 
-test("in the game, the ship follows the stick and the score fills until the round is won", () => {
-  for (let t = 0; t < 30; t += 0.31) {
-    const g = game(t, 2);
-    expect(Math.abs(g.ship)).toBeLessThanOrEqual(GAME.right);
-    for (const f of g.fallers) {
-      expect(f.y).toBeGreaterThanOrEqual(GAME.bottom);
-      expect(f.y).toBeLessThanOrEqual(GAME.top);
-    }
-  }
-  expect(game(0.5, 2).score).toBeLessThan(game(3, 2).score);
-  expect(game(LOOP.cabinet.doneAt + 0.2, 2).won).toBe(true);
-});
-
 test("the sparkle comes once each time round, as the work is finished", () => {
   let bursts = 0;
   for (let t = 0; t < LOOP.terminal.seconds * 3; t += 1 / 60) {
@@ -69,14 +56,14 @@ test("the sparkle comes once each time round, as the work is finished", () => {
   expect(bursts).toBe(3);
   expect(finishedBetween("easel", LOOP.easel.doneAt - 0.01, LOOP.easel.doneAt + 0.01)).toBe(true);
   expect(finishedBetween("easel", 1, 1)).toBe(false);
-  expect(loopAt("cabinet", 13)).toEqual({ p: 1, round: 2 });
+  expect(loopAt("terminal", 15)).toEqual({ p: 1, round: 2 });
 });
 
 test("his face keeps time with the work: pleased just as it is finished", () => {
   const mood = { running: false, waving: false, sinceLanding: 10, pointerX: 0, animate: true };
-  const at = (place: "design" | "code" | "play", t: number) => faceFor({ ...mood, place, t });
+  const at = (place: "design" | "code" | "events", t: number) => faceFor({ ...mood, place, t });
   expect(at("design", LOOP.easel.doneAt - 0.2).mouth).toBe("flat");
   expect(at("design", LOOP.easel.doneAt + 0.2).blush).toBe(true);
   expect(at("code", LOOP.terminal.doneAt + 0.2).mouth).toBe("o");
-  expect(at("play", LOOP.cabinet.doneAt + 0.2).eyes).toBe("happy");
+  expect(at("events", 5).eyes).toBe("happy");
 });

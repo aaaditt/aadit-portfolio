@@ -1,8 +1,8 @@
 import { EXHIBITS } from "../world/voxel/exhibitData";
-import type { SheetKind } from "../world/voxel/sheets";
+import type { SheetKind, SheetLayout } from "../world/voxel/sheets";
 
 /** The sections that have projects in them. */
-export type WorkSection = "design" | "code" | "play";
+export type WorkSection = "design" | "code" | "events";
 
 /** One stage of a design project: a sheet above its easel, and a line about it in the card. */
 export type Sheet = {
@@ -11,6 +11,31 @@ export type Sheet = {
   label: string;
   /** What happened at this stage, in a sentence or two. */
   note: string;
+};
+
+/** One working part of a code project: a block of its machine, and a line about it in the card. */
+export type Part = {
+  /** Lower case, unique within the project. */
+  id: string;
+  label: string;
+  /** What this part does, in a sentence. */
+  note: string;
+};
+
+/**
+ * How the world shows a project when it is opened, built from the project's own facts:
+ * - a design project lists the stages it went through, in order, ending on the final piece;
+ * - a code project lists its working parts, in the order data flows through them, and what comes out;
+ * - an event gives how many people came.
+ */
+export type Show = {
+  sheets?: Sheet[];
+  /** How the pictures on the sheets are laid out. */
+  layout?: SheetLayout;
+  parts?: Part[];
+  /** What comes out of the machine's last part, in a few words. */
+  result?: string;
+  attendance?: number;
 };
 
 export type Project = {
@@ -25,7 +50,7 @@ export type Project = {
   role: string;
   /** Who it was with: "Solo", "Team of four", a client... */
   team: string;
-  status: "Shipped" | "Prototype" | "In progress";
+  status: "Shipped" | "Prototype" | "In progress" | "Held";
   tools: string[];
   year: number;
   /** `soon` shows the button greyed out, for a link that is not ready yet. */
@@ -36,11 +61,10 @@ export type Project = {
   colours: [string, string, string];
   /** True for the placeholders. Replace them with real work and drop this flag. */
   sample?: boolean;
-  /**
-   * How the world shows this project when it is opened. A design project lists the stages it went
-   * through, in order, ending on the final piece. Without it, he simply works at the exhibit.
-   */
-  show?: { sheets: Sheet[] };
+  /** The one to look at first in its section: its slot is drawn larger. One per section. */
+  lead?: boolean;
+  /** Without it, he simply works at the exhibit. */
+  show?: Show;
 };
 
 /**
@@ -65,7 +89,9 @@ export const PROJECTS: Project[] = [
     ],
     colours: ["#c8553d", "#e8c15a", "#2f7f79"],
     sample: true,
+    lead: true,
     show: {
+      layout: "blocks",
       sheets: [
         { kind: "sketch", label: "Sketch", note: "A placeholder note: first ideas on paper, working out what the mark should say." },
         { kind: "wireframe", label: "Layout", note: "A placeholder note: the layout in grey boxes, before any colour got involved." },
@@ -91,6 +117,15 @@ export const PROJECTS: Project[] = [
     ],
     colours: ["#4f86c6", "#e79aa0", "#e3b341"],
     sample: true,
+    show: {
+      layout: "screen",
+      sheets: [
+        { kind: "sketch", label: "Sketch", note: "A placeholder note: thumbnail screens on paper, hunting for the calmest flow." },
+        { kind: "wireframe", label: "Layout", note: "A placeholder note: every screen in grey, to settle what goes where." },
+        { kind: "palette", label: "Colours", note: "A placeholder note: one strong colour for actions, two quiet ones for everything else." },
+        { kind: "final", label: "Final", note: "A placeholder note: the finished screens, as they were tested." },
+      ],
+    },
   },
   {
     id: "poster-series",
@@ -109,6 +144,15 @@ export const PROJECTS: Project[] = [
     ],
     colours: ["#4f9a4d", "#e58f3c", "#27374d"],
     sample: true,
+    show: {
+      layout: "poster",
+      sheets: [
+        { kind: "sketch", label: "Sketch", note: "A placeholder note: small roughs for a whole set, so the posters would read as a family." },
+        { kind: "wireframe", label: "Layout", note: "A placeholder note: a shared grid: one big shape, one block of type." },
+        { kind: "palette", label: "Colours", note: "A placeholder note: three inks that could be printed cheaply." },
+        { kind: "final", label: "Final", note: "A placeholder note: the finished posters, as they went up on the walls." },
+      ],
+    },
   },
   {
     id: "portfolio-world",
@@ -127,6 +171,16 @@ export const PROJECTS: Project[] = [
     ],
     colours: ["#e8c15a", "#9fd3e6", "#9bbf4f"],
     sample: true,
+    lead: true,
+    show: {
+      parts: [
+        { id: "data", label: "Content", note: "A placeholder note: every project is a few lines of data." },
+        { id: "world", label: "World", note: "A placeholder note: the valley is built from blocks, the same on every visit." },
+        { id: "show", label: "Shows", note: "A placeholder note: each place builds its show from the open project's data." },
+        { id: "page", label: "Page", note: "A placeholder note: the facts are plain page text, readable without the world." },
+      ],
+      result: "A placeholder result: this page",
+    },
   },
   {
     id: "study-tool",
@@ -145,6 +199,14 @@ export const PROJECTS: Project[] = [
     ],
     colours: ["#e79aa0", "#9fd3e6", "#9bbf4f"],
     sample: true,
+    show: {
+      parts: [
+        { id: "notes", label: "Notes in", note: "A placeholder note: typed or pasted notes are split into topics." },
+        { id: "questions", label: "Questions", note: "A placeholder note: each topic becomes a handful of practice questions." },
+        { id: "quiz", label: "Quiz", note: "A placeholder note: the questions come back spaced out over a few days." },
+      ],
+      result: "A placeholder result: a quiz",
+    },
   },
   {
     id: "data-scraper",
@@ -163,60 +225,73 @@ export const PROJECTS: Project[] = [
     ],
     colours: ["#e58f3c", "#9fd3e6", "#9bbf4f"],
     sample: true,
+    show: {
+      parts: [
+        { id: "fetch", label: "Fetch", note: "A placeholder note: public pages are collected on a schedule." },
+        { id: "clean", label: "Clean", note: "A placeholder note: messy rows are fixed or dropped." },
+        { id: "count", label: "Count", note: "A placeholder note: the rows are grouped by month." },
+        { id: "chart", label: "Chart", note: "A placeholder note: the totals are drawn as one line." },
+      ],
+      result: "A placeholder result: a chart",
+    },
   },
   {
-    id: "jam-game",
-    section: "play",
-    title: "Game jam entry",
-    blurb: "A placeholder for a game: a small puzzle game made in a weekend.",
-    outcome: "A placeholder outcome: placed in the top ten of the jam.",
-    role: "Game designer and programmer",
-    team: "Team of four",
-    status: "Shipped",
-    tools: ["Godot"],
-    year: 2025,
-    links: [
-      { label: "Case study", href: "/", soon: true },
-      { label: "Live", href: "/", soon: true },
-    ],
-    colours: ["#2f7f79", "#9be7c4", "#e8c15a"],
-    sample: true,
-  },
-  {
-    id: "campus-event",
-    section: "play",
-    title: "Campus event",
-    blurb: "A placeholder for an event: a gaming night for a hundred students.",
+    id: "games-night",
+    section: "events",
+    title: "Games night",
+    blurb: "A placeholder for an event: an evening of games for the whole campus.",
     outcome: "A placeholder outcome: a full room, and asked to run it again.",
     role: "Organiser",
     team: "Team of five",
-    status: "Shipped",
+    status: "Held",
     tools: ["Planning", "Notion"],
     year: 2025,
     links: [
-      { label: "Case study", href: "/", soon: true },
-      { label: "Live", href: "/", soon: true },
+      { label: "Photos", href: "/", soon: true },
+      { label: "Write-up", href: "/", soon: true },
     ],
-    colours: ["#27374d", "#ffd27a", "#c8553d"],
+    colours: ["#2f7f79", "#ffd27a", "#c8553d"],
     sample: true,
+    lead: true,
+    show: { attendance: 120 },
   },
   {
-    id: "board-game",
-    section: "play",
-    title: "Board game",
-    blurb: "A placeholder for a tabletop game: rules, cards and playtests.",
-    outcome: "A placeholder outcome: three rounds of playtests shaped the rules.",
-    role: "Designer",
-    team: "Solo",
-    status: "Prototype",
-    tools: ["Paper", "Figma"],
+    id: "design-workshop",
+    section: "events",
+    title: "Design workshop",
+    blurb: "A placeholder for an event: a hands-on afternoon teaching the basics of Figma.",
+    outcome: "A placeholder outcome: everyone left with a poster of their own.",
+    role: "Host and designer",
+    team: "Team of three",
+    status: "Held",
+    tools: ["Figma", "Slides"],
+    year: 2025,
+    links: [
+      { label: "Photos", href: "/", soon: true },
+      { label: "Write-up", href: "/", soon: true },
+    ],
+    colours: ["#27374d", "#e79aa0", "#e8c15a"],
+    sample: true,
+    show: { attendance: 45 },
+  },
+  {
+    id: "hack-day",
+    section: "events",
+    title: "Hack day",
+    blurb: "A placeholder for an event: a one-day build sprint with a demo hour at the end.",
+    outcome: "A placeholder outcome: twelve teams showed something that worked.",
+    role: "Co-organiser",
+    team: "Team of six",
+    status: "Held",
+    tools: ["Planning", "Discord"],
     year: 2024,
     links: [
-      { label: "Case study", href: "/", soon: true },
-      { label: "Live", href: "/", soon: true },
+      { label: "Photos", href: "/", soon: true },
+      { label: "Write-up", href: "/", soon: true },
     ],
     colours: ["#e58f3c", "#bfe9ff", "#4f86c6"],
     sample: true,
+    show: { attendance: 80 },
   },
 ];
 
@@ -260,7 +335,7 @@ export function neighbours(project: Project) {
   };
 }
 
-const KIND_NAMES = { easel: "easel", terminal: "terminal", cabinet: "arcade cabinet" } as const;
+const KIND_NAMES = { easel: "easel", terminal: "terminal", cart: "cart" } as const;
 
 /** Where a project's exhibit stands in the world, in words: "the middle easel". */
 export function whereIs(project: Project): string {

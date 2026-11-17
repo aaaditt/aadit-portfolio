@@ -59,7 +59,7 @@ export default function Image() {
           ))}
         </div>
 
-        <div style={{ display: "flex", marginTop: 36, fontSize: 38, color: INK }}>Design, code, games and events, in a small pixel world.</div>
+        <div style={{ display: "flex", marginTop: 36, fontSize: 38, color: INK }}>Design, code and events, in a small pixel world.</div>
       </div>
     ),
     size,

@@ -7,6 +7,7 @@ import { exhibitFor } from "@/content/projects";
 import type { Section } from "@/content/sections";
 import { intro } from "./introStore";
 import { flight } from "./overlayState";
+import { asked } from "./pickStore";
 import { riseClock } from "./voxel/Voxels";
 import { groundY } from "./voxel/terrain";
 import { walker } from "./walker";
@@ -60,6 +61,12 @@ const WIDE = 900;
 /** The screen narrower than this has the card along the bottom; the action is moved above it. */
 const NARROW = 560;
 
+type View = { position: [number, number, number]; target: [number, number, number] };
+/** At the camp, a question widens the view to take in whatever answers it. */
+const CAMP_VIEW: View = { position: [9.2, 12.4, 42.5], target: [0.4, 8.5, 24.5] };
+/** "What have you done?" looks past him and out over the valley. */
+const VALLEY_VIEW: View = { position: [3.5, 15, 41], target: [3.5, 5, -2] };
+
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const smoothstep = (a: number, c: number, t: number) => {
   const x = Math.min(1, Math.max(0, (t - a) / (c - a)));
@@ -100,8 +107,10 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
     const piece = work ? exhibit(work) : null;
     /** Where the camera should be, before any turning by the visitor. */
     const aim = () => {
-      goalTarget.set(...section.camera.target);
-      goalPosition.set(...section.camera.position);
+      const ask = section.id === "about" ? asked.get() : "";
+      const view: View = ask === "done" ? VALLEY_VIEW : ask ? CAMP_VIEW : section.camera;
+      goalTarget.set(...view.target);
+      goalPosition.set(...view.position);
       const offset = aimOffset.copy(goalPosition).sub(goalTarget).multiplyScalar(pullBack);
       if (piece) {
         // Come in on the exhibit he is working at, along the section's own line of sight.

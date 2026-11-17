@@ -1,4 +1,4 @@
-export type SectionId = "home" | "design" | "code" | "play" | "about";
+export type SectionId = "home" | "design" | "code" | "events" | "about";
 
 type Vec3 = [number, number, number];
 
@@ -10,6 +10,8 @@ export type Section = {
   /** Heading shown when the section is open. */
   title: string;
   blurb: string;
+  /** What he says on getting there. Home has his greeting instead. */
+  line?: string;
   /** Where the camera sits and what it looks at for this section. */
   camera: { position: Vec3; target: Vec3 };
 };
@@ -20,7 +22,7 @@ export const SECTIONS: Section[] = [
     label: "Home",
     href: "/",
     title: "Aadit",
-    blurb: "Design, code, games and events.",
+    blurb: "Design, code and events.",
     // About a quarter closer than the whole valley, so he is not lost in it.
     camera: { position: [6.75, 13.25, 40], target: [0, 9.5, 10] },
   },
@@ -30,6 +32,7 @@ export const SECTIONS: Section[] = [
     href: "/design",
     title: "Design Studio",
     blurb: "Interfaces, visuals and brand work.",
+    line: "Pick an easel!",
     camera: { position: [-17, 16, 15], target: [-18, 5, -8] },
   },
   {
@@ -38,14 +41,16 @@ export const SECTIONS: Section[] = [
     href: "/code",
     title: "Code Lab",
     blurb: "Apps, tools and experiments in software.",
+    line: "Pick a machine!",
     camera: { position: [18.5, 20, 19], target: [15, 4.5, -7] },
   },
   {
-    id: "play",
-    label: "Play",
-    href: "/play",
-    title: "Arcade",
-    blurb: "Games and events I've made or run.",
+    id: "events",
+    label: "Events",
+    href: "/events",
+    title: "The Grounds",
+    blurb: "Events I've run, and the clubs I'm part of.",
+    line: "Pick an event!",
     camera: { position: [4.2, 19.5, 3.5], target: [1, 5, -20] },
   },
   {
@@ -54,6 +59,7 @@ export const SECTIONS: Section[] = [
     href: "/about",
     title: "About & contact",
     blurb: "Who I am and how to reach me.",
+    line: "Ask me anything!",
     camera: { position: [6.2, 8.6, 35.6], target: [0.8, 9.4, 27.3] },
   },
 ];

@@ -5,13 +5,17 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { sfx } from "@/audio/engine";
 import { exhibitFor } from "@/content/projects";
+import { SECTIONS, type SectionId } from "@/content/sections";
 import { bubbleAnchor } from "../bubbleAnchor";
+import { say } from "../bubbleStore";
 import { intro } from "../introStore";
 import { wasDrag } from "../orbit";
-import { highlight, hover } from "../overlayState";
+import { cue, highlight, hover, mailbox } from "../overlayState";
+import { asked, banners } from "../pickStore";
 import { poke } from "../pokeStore";
 import { table } from "../sheetStore";
 import { useMotion } from "../motion";
+import { bannerSpot } from "../show/Grounds";
 import { walker } from "../walker";
 import { b, type Box } from "./box";
 import { EXHIBITS } from "./exhibitData";
@@ -119,6 +123,15 @@ const CROSSED_Z = 0.95;
 const ARM: Box[] = [b(-1, -5.5, -1, 2, 6, 2, HOODIE), b(-1.1, -5.6, -1.1, 2.2, 0.8, 2.2, HOODIE_D), b(-0.8, -6.8, -0.8, 1.6, 1.2, 1.6, SKIN)];
 const BRUSH: Box[] = [b(-0.3, -8.8, -0.3, 0.6, 2.2, 0.6, "#8b6b4a"), b(-0.45, -9.7, -0.45, 0.9, 1, 0.9, "#c8553d")];
 
+const MIC: Box[] = [b(-0.3, -8.4, -0.3, 0.6, 1.7, 0.6, "#22252b"), b(-0.5, -9.5, -0.5, 1, 1.1, 1, "#9aa0a6")];
+
+/** How long the throw of a paper plane takes, and how long he looks sheepish when one comes back. */
+const THROW_SECONDS = 0.5;
+const SHEEPISH_SECONDS = 2.6;
+/** How far back he sits from where he stands, to be on the log, and how far down. */
+const SIT_BACK = 0.6;
+const SIT_DOWN = 0.1;
+
 /**
  * Every joint that moves, as angles. Arms and legs swing forward when negative; an arm's
  * `Side` angle lifts it out to the side when positive on the right and negative on the left.
@@ -145,6 +158,11 @@ export function Character({ greet }: { greet: boolean }) {
   const legR = useRef<THREE.Group>(null);
   const legL = useRef<THREE.Group>(null);
   const brush = useRef<THREE.Group>(null);
+  const mic = useRef<THREE.Group>(null);
+  /** The place he last said his line for, so he says it once on getting there. */
+  const spokeAt = useRef<SectionId | null>(null);
+  /** How far he has sat down, from 0 to 1. */
+  const sat = useRef(0);
   const animate = useMotion();
   /** When he last started greeting, so the first wave comes straight away. */
   const wavedAt = useRef(-1);
@@ -177,6 +195,19 @@ export function Character({ greet }: { greet: boolean }) {
     const lookAt = pointedAt ?? (choices.length > 0 ? choices[Math.floor(clock.elapsedTime / GLANCE_SECONDS) % choices.length] : undefined);
     const t = animate ? clock.elapsedTime : 0;
     clockNow.current = clock.elapsedTime;
+    // At the camp, the question he has been asked decides what he does.
+    const ask = place === "about" && !running ? asked.get() : "";
+    const sitting = ask === "who";
+    const sinceCue = (performance.now() - cue.at) / 1000;
+    const throwing = animate && place === "about" && !running && cue.kind === "mail-sending" && sinceCue < THROW_SECONDS;
+    const sheepish = place === "about" && !running && (performance.now() - mailbox.backAt) / 1000 < SHEEPISH_SECONDS;
+    // At the Grounds, a club banner that has been run up, which he salutes.
+    const banner = waiting && place === "events" ? bannerSpot(banners.get()) : null;
+    // On getting to a place he says its line, once.
+    if (!running && intro.get() === "done" && spokeAt.current !== place) {
+      spokeAt.current = place;
+      say(SECTIONS.find((s) => s.id === place)?.line ?? "", 4.5);
+    }
     // Clicked: a jump and a full spin, arms up. Not while he is running somewhere.
     const sincePoke = clock.elapsedTime - pokedAt.current;
     const poked = sincePoke < POKE_SECONDS && !running;
@@ -218,12 +249,65 @@ export function Character({ greet }: { greet: boolean }) {
       pose.legR = -0.5 * Math.sin(Math.PI * jump);
       pose.legL = -0.5 * Math.sin(Math.PI * jump);
       pose.hop = Math.sin(Math.PI * jump) * POKE_HEIGHT;
+    } else if (throwing) {
+      // Throwing the paper plane: the arm comes over from behind his shoulder.
+      const k = sinceCue / THROW_SECONDS;
+      pose.armR = 1.1 - k * 3.6;
+      pose.armRSide = 0.3;
+      pose.armL = 0.25;
+      pose.armLSide = -0.25;
+      pose.lean = 0.14 * k;
+    } else if (sheepish) {
+      // The note came back: a hand to the back of his head.
+      pose.armR = -0.25;
+      pose.armRSide = 2.65 + Math.sin(t * 7) * 0.06;
+      pose.armL = 0.05;
+      pose.armLSide = -0.15;
+    } else if (sitting) {
+      // On the log by the fire, legs out in front, hands on his knees.
+      pose.legR = -1.45;
+      pose.legL = -1.45;
+      pose.armR = -0.5 + Math.sin(t * 1.4) * 0.04;
+      pose.armL = -0.5;
+      pose.armRSide = 0.12;
+      pose.armLSide = -0.12;
+      pose.lean = 0.07;
+      pose.hop = 0;
+    } else if (ask) {
+      // Pointing at whatever answers the question: up at the lanterns, out at the rest.
+      pose.armR = ask === "study" ? -2.35 : -1.5;
+      pose.armRSide = 0.08;
+      pose.armL = CROSSED_X;
+      pose.armLSide = CROSSED_Z;
+    } else if (banner) {
+      // A salute: hand to his brow, the other arm straight down.
+      pose.armR = -0.75;
+      pose.armRSide = 2.25;
+      pose.armL = 0.02;
+      pose.armLSide = -0.06;
     } else if (pointedAt) {
       // Pointing out the exhibit the visitor is looking at in the list.
       pose.armR = -1.5;
       pose.armRSide = 0.05;
       pose.armL = CROSSED_X;
       pose.armLSide = CROSSED_Z;
+    } else if (presenting && place === "code") {
+      // At the machine's lever: a hand on it, pulled sharply each time it runs.
+      const pull = animate ? Math.max(0, 1 - (clock.elapsedTime - table.flick) / 0.5) : 0;
+      pose.armR = -1.25 + Math.sin(pull * Math.PI) * 0.75;
+      pose.armRSide = -0.15;
+      pose.armL = -0.15;
+      pose.armLSide = -0.22;
+      pose.lean = 0.05 + Math.sin(pull * Math.PI) * 0.12;
+    } else if (presenting && place === "events") {
+      // On the mic in front of the crowd: it at his mouth, the other arm up and waving.
+      const cheer = animate ? Math.max(0, 1 - (clock.elapsedTime - table.flick) / 0.6) : 0;
+      pose.armR = -2.1;
+      pose.armRSide = -0.6;
+      pose.armL = -0.3;
+      pose.armLSide = -(2.2 + Math.sin(t * 6) * 0.25);
+      pose.sway = Math.sin(t * 3) * 0.05;
+      pose.hop = Math.abs(Math.sin(t * 3)) * 0.08 + Math.sin(cheer * Math.PI) * 0.4;
     } else if (presenting) {
       // Showing the sheets fanned out above the easel: one arm raised towards them, open-handed.
       // He raises whichever arm is on the camera's side of him, so the gesture is never hidden.
@@ -251,14 +335,13 @@ export function Character({ greet }: { greet: boolean }) {
       pose.armRSide = -0.2;
       pose.armLSide = 0.2;
       pose.lean = 0.06;
-    } else if (working && place === "play") {
-      // Playing: one hand on the stick, the other hammering a button, leaning into it.
+    } else if (working && place === "events") {
+      // At a cart with nothing unpacked: hands on the counter.
       pose.armR = -1.05;
-      pose.armRSide = -0.22 + Math.sin(t * 5.2) * 0.24;
-      pose.armL = -1 + Math.max(0, Math.sin(t * 9)) * 0.22;
-      pose.armLSide = 0.22;
-      pose.lean = 0.1;
-      pose.sway = Math.sin(t * 5.2) * 0.05;
+      pose.armRSide = -0.2;
+      pose.armL = -1.05;
+      pose.armLSide = 0.2;
+      pose.lean = 0.08;
     } else {
       // Arms crossed, as in the profile picture, with one unfolding to wave.
       pose.armR = CROSSED_X * (1 - up);
@@ -282,15 +365,27 @@ export function Character({ greet }: { greet: boolean }) {
       // Look around a little at the lookout; face the work everywhere else.
       const focus = walker.focus;
       let want = walker.heading + (atLookout && !running ? Math.sin(t * 0.5) * 0.18 : 0);
-      if (working && focus) {
+      const toCamera = Math.atan2(camera.position.x - walker.x, camera.position.z - walker.z);
+      if (presenting && place === "events") {
+        // He faces the crowd, which stands between him and the camera.
+        want = toCamera;
+      } else if (banner) {
+        want = Math.atan2(banner.x - walker.x, banner.z - walker.z);
+      } else if (ask) {
+        // Turned to whatever answers the question, and holding still.
+        want = walker.heading;
+      } else if (working && focus) {
         // Face the work, turned a little towards the camera.
         const work = Math.atan2(focus.x - walker.x, focus.z - walker.z);
-        want = turn(work, Math.atan2(camera.position.x - walker.x, camera.position.z - walker.z), TOWARDS_CAMERA);
+        want = turn(work, toCamera, TOWARDS_CAMERA);
       } else if (pointedAt) {
         want = Math.atan2(pointedAt.x - walker.x, pointedAt.z - walker.z);
       }
       facing.current = animate ? turn(facing.current, want, ease(running ? 14 : 7)) : want;
-      root.current.position.set(walker.x, walker.y + 5.8 * U + now.hop, walker.z);
+      // Sitting, he is a little back from where he stood, on the log, and a little lower.
+      sat.current += ((sitting ? 1 : 0) - sat.current) * ease(8);
+      const back = sat.current * SIT_BACK;
+      root.current.position.set(walker.x - Math.sin(facing.current) * back, walker.y + 5.8 * U + now.hop - sat.current * SIT_DOWN, walker.z - Math.cos(facing.current) * back);
       // The spin of a jump eases out, so he lands facing the way he was.
       const spin = jump > 0 ? (1 - Math.pow(1 - jump, 3)) * Math.PI * 2 : 0;
       root.current.rotation.set(now.lean, facing.current + spin, now.sway, "YXZ");
@@ -301,6 +396,7 @@ export function Character({ greet }: { greet: boolean }) {
     if (legR.current) legR.current.rotation.x = now.legR;
     if (legL.current) legL.current.rotation.x = now.legL;
     if (brush.current) brush.current.visible = working && place === "design" && !presenting;
+    if (mic.current) mic.current.visible = presenting && place === "events";
 
     if (head.current) {
       // At the lookout he looks towards the visitor's pointer. At work he watches what he is doing.
@@ -319,7 +415,7 @@ export function Character({ greet }: { greet: boolean }) {
       h.x += (wantX - h.x) * ease(5);
 
       // His expression for the moment.
-      const face = faceFor({ place, running, waving: up > 0.5, sinceLanding: t - landedAt.current, t, pointerX: pointer.x, animate, poked, working });
+      const face = faceFor({ place, running, waving: up > 0.5, sinceLanding: t - landedAt.current, t, pointerX: pointer.x, animate, poked, working, sheepish });
       const show = (part: Part, on: boolean) => {
         const group = parts.current[part];
         if (group) group.visible = on;
@@ -341,7 +437,8 @@ export function Character({ greet }: { greet: boolean }) {
       anchor.project(camera);
       bubbleAnchor.x = (anchor.x * 0.5 + 0.5) * size.width;
       bubbleAnchor.y = (-anchor.y * 0.5 + 0.5) * size.height;
-      bubbleAnchor.visible = greeting && anchor.z < 1;
+      bubbleAnchor.visible = anchor.z < 1;
+      bubbleAnchor.greeting = greeting;
     }
   });
 
@@ -391,6 +488,9 @@ export function Character({ greet }: { greet: boolean }) {
         <Voxels boxes={ARM} />
         <group ref={brush} visible={false}>
           <Voxels boxes={BRUSH} />
+        </group>
+        <group ref={mic} visible={false}>
+          <Voxels boxes={MIC} />
         </group>
       </group>
       <group ref={armL} position={[-4.4, 5.9, 0]} rotation={[CROSSED_X, 0, CROSSED_Z]}>

@@ -1,0 +1,156 @@
+.asks {
+  margin-top: 1rem;
+}
+
+.list {
+  margin-top: 1.1rem;
+  padding-top: 0.9rem;
+  border-top: 1px dashed var(--panel-line);
+  scroll-margin-top: 0.75rem;
+}
+
+.heading {
+  margin-bottom: 0.45rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--panel-accent);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.chip,
+.row,
+.place {
+  border: 2px solid var(--card-edge);
+  background: var(--panel-hover);
+  color: inherit;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 0 var(--card-shadow);
+  transition:
+    translate 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.chip {
+  min-height: 44px;
+  padding: 0.35rem 0.6rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  text-align: left;
+}
+
+.chip:hover,
+.chip:focus-visible,
+.row:hover,
+.row:focus-visible,
+.place:hover,
+.place:focus-visible {
+  translate: -1px -1px;
+  box-shadow: 3px 3px 0 0 var(--card-shadow);
+}
+
+/* The picked one is pressed in, like a held button. */
+.chip[aria-pressed="true"],
+.row[aria-pressed="true"] {
+  translate: 2px 2px;
+  box-shadow: none;
+  background: var(--panel-ink);
+  color: var(--panel);
+}
+
+.answer {
+  margin-top: 0.6rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.answer:empty {
+  display: none;
+}
+
+.answer p + p {
+  margin-top: 0.5rem;
+}
+
+.places {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.place {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 40px;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.rows {
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  width: 100%;
+  min-height: 44px;
+  padding: 0.4rem 0.6rem;
+  text-align: left;
+  font: inherit;
+}
+
+.rowTitle {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.92rem;
+  line-height: 1.3;
+}
+
+.rowDetail {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+
+.tag {
+  flex: none;
+  padding: 0.05rem 0.35rem;
+  border: 1px dashed currentColor;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.listNote {
+  margin-top: 0.5rem;
+  font-size: 0.82rem;
+  color: var(--panel-soft);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .row,
+  .place {
+    transition: none;
+  }
+}

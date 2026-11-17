@@ -9,7 +9,7 @@ import type { Box } from "./box";
 import type { Exhibit } from "./exhibitData";
 import { K } from "./models";
 import { Voxels } from "./Voxels";
-import { GAME, SCREEN, code, finishedBetween, game, painting, type Kind } from "./workLoop";
+import { SCREEN, code, finishedBetween, painting, type Kind } from "./workLoop";
 
 const cube = new THREE.BoxGeometry(1, 1, 1);
 
@@ -26,10 +26,10 @@ const MARKS = 7;
 const SPARK_FROM: Record<Kind, [number, number, number]> = {
   easel: [0, 2.4, 0.4],
   terminal: [0, 2.35, 0.1],
-  cabinet: [0, 2.7, 0.5],
 };
 
-const PLACE: Record<Exhibit["kind"], Kind> = { easel: "easel", terminal: "terminal", cabinet: "cabinet" };
+/** What is worked on at each kind of exhibit. A cart has nothing to draw on: its event is shown around it. */
+const PLACE: Record<Exhibit["kind"], Kind | null> = { easel: "easel", terminal: "terminal", cart: null };
 
 /** A seed for each exhibit, so the three easels paint different pictures. */
 const seedOf = (id: string) => [...id].reduce((n, ch) => n * 31 + ch.charCodeAt(0), 7) % 9973;
@@ -53,7 +53,7 @@ export function Work({
   colours: [string, string, string];
   /** The finished piece, hidden while it is being worked on. */
   swap: Box[];
-  /** Glowing parts that always show, such as the cabinet's screen. */
+  /** Glowing parts that always show, such as a cart's sign. */
   keep: Box[];
   /** The piece is done and stays on show: its sheets tell the story, so nothing is redrawn here. */
   finished?: boolean;
@@ -68,11 +68,11 @@ export function Work({
   const [a, b, c] = colours;
 
   useFrame(({ clock }) => {
-    const working = animate && !finished && !walker.moving && walker.exhibit === exhibit.id;
+    const working = animate && kind !== null && !finished && !walker.moving && walker.exhibit === exhibit.id;
     if (still.current) still.current.visible = !working;
     if (live.current) live.current.visible = working;
     const t = clock.elapsedTime;
-    if (!working) {
+    if (!working || kind === null) {
       last.current = t;
       return;
     }
@@ -90,7 +90,7 @@ export function Work({
     if (kind === "easel") {
       // On the canvas face, each stroke drawn from its left edge as the brush moves across.
       for (const s of painting(t, seed)) draw(s.x, s.y, s.w * s.share, s.h, 0.36, 0.05, paint([a, b, c][s.colour]));
-    } else if (kind === "terminal") {
+    } else {
       const screen = code(t, seed);
       const palette = [a, K.glass, K.crop, b];
       for (const line of screen.lines) draw(line.x, line.y, line.w, line.h, 0.05, 0.04, light(palette[line.colour]));
@@ -100,13 +100,6 @@ export function Work({
       } else if (Math.floor(t * 4) % 2 === 0) {
         draw(screen.cursor.x + 0.02, screen.cursor.y, 0.07, SCREEN.height, 0.05, 0.045, light(K.white));
       }
-    } else {
-      const g = game(t, seed);
-      // Over the screen's face: the score along the top, things falling, and his ship at the bottom.
-      const z = 0.58;
-      draw(GAME.left + 0.02, GAME.top - 0.05, (GAME.right - GAME.left - 0.04) * g.score, 0.03, z, 0.015, light(K.white));
-      if (!g.won) for (const f of g.fallers) draw(f.x - 0.03, f.y - 0.03, 0.06, 0.06, z, 0.015, light(K.gold));
-      draw(g.ship - 0.06, GAME.bottom + 0.02, 0.12, 0.07, z, 0.015, light(g.won ? K.gold : K.white));
     }
     for (let i = used; i < MARKS; i++) {
       const mesh = marks.current[i];

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { projectsIn } from "@/content/projects";
 import { SECTIONS, getSection } from "@/content/sections";
 import Link from "next/link";
+import { CLUBS } from "@/content/about";
+import { Clubs } from "@/ui/Asks";
 import { Card } from "@/ui/Card";
 import { Inventory } from "@/ui/Inventory";
 import styles from "./page.module.css";
@@ -42,7 +44,8 @@ async function SectionCard({ params }: Props) {
       <h1 className={styles.title}>{section.title}</h1>
       <p className={styles.blurb}>{section.blurb}</p>
       <Inventory projects={projects} base={section.href} />
-      {projects.some((p) => p.sample) && <p className={styles.note}>Pick one, or click its exhibit in the world. Samples for now; real projects are on the way.</p>}
+      {projects.some((p) => p.sample) && <p className={styles.note}>Pick one, or click it in the world. Samples for now; the real ones are on the way.</p>}
+      {section.id === "events" && <Clubs list={CLUBS} />}
     </Card>
   );
 }

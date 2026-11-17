@@ -42,7 +42,7 @@ test("home and about share a spot, so there is nowhere to run", () => {
 
 test("he can be sent somewhere else while still running", () => {
   walker.place("home");
-  walker.go("play");
+  walker.go("events");
   walker.advance(1);
   const z = walker.z;
   expect(z).toBeLessThan(NODES.lookout[1]);
@@ -108,9 +108,9 @@ test("opening a project sends him to its exhibit, where he faces it; going back 
 });
 
 test("a direct link to a project puts him straight at its exhibit", () => {
-  walker.place("play", "play-1");
-  expect([walker.x, walker.z]).toEqual(NODES["play-1"]);
-  expect(walker.exhibit).toBe("play-1");
+  walker.place("events", "events-1");
+  expect([walker.x, walker.z]).toEqual(NODES["events-1"]);
+  expect(walker.exhibit).toBe("events-1");
 });
 
 test("every exhibit's spot is in front of it, within reach, and turned in towards it", () => {

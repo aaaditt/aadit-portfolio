@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { EXHIBITS } from "../world/voxel/exhibitData";
 import { PROJECTS, exhibitFor, getProject, liveLinks, mainLink, neighbours, projectFor, projectsIn, whereIs } from "./projects";
 
-const SECTIONS = ["design", "code", "play"] as const;
+const SECTIONS = ["design", "code", "events"] as const;
 
 test("each section with exhibits has exactly three projects, one per exhibit", () => {
   for (const section of SECTIONS) {
@@ -32,7 +32,7 @@ test("every project has what its card shows", () => {
     // What recruiters look for first: what came of it, who it was with, and where it got to.
     expect(p.outcome.length, p.id).toBeGreaterThan(10);
     expect(p.team.length, p.id).toBeGreaterThan(0);
-    expect(["Shipped", "Prototype", "In progress"]).toContain(p.status);
+    expect(["Shipped", "Prototype", "In progress", "Held"]).toContain(p.status);
   }
 });
 
@@ -58,7 +58,7 @@ test("each project says where its exhibit stands", () => {
   const [left, middle, right] = projectsIn("design");
   expect(whereIs(left)).toBe("the left easel");
   expect(whereIs(middle)).toBe("the middle easel");
-  expect(whereIs(projectsIn("play")[2])).toBe("the right arcade cabinet");
+  expect(whereIs(projectsIn("events")[2])).toBe("the right cart");
   expect(whereIs(projectsIn("code")[1])).toBe("the middle terminal");
   expect(right.id).toBeTruthy();
 });
@@ -83,12 +83,18 @@ test("links that are not ready are left out, and the first ready one is the main
   expect(mainLink(base)).toBeUndefined();
 });
 
-test("a project with a show has a few named sheets, each with something to say, ending on the final piece", () => {
-  const shows = PROJECTS.filter((p) => p.show);
-  expect(shows.length).toBeGreaterThan(0);
-  for (const p of shows) {
-    const sheets = p.show!.sheets;
-    expect(p.section, p.id).toBe("design");
+test("every project has something for the world to show, of the kind its section shows", () => {
+  for (const p of PROJECTS) {
+    expect(p.show, p.id).toBeDefined();
+    expect(Boolean(p.show!.sheets), p.id).toBe(p.section === "design");
+    expect(Boolean(p.show!.parts), p.id).toBe(p.section === "code");
+    expect(Boolean(p.show!.attendance), p.id).toBe(p.section === "events");
+  }
+});
+
+test("a design project has a few named sheets, each with something to say, ending on the final piece", () => {
+  for (const p of projectsIn("design")) {
+    const sheets = p.show!.sheets!;
     expect(sheets.length, p.id).toBeGreaterThanOrEqual(3);
     expect(sheets.length, p.id).toBeLessThanOrEqual(5);
     expect(new Set(sheets.map((s) => s.kind)).size, p.id).toBe(sheets.length);
@@ -99,4 +105,35 @@ test("a project with a show has a few named sheets, each with something to say, 
       if (p.sample) expect(s.note, p.id).toMatch(/^A placeholder/);
     }
   }
+  // The three do not all look alike.
+  expect(new Set(projectsIn("design").map((p) => p.show!.layout)).size).toBe(3);
+});
+
+test("a code project has three to five working parts with short names, and says what comes out", () => {
+  for (const p of projectsIn("code")) {
+    const parts = p.show!.parts!;
+    expect(parts.length, p.id).toBeGreaterThanOrEqual(3);
+    expect(parts.length, p.id).toBeLessThanOrEqual(5);
+    expect(new Set(parts.map((part) => part.id)).size, p.id).toBe(parts.length);
+    for (const part of parts) {
+      expect(part.id, p.id).toMatch(/^[a-z0-9-]+$/);
+      // Short enough for a chip.
+      expect(part.label.length, p.id).toBeLessThanOrEqual(10);
+      expect(part.note.length, p.id).toBeGreaterThan(10);
+      if (p.sample) expect(part.note, p.id).toMatch(/^A placeholder/);
+    }
+    expect(p.show!.result!.length, p.id).toBeGreaterThan(3);
+    if (p.sample) expect(p.show!.result, p.id).toMatch(/^A placeholder/);
+  }
+});
+
+test("an event says how many came, as a whole number of people", () => {
+  for (const p of projectsIn("events")) {
+    expect(Number.isInteger(p.show!.attendance), p.id).toBe(true);
+    expect(p.show!.attendance, p.id).toBeGreaterThan(0);
+  }
+});
+
+test("each section has exactly one lead project", () => {
+  for (const section of SECTIONS) expect(projectsIn(section).filter((p) => p.lead), section).toHaveLength(1);
 });

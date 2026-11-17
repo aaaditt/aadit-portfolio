@@ -144,13 +144,13 @@ function buildWorld(): World {
 
   const design = plateau("design");
   const code = plateau("code");
-  const play = plateau("play");
+  const play = plateau("events");
   const lookout = plateau("lookout");
   const plaza = plateau("plaza");
 
   add(M.studio(), [design.x + 0.5, design.h, design.z - 1]);
   add(M.lab(), [code.x + 1, code.h, code.z - 1]);
-  add(M.arcade(), [play.x, play.h, play.z + 1]);
+  add(M.grounds(), [play.x, play.h, play.z + 1]);
   props.push(...place(M.camp(), [lookout.x, lookout.h, lookout.z]));
   props.push(...place(M.well(), [plaza.x, plaza.h, plaza.z]));
 

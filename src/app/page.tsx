@@ -17,7 +17,7 @@ export default function Home() {
         ))}
       </h1>
       <div className={`${styles.plate} reveal`} style={{ "--reveal-delay": "0.75s" } as CSSProperties}>
-        <p className={styles.line}>Design, code, games and events.</p>
+        <p className={styles.line}>Design, code and events.</p>
         <p className={styles.hint}>Pick a place to visit from the bar below, or click one in the world.</p>
         <ReplayIntro />
       </div>
