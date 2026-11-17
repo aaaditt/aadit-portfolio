@@ -8,6 +8,8 @@ import type { Section } from "@/content/sections";
 import { intro } from "./introStore";
 import { flight } from "./overlayState";
 import { asked } from "./pickStore";
+import { fogRange, stageFov, stageStepBack, viewDrop } from "./stageRule";
+import { cameraMove, stage } from "./stageStore";
 import { riseClock } from "./voxel/Voxels";
 import { groundY } from "./voxel/terrain";
 import { walker } from "./walker";
@@ -56,10 +58,9 @@ const OVERSHOOT = 0.075;
 const CLOSER = 0.7;
 const LOWER = 1.5;
 const aimOffset = new THREE.Vector3();
+const stagePoint = new THREE.Vector3();
 /** The screen wider than this has the card down its left side; the action is moved right of it. */
 const WIDE = 900;
-/** The screen narrower than this has the card along the bottom; the action is moved above it. */
-const NARROW = 560;
 
 type View = { position: [number, number, number]; target: [number, number, number] };
 /** At the camp, a question widens the view to take in whatever answers it. */
@@ -113,9 +114,14 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
       goalPosition.set(...view.position);
       const offset = aimOffset.copy(goalPosition).sub(goalTarget).multiplyScalar(pullBack);
       if (piece) {
-        // Come in on the exhibit he is working at, along the section's own line of sight.
+        // Come in on the show at the exhibit he is working at, along the section's own line of sight.
         goalTarget.set(piece.x, groundY(piece.x, piece.z) + 1.6, piece.z + 0.4);
+        // Once staged, the camera looks at the show itself, which stands above or in front of the exhibit.
+        if (stage.level > 0) goalTarget.lerp(stagePoint.set(stage.x, stage.y, stage.z), Math.min(1, stage.level * 1.5));
         offset.multiplyScalar(CLOSER).y -= LOWER;
+        // The long lens of a staged show would bring it too close: step back as the lens narrows,
+        // so the show grows in the frame without filling it.
+        offset.multiplyScalar(stageStepBack(stage.level));
       }
       goalPosition.copy(goalTarget).add(offset);
     };
@@ -193,8 +199,10 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
         camera.position.lerpVectors(m.from, goalPosition, e);
         camera.position.y += Math.sin(Math.PI * e) * lift;
         target.current.lerpVectors(m.fromTarget, goalTarget, e);
+        cameraMove.progress = Math.min(1, m.t);
         if (m.t >= 1) move.current = null;
       } else if (animate) {
+        cameraMove.progress = 1;
         // At rest, drift a little with the pointer so the scene feels alive, until the visitor
         // takes hold of the view; then follow their hand closely.
         if (!orbit.turned) {
@@ -205,6 +213,7 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
         camera.position.lerp(goalPosition, ease);
         target.current.lerp(goalTarget, ease);
       } else {
+        cameraMove.progress = 1;
         camera.position.copy(goalPosition);
         target.current.copy(goalTarget);
       }
@@ -229,12 +238,13 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
     // phone. Not during the opening, which has the screen to itself.
     const opening = intro.get() === "playing";
     const wantX = opening ? 0 : size.width >= WIDE ? -Math.min(240, size.width * 0.16) : 0;
-    const wantY = opening || section.id === "home" ? 0 : size.width <= NARROW ? size.height * 0.2 : 0;
+    const wantY = opening || section.id === "home" ? 0 : size.height * viewDrop(stage.level, size.width);
     const glide = animate ? 1 - Math.exp(-4 * step) : 1;
     shift.current.x += (wantX - shift.current.x) * glide;
     shift.current.y += (wantY - shift.current.y) * glide;
     const shifted = Math.abs(shift.current.x) > 0.5 || Math.abs(shift.current.y) > 0.5;
-    camera.fov = fov;
+    // A staged show is seen through a long lens: flatter, and bigger in the frame.
+    camera.fov = opening ? fov : stageFov(stage.level, size.width);
     if (shifted) camera.setViewOffset(size.width, size.height, shift.current.x, shift.current.y, size.width, size.height);
     else if (camera.view?.enabled) camera.clearViewOffset();
     camera.updateProjectionMatrix();
@@ -243,8 +253,10 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
     // Push the haze back as the camera climbs, so the map view from high up stays clear.
     if (scene.fog instanceof THREE.Fog) {
       const lift = Math.max(0, camera.position.y - 18) * 1.7;
-      scene.fog.near = 45 + lift;
-      scene.fog.far = 150 + lift;
+      // While staged, it closes in round the show instead.
+      const range = fogRange(camera.position.distanceTo(stagePoint.set(stage.x, stage.y, stage.z)), stage.level);
+      scene.fog.near = range.near + lift * (1 - stage.level);
+      scene.fog.far = range.far + lift * (1 - stage.level);
     }
   });
 

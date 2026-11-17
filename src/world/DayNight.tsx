@@ -6,6 +6,8 @@ import * as THREE from "three";
 import { useTheme } from "@/ui/themeStore";
 import { DAY_HAZE, NIGHT_HAZE, daylight } from "./daylight";
 import { useMotion } from "./motion";
+import { GRADES, lightScale } from "./stageRule";
+import { stage } from "./stageStore";
 import { walker } from "./walker";
 
 const DAY = {
@@ -39,6 +41,8 @@ const POOL_POWER = [10, 10, 4.5, 8];
 
 const FILL_POWER = 4;
 const toCamera = new THREE.Vector3();
+const tint = new THREE.Color();
+const tintNight = new THREE.Color();
 
 /** How quickly day turns to night, per second. About a second and a half end to end. */
 const RATE = 3.2;
@@ -66,15 +70,26 @@ export function DayNight() {
     started.current = true;
     const n = daylight.night;
 
-    if (fog.current) fog.current.color.lerpColors(DAY.haze, NIGHT.haze, n);
+    // While a show is staged, the world's own light drops and the fog closes in round the show,
+    // in the place's own colour. This sits on top of day or night: the theme still decides which.
+    const s = stage.level;
+    const dim = lightScale(s, n);
+    if (fog.current) {
+      fog.current.color.lerpColors(DAY.haze, NIGHT.haze, n);
+      if (s > 0) {
+        const grade = GRADES[stage.place];
+        tint.set(grade.day).lerp(tintNight.set(grade.night), n);
+        fog.current.color.lerp(tint, s);
+      }
+    }
     if (hemisphere.current) {
       hemisphere.current.color.lerpColors(DAY.sky, NIGHT.sky, n);
       hemisphere.current.groundColor.lerpColors(DAY.ground, NIGHT.ground, n);
-      hemisphere.current.intensity = DAY.ambient + (NIGHT.ambient - DAY.ambient) * n;
+      hemisphere.current.intensity = (DAY.ambient + (NIGHT.ambient - DAY.ambient) * n) * dim;
     }
     if (sun.current) {
       sun.current.color.lerpColors(DAY.sun, NIGHT.sun, n);
-      sun.current.intensity = DAY.sunPower + (NIGHT.sunPower - DAY.sunPower) * n;
+      sun.current.intensity = (DAY.sunPower + (NIGHT.sunPower - DAY.sunPower) * n) * dim;
     }
     // A soft warm light on the camera's side of the character, so his face reads at night, so he never becomes a silhouette.
     if (fill.current) {

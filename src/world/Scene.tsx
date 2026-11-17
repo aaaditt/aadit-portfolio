@@ -9,6 +9,7 @@ import { Buckets } from "./show/Buckets";
 import { Camp } from "./show/Camp";
 import { Banners, StageLights } from "./show/Grounds";
 import { Lab } from "./show/Lab";
+import { Stage } from "./show/Stage";
 import { Boat, Campfire, Clouds, CodeSign, HotAirBalloon, MailFlag, Water, WindmillSails } from "./voxel/Animated";
 import { Appear } from "./voxel/Appear";
 import { Character } from "./voxel/Character";
@@ -36,6 +37,7 @@ export function Scene({
   return (
     <>
       <DayNight />
+      <Stage current={current} project={project} />
 
       {/* The ground receives shadows but does not cast them, which halves the shadow work. */}
       <Voxels boxes={world.terrain} cast={false} grain rise />

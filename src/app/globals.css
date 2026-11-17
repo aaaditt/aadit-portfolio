@@ -10,6 +10,8 @@
   --navy: #27374d;
   /* Panels the page puts over the world: by day light with dark text, by night the reverse. */
   --panel: rgb(255 252 244 / 0.88);
+  /* The card over a staged show: near solid, so it reads over a darkened world. */
+  --panel-staged: rgb(255 252 244 / 0.96);
   --panel-ink: #17202b;
   --panel-soft: #485465;
   --panel-line: rgb(23 32 43 / 0.14);
@@ -40,6 +42,7 @@
   --panel-shadow: rgb(0 0 0 / 0.6);
   --panel-glint: rgb(255 255 255 / 0.14);
   --panel-accent: #ffc56b;
+  --panel-staged: rgb(13 19 34 / 0.96);
   --bubble: #1d2640;
   --bubble-ink: #f4f1e8;
   --focus: #ffd27a;
@@ -166,6 +169,11 @@ html:not([data-intro="done"]) .reveal {
   background: var(--bubble);
   border: solid var(--bubble-ink);
   border-width: 0 3px 3px 3px;
+}
+
+/* While a show is staged (see src/world/show/Stage.tsx), the panels go near solid. */
+:root[data-stage="on"] {
+  --panel: var(--panel-staged);
 }
 
 /* Visible only to screen readers. */

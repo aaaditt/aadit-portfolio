@@ -4,6 +4,7 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useMotion } from "../motion";
+import { stage } from "../stageStore";
 import { walker } from "../walker";
 import { b, type Box } from "./box";
 import { groundY, plateau } from "./terrain";
@@ -73,6 +74,8 @@ export function Villagers() {
       const noticed = animate && walker.moving && Math.hypot(walker.x - x, walker.z - z) < NOTICE;
       watching.current[i] += ((noticed ? 1 : 0) - watch) * (1 - Math.exp(-(noticed ? 12 : 2.5) * step));
       group.position.set(x, groundY(x, z) + Math.abs(Math.sin(clock.elapsedTime * 9 + i)) * 0.07 * moving, z);
+      // While a show is staged, only those close to it stay.
+      group.visible = stage.level < 0.5 || Math.hypot(x - stage.x, z - stage.z) < 14;
       const ahead = Math.atan2(x2 - x1, z2 - z1) + (forward ? 0 : Math.PI);
       const towards = Math.atan2(walker.x - x, walker.z - z);
       group.rotation.y = ahead + Math.atan2(Math.sin(towards - ahead), Math.cos(towards - ahead)) * watch;
@@ -107,6 +110,7 @@ export function Birds() {
   const animate = useMotion();
 
   useFrame(({ clock }) => {
+    if (flock.current) flock.current.visible = stage.level < 0.5;
     if (!flock.current || !animate) return;
     const t = clock.elapsedTime;
     const lap = (t % 22) / 22;
@@ -150,6 +154,9 @@ export function ChimneySmoke() {
   }, []);
 
   useFrame(({ clock }) => {
+    refs.current.forEach((group) => {
+      if (group) group.visible = stage.level < 0.5;
+    });
     if (!animate) return;
     refs.current.forEach((group, g) => {
       group?.children.forEach((puff, i) => {

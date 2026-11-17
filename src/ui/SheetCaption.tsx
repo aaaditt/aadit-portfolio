@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { caption } from "@/world/overlayState";
+import { stage } from "@/world/stageStore";
 import styles from "./SheetCaption.module.css";
 
 /**
@@ -18,7 +19,8 @@ export function SheetCaption() {
     const follow = () => {
       const el = box.current;
       if (el) {
-        el.classList.toggle(styles.on, caption.on);
+        // While a show is staged, the card is the only words on screen.
+        el.classList.toggle(styles.on, caption.on && stage.level < 0.3);
         if (caption.on) {
           // Keep it on the screen, whatever the sheet is doing.
           const half = el.offsetWidth / 2 + 8;

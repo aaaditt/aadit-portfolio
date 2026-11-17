@@ -3,6 +3,7 @@
 import { useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { stageUniforms } from "../stageStore";
 import type { Box } from "./box";
 
 const dummy = new THREE.Object3D();
@@ -30,6 +31,33 @@ const RISE_VERTEX = `
     transformed.y -= (1.0 - riseE) * 36.0 / instanceMatrix[1][1];
   #endif`;
 
+/**
+ * Dims everything away from the open item's show while it is staged (see stageStore): the world
+ * fades back and the show is left to the one light on it.
+ */
+function addStage(shader: { uniforms: Record<string, unknown>; vertexShader: string; fragmentShader: string }) {
+  Object.assign(shader.uniforms, stageUniforms);
+  shader.vertexShader = shader.vertexShader
+    .replace("#include <common>", "#include <common>\nvarying vec3 vStageWorld;")
+    .replace(
+      "#include <project_vertex>",
+      `#include <project_vertex>
+      vec4 stageWorld = vec4(transformed, 1.0);
+      #ifdef USE_INSTANCING
+        stageWorld = instanceMatrix * stageWorld;
+      #endif
+      vStageWorld = (modelMatrix * stageWorld).xyz;`,
+    );
+  shader.fragmentShader = shader.fragmentShader
+    .replace("#include <common>", "#include <common>\nvarying vec3 vStageWorld;\nuniform vec3 uStageCentre;\nuniform vec2 uStageDim;")
+    .replace(
+      "#include <fog_fragment>",
+      `float stageAway = smoothstep(uStageDim.x, uStageDim.x + 8.0, distance(vStageWorld, uStageCentre));
+      gl_FragColor.rgb *= 1.0 - 0.65 * uStageDim.y * stageAway;
+      #include <fog_fragment>`,
+    );
+}
+
 function addRise(shader: { uniforms: Record<string, unknown>; vertexShader: string }) {
   shader.uniforms.uRise = riseClock;
   shader.vertexShader = shader.vertexShader
@@ -40,10 +68,11 @@ function addRise(shader: { uniforms: Record<string, unknown>; vertexShader: stri
 /** A full-brightness material for lit things, which can also rise with the land. */
 function glowMaterial(rise: boolean, faded: boolean) {
   const material = new THREE.MeshBasicMaterial({ toneMapped: false, transparent: faded });
-  if (rise) {
-    material.onBeforeCompile = addRise;
-    material.customProgramCacheKey = () => `glow-rise-${faded}`;
-  }
+  material.onBeforeCompile = (shader) => {
+    if (rise) addRise(shader);
+    addStage(shader);
+  };
+  material.customProgramCacheKey = () => `glow-${rise}-${faded}-stage`;
   return material;
 }
 
@@ -56,10 +85,10 @@ function glowMaterial(rise: boolean, faded: boolean) {
  */
 function blockMaterial(grain: boolean, rise: boolean) {
   const material = new THREE.MeshStandardMaterial({ roughness: 1 });
-  if (!grain && !rise) return material;
 
   material.onBeforeCompile = (shader) => {
     if (rise) addRise(shader);
+    addStage(shader);
     if (grain) {
       shader.vertexShader = shader.vertexShader
         .replace("#include <common>", "#include <common>\nvarying vec3 vGrain;")
@@ -90,7 +119,7 @@ function blockMaterial(grain: boolean, rise: boolean) {
     }
   };
   // Materials with different options must not share a compiled shader.
-  material.customProgramCacheKey = () => `block-${grain}-${rise}`;
+  material.customProgramCacheKey = () => `block-${grain}-${rise}-stage`;
   return material;
 }
 

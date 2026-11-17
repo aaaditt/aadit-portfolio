@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { bubbleAnchor } from "@/world/bubbleAnchor";
 import { lineAt } from "@/world/bubbleStore";
 import { poke } from "@/world/pokeStore";
+import { stage } from "@/world/stageStore";
 
 const HELLO = "Hi, I'm Aadit!";
 
@@ -22,7 +23,8 @@ export function SpeechBubble() {
       const el = ref.current;
       if (el) {
         const said = lineAt(performance.now());
-        const on = bubbleAnchor.visible && (said !== "" || bubbleAnchor.greeting);
+        // While a show is staged, the card is the only words on screen.
+        const on = bubbleAnchor.visible && (said !== "" || bubbleAnchor.greeting) && stage.level < 0.3;
         el.style.left = `${bubbleAnchor.x}px`;
         el.style.top = `${bubbleAnchor.y}px`;
         el.classList.toggle("bubble-on", on);
