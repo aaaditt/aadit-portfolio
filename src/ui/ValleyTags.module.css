@@ -1,19 +1,18 @@
-/* A name tag over a place in the valley. It is put where the scene says the place is. */
+/* A tag on a beam of light over the valley. It is put where the scene says the beam's top is. */
 .tag {
   position: fixed;
   z-index: 6;
-  translate: -50% -50%;
-  padding: 0.35rem 0.6rem 0.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  translate: -50% -100%;
+  padding: 0.4rem 0.65rem 0.45rem;
   background: var(--bubble);
   color: var(--bubble-ink);
   border: 3px solid var(--bubble-ink);
   box-shadow: 4px 4px 0 0 rgb(23 32 43 / 0.3);
-  font-family: var(--font-display), monospace;
-  font-size: 1rem;
-  line-height: 1;
-  text-transform: uppercase;
   text-decoration: none;
-  letter-spacing: 0.06em;
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
@@ -30,6 +29,41 @@
 .tag:hover,
 .tag:focus-visible {
   scale: 1.08;
+}
+
+.name {
+  font-family: var(--font-display), monospace;
+  font-size: 1rem;
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.line {
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+}
+
+.tag {
+  min-width: 7.5rem;
+}
+
+.role {
+  max-width: 11.5rem;
+  overflow: hidden;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  opacity: 0.8;
+}
+
+/* On a phone the tags are close together: names and counts only. */
+@media (max-width: 480px) {
+  .role {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

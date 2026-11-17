@@ -65,7 +65,7 @@ type View = { position: [number, number, number]; target: [number, number, numbe
 /** At the camp, a question widens the view to take in whatever answers it. */
 const CAMP_VIEW: View = { position: [9.2, 12.4, 42.5], target: [0.4, 8.5, 24.5] };
 /** "What have you done?" looks past him and out over the valley. */
-const VALLEY_VIEW: View = { position: [10.5, 15.5, 38], target: [1, 5, -4] };
+const VALLEY_VIEW: View = { position: [-4, 37, 50], target: [-4, 2, -8] };
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const smoothstep = (a: number, c: number, t: number) => {
@@ -256,13 +256,15 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
     const opening = intro.get() === "playing";
     const share = opening ? landing.current : 1;
     const wantX = (size.width >= WIDE ? -Math.min(240, size.width * 0.16) : 0) * share;
-    const wantY = (section.id === "home" ? 0 : size.height * viewDrop(stage.level, size.width)) * share;
+    // A wide stage keeps the ordinary framing and lens.
+    const lens = stage.wide ? 0 : stage.level;
+    const wantY = (section.id === "home" ? 0 : size.height * viewDrop(lens, size.width)) * share;
     const glide = opening || !animate ? 1 : 1 - Math.exp(-4 * step);
     shift.current.x += (wantX - shift.current.x) * glide;
     shift.current.y += (wantY - shift.current.y) * glide;
     const shifted = Math.abs(shift.current.x) > 0.5 || Math.abs(shift.current.y) > 0.5;
     // A staged show is seen through a long lens: flatter, and bigger in the frame.
-    camera.fov = opening ? fov : tent.inside ? ROOM_FOV : stageFov(stage.level, size.width);
+    camera.fov = opening ? fov : tent.inside ? ROOM_FOV : stageFov(lens, size.width);
     if (shifted) camera.setViewOffset(size.width, size.height, shift.current.x, shift.current.y, size.width, size.height);
     else if (camera.view?.enabled) camera.clearViewOffset();
     camera.updateProjectionMatrix();

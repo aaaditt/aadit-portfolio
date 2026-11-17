@@ -7,6 +7,7 @@ import { daylight } from "./daylight";
 import { Hotspots } from "./Hotspots";
 import { Buckets } from "./show/Buckets";
 import { Camp } from "./show/Camp";
+import { Beams } from "./show/Beams";
 import { Banners, StageLights } from "./show/Grounds";
 import { Lab } from "./show/Lab";
 import { Stage } from "./show/Stage";
@@ -81,6 +82,7 @@ export function Scene({
       <Moon />
       <Fireflies />
 
+      <Beams current={current} onOpen={onOpen} />
       <Hotspots current={current} onOpen={onOpen} />
     </>
   );

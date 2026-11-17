@@ -11,6 +11,8 @@ export const stage = {
   /** How brightly the light on the show shines, 0 to 1. */
   key: 0,
   place: "design" as StagePlace,
+  /** A stage that is a whole view, not one show: the world dims, but the lens and framing stay wide. */
+  wide: false,
   x: 0,
   y: 0,
   z: 0,

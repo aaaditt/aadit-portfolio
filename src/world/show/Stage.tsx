@@ -23,13 +23,16 @@ const SHOW_AT: Record<Exhibit["kind"], [number, number, number]> = {
 };
 
 /** The middle of the show for what is open, or null if nothing is. */
-export function showCentre(current: SectionId, project: string | null): { place: StagePlace; x: number; y: number; z: number } | null {
+export function showCentre(current: SectionId, project: string | null): { place: StagePlace; x: number; y: number; z: number; wide?: boolean } | null {
   const e = project ? exhibitFor(project) : undefined;
   if (e && e.section === current && (current === "design" || current === "code" || current === "events")) {
     const [dx, dy, dz] = SHOW_AT[e.kind];
     return { place: current, x: e.x + dx, y: groundY(e.x, e.z) + dy, z: e.z + dz };
   }
   if (current === "about" && tent.inside) return { place: "about", x: ROOM_AT[0], y: ROOM_AT[1] + 2.5, z: ROOM_AT[2] + 1 };
+  // Looking out over the valley, the stage is the whole valley: it darkens so the beams of light
+  // rising from it are the brightest things there.
+  if (current === "about" && asked.get() === "done") return { place: "about", x: 0, y: 4, z: -12, wide: true };
   if (current === "about" && asked.get()) {
     const camp = plateau("lookout");
     return { place: "about", x: camp.x + 0.4, y: camp.h + 2.2, z: camp.z + 1.2 };
@@ -64,6 +67,7 @@ export function Stage({ current, project }: { current: SectionId; project: strin
       stage.y += (show.y - stage.y) * glide;
       stage.z += (show.z - stage.z) * glide;
       stage.place = show.place;
+      stage.wide = Boolean(show.wide);
     }
     stage.level = stageStep(stage.level, on, Math.min(delta, 0.05), animate);
     // Going out, the key light leaves first.
@@ -76,7 +80,8 @@ export function Stage({ current, project }: { current: SectionId; project: strin
     if (!on) landed.current = false;
 
     stageUniforms.uStageCentre.value = [stage.x, stage.y, stage.z];
-    stageUniforms.uStageDim.value = [dimRadius(stage.level), stage.level];
+    // A wide stage, the whole valley, goes darker still, so the beams of light are the only bright things.
+    stageUniforms.uStageDim.value = [dimRadius(stage.level), stage.level * (stage.wide ? 1.2 : 1)];
 
     const root = document.documentElement;
     if (stage.level > 0.4) root.dataset.stage = "on";

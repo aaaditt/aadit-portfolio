@@ -63,7 +63,7 @@ const ASKS: Ask[] = [
     id: "done",
     chip: "What have you done?",
     says: "It's all down there.",
-    answer: "Design, code and events. Each has its own place in the valley: pick a name tag to go and look.",
+    answer: "Design, code and events. Each has its own place in the valley, and a beam of light shows how much is there: pick one to go and look.",
   },
   {
     id: "earned",

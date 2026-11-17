@@ -8,7 +8,6 @@ import { sfx } from "@/audio/engine";
 import { wasDrag } from "./orbit";
 import { intro } from "./introStore";
 import { flight, hover, mapLabels } from "./overlayState";
-import { asked } from "./pickStore";
 import { plateau } from "./voxel/terrain";
 
 type Spot = { id: SectionId; centre: [number, number, number]; size: [number, number, number] };
@@ -31,8 +30,7 @@ const projected = new THREE.Vector3();
 
 /**
  * Invisible boxes around each landmark. Hovering one shows its name; clicking it opens that section.
- * Also reports where each district sits on screen, for the name tags in the opening map view
- * and the ones he points out from the camp.
+ * Also reports where each district sits on screen, for the name tags in the opening map view.
  */
 export function Hotspots({ current, onOpen }: { current: SectionId; onOpen: (href: string) => void }) {
   // Never leave the pointer cursor or a name tag behind.
@@ -45,9 +43,8 @@ export function Hotspots({ current, onOpen }: { current: SectionId; onOpen: (hre
   );
 
   useFrame(({ camera, size }) => {
-    // Wanted during the opening map view, and when he points out over the valley from the camp.
-    const opening = intro.get() === "playing" && flight.progress <= 0.45;
-    if (!opening && asked.get() !== "done") return;
+    // Wanted during the opening map view.
+    if (intro.get() !== "playing" || flight.progress > 0.45) return;
     SPOTS.forEach((spot, i) => {
       projected.set(...spot.centre).project(camera);
       mapLabels[i].x = (projected.x * 0.5 + 0.5) * size.width;

@@ -7,6 +7,7 @@ import { daylight } from "../daylight";
 import { mailbox } from "../overlayState";
 import { useMotion } from "../motion";
 import { asked } from "../pickStore";
+import { stage } from "../stageStore";
 import { b } from "./box";
 import { flagTurn } from "./mailFlag";
 import * as M from "./models";
@@ -116,7 +117,8 @@ export function Clouds() {
   // And one the camera is about to pass through, now that the view can be turned, would fill the screen.
   useFrame(({ camera }) => {
     if (!ref.current) return;
-    ref.current.visible = camera.position.y < 60;
+    // Nor while a show is staged: they would cross the one thing being looked at.
+    ref.current.visible = camera.position.y < 60 && stage.level < 0.3;
     for (const cloud of ref.current.children) cloud.visible = cloud.position.distanceTo(camera.position) > 16;
   });
 
