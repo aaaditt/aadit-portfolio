@@ -9,6 +9,30 @@
   scroll-margin-top: 0.75rem;
 }
 
+/* A list inside a list: the certificates of one kind. */
+.subList {
+  margin-top: 0.7rem;
+}
+
+.subHeading {
+  margin-bottom: 0.35rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--panel-soft);
+}
+
+.verify {
+  display: inline-block;
+  margin: 0.25rem 0 0.15rem;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: inherit;
+}
+
 .heading {
   margin-bottom: 0.45rem;
   font-family: var(--font-mono), monospace;

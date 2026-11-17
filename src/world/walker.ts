@@ -127,6 +127,22 @@ export const walker = {
     return true;
   },
 
+  /**
+   * Puts him at a point off the paths, at once: inside the trophy tent. He stays there until he is
+   * put back on a stand; any run from there starts from the place he last stood.
+   */
+  enter(x: number, y: number, z: number, facing: number) {
+    walker.x = x;
+    walker.y = y;
+    walker.z = z;
+    walker.heading = facing;
+    walker.moving = false;
+    walker.progress = 1;
+    walker.speed = 0;
+    walker.exhibit = null;
+    walker.focus = null;
+  },
+
   /** Moves him on by a frame. */
   advance(delta: number) {
     if (!walker.moving) return;

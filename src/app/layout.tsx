@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Geist, Geist_Mono, Pixelify_Sans } from "next/font/google";
 import { BottomBar } from "@/ui/BottomBar";
+import { DoorFade } from "@/ui/DoorFade";
 import { IntroOverlay } from "@/ui/IntroOverlay";
 import { ListLink } from "@/ui/ListLink";
 import { ResetView } from "@/ui/ResetView";
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Suspense fallback={null}>
           <World />
         </Suspense>
+        <DoorFade />
         <SpeechBubble />
         <SheetCaption />
         <ValleyTags />

@@ -3,20 +3,21 @@
 import { useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { sfx } from "@/audio/engine";
-import { CV, asks } from "@/content/about";
+import { CV, asks, type Credential } from "@/content/about";
 import { SECTIONS } from "@/content/sections";
 import { say } from "@/world/bubbleStore";
-import { asked, banners, lanterns, type Pick } from "@/world/pickStore";
+import { asked, banners, trophies, type Pick } from "@/world/pickStore";
+import { shelves } from "@/world/show/trophyRule";
 import styles from "./Asks.module.css";
 
 /** Answers that are further down the card: the part of the page each one is in. */
-const BELOW: Record<string, string> = { study: "study", reach: "contact" };
+const BELOW: Record<string, string> = { earned: "certificates", reach: "contact" };
 
 const PLACES = SECTIONS.filter((s) => s.id === "design" || s.id === "code" || s.id === "events");
 
 /**
  * Questions to put to him at the camp. Picking one sends him to whatever answers it (the log by
- * the fire, the signpost, the lanterns, the mailbox) and shows the answer in full here.
+ * the fire, the signpost, the trophy tent, the mailbox) and shows the answer in full here.
  */
 export function Asks() {
   const list = asks();
@@ -27,7 +28,7 @@ export function Asks() {
   useEffect(
     () => () => {
       asked.clear();
-      lanterns.clear();
+      trophies.clear();
       say("");
     },
     [],
@@ -71,7 +72,6 @@ export function Asks() {
             ))}
           </p>
         )}
-        {ask === "study" && <p>One lantern on the line for each. They are listed just below; pick one to lift it.</p>}
         {ask === "reach" && <p>The quickest ways are just below.</p>}
         {ask === "cv" && CV && (
           <p className={styles.places}>
@@ -85,17 +85,18 @@ export function Asks() {
   );
 }
 
-export type Row = { id: string; title: string; detail: string; tag?: string };
+export type Row = { id: string; title: string; detail: string; tag?: string; href?: string };
 
 /**
- * A short list of things that each stand somewhere in the world: lanterns on the line, banners on
- * their poles. Picking a row picks its thing in the world, and the other way round.
+ * A short list of things that each stand somewhere in the world: certificates on the shelves,
+ * banners on their poles. Picking a row picks its thing in the world, and the other way round.
  */
-function PickList({ id, heading, rows, store, note }: { id?: string; heading: string; rows: Row[]; store: Pick; note?: string }) {
+function PickList({ id, heading, rows, store, note, sub = false }: { id?: string; heading: string; rows: Row[]; store: Pick; note?: string; sub?: boolean }) {
   const picked = useSyncExternalStore(store.subscribe, store.get, () => "");
+  const Heading = sub ? "h3" : "h2";
   return (
-    <section id={id} className={styles.list} aria-label={heading}>
-      <h2 className={styles.heading}>{heading}</h2>
+    <section id={id} className={sub ? styles.subList : styles.list} aria-label={heading}>
+      <Heading className={sub ? styles.subHeading : styles.heading}>{heading}</Heading>
       <ul className={styles.rows}>
         {rows.map((row) => (
           <li key={row.id}>
@@ -114,6 +115,11 @@ function PickList({ id, heading, rows, store, note }: { id?: string; heading: st
               </span>
               <span className={styles.rowDetail}>{row.detail}</span>
             </button>
+            {row.href && (
+              <a href={row.href} className={styles.verify} target="_blank" rel="noreferrer">
+                Verify <span aria-hidden="true">▶</span>
+              </a>
+            )}
           </li>
         ))}
       </ul>
@@ -122,16 +128,24 @@ function PickList({ id, heading, rows, store, note }: { id?: string; heading: st
   );
 }
 
-/** What he has studied: one row, and one lantern at the camp, for each course or certificate. */
-export function Credentials({ list }: { list: { id: string; title: string; from: string; when: string; state: string; sample?: boolean }[] }) {
+/** His certificates, one list per kind, in the same order as the shelves inside the camp's tent. */
+export function Credentials({ list }: { list: Credential[] }) {
   return (
-    <PickList
-      id="study"
-      heading="Study"
-      store={lanterns}
-      rows={list.map((c) => ({ id: c.id, title: c.title, detail: `${c.from} · ${c.when}`, tag: c.sample ? "Sample" : c.state === "in progress" ? "In progress" : undefined }))}
-      note={list.some((c) => c.sample) ? "Each is a lantern on the line at the camp. Samples for now; the real ones are on the way." : "Each is a lantern on the line at the camp."}
-    />
+    <section id="certificates" className={styles.list} aria-label="Certificates">
+      <h2 className={styles.heading}>Certificates</h2>
+      {shelves(list).map((shelf) => (
+        <PickList
+          key={shelf.kind}
+          sub
+          heading={shelf.title}
+          store={trophies}
+          rows={shelf.items.map((c) => ({ id: c.id, title: c.title, detail: `${c.from} · ${c.when}`, tag: c.sample ? "Sample" : undefined, href: c.link }))}
+        />
+      ))}
+      <p className={styles.listNote}>
+        {list.some((c) => c.sample) ? "Each has its place on the shelves inside the tent. Samples for now; the real ones are on the way." : "Each has its place on the shelves inside the tent."}
+      </p>
+    </section>
   );
 }
 

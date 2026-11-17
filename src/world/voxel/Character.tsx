@@ -274,8 +274,8 @@ export function Character({ greet }: { greet: boolean }) {
       pose.lean = 0.07;
       pose.hop = 0;
     } else if (ask) {
-      // Pointing at whatever answers the question: up at the lanterns, out at the rest.
-      pose.armR = ask === "study" ? -2.35 : -1.5;
+      // Pointing at whatever answers the question.
+      pose.armR = -1.5;
       pose.armRSide = 0.08;
       pose.armL = CROSSED_X;
       pose.armLSide = CROSSED_Z;

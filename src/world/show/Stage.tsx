@@ -11,6 +11,7 @@ import { useMotion } from "../motion";
 import { asked } from "../pickStore";
 import { GRADES, dimRadius, keyLevel, stageStep, type StagePlace } from "../stageRule";
 import { cameraMove, stage, stageUniforms } from "../stageStore";
+import { ROOM_AT, tent } from "../tentStore";
 import type { Exhibit } from "../voxel/exhibitData";
 import { groundY, plateau } from "../voxel/terrain";
 
@@ -28,6 +29,7 @@ export function showCentre(current: SectionId, project: string | null): { place:
     const [dx, dy, dz] = SHOW_AT[e.kind];
     return { place: current, x: e.x + dx, y: groundY(e.x, e.z) + dy, z: e.z + dz };
   }
+  if (current === "about" && tent.inside) return { place: "about", x: ROOM_AT[0], y: ROOM_AT[1] + 2.5, z: ROOM_AT[2] + 1 };
   if (current === "about" && asked.get()) {
     const camp = plateau("lookout");
     return { place: "about", x: camp.x + 0.4, y: camp.h + 2.2, z: camp.z + 1.2 };

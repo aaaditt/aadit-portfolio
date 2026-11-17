@@ -43,7 +43,7 @@ export const STORY = [
 /** A CV to hand over, as a file in /public (for example "/aadit-cv.pdf"). Empty until there is one. */
 export const CV = "";
 
-export type AskId = "who" | "where" | "done" | "study" | "reach" | "cv";
+export type AskId = "who" | "where" | "done" | "earned" | "reach" | "cv";
 
 /** A question a visitor can put to him at the camp. */
 export type Ask = {
@@ -65,7 +65,12 @@ const ASKS: Ask[] = [
     says: "It's all down there.",
     answer: "Design, code and events. Each has its own place in the valley: pick a name tag to go and look.",
   },
-  { id: "study", chip: "What have you studied?", says: "One lantern each.", answer: "" },
+  {
+    id: "earned",
+    chip: "What have you earned?",
+    says: "Come inside!",
+    answer: "Every certificate has its place on the shelves inside the tent, one shelf for each kind. They are listed just below too: pick one to bring it forward.",
+  },
   { id: "reach", chip: "How do I reach you?", says: "Leave me a note!", answer: "" },
   { id: "cv", chip: "Can I see your CV?", says: "It's in the tent.", answer: "" },
 ];
@@ -73,25 +78,44 @@ const ASKS: Ask[] = [
 /** The questions on offer. The CV one waits until there is a CV. */
 export const asks = () => ASKS.filter((a) => a.id !== "cv" || CV !== "");
 
-/** A course, certificate or degree: one lantern on the line at the camp. */
+/**
+ * A certificate: a course, a sports award, a hackathon or event, or any other kind. Each has its
+ * place on the shelves inside the camp's tent, one shelf for each kind (see trophyRule.ts).
+ */
 export type Credential = {
   id: string;
   title: string;
   /** Who gave it. */
   from: string;
-  /** When: "2025", or "2024 to 2028". */
+  /** When: "2025", or "2024 to 2028, in progress". */
   when: string;
-  /** One still being worked towards has a dim lantern. */
-  state: "done" | "in progress";
+  /**
+   * Its kind: "course", "sport" and "event" have objects of their own (a scroll, a medal, a
+   * badge). Any other kind gets its own shelf of framed certificates, named after the kind.
+   */
+  kind: string;
+  /** A page that proves it, such as a Coursera verify link. */
+  link?: string;
   /** True for placeholders, whose title must then start "A placeholder". */
   sample?: boolean;
 };
 
+const sample = (id: string, kind: string, title: string, from: string, when: string): Credential => ({ id, kind, title: `A placeholder ${title}`, from, when, sample: true });
+
 export const CREDENTIALS: Credential[] = [
-  { id: "degree", title: "B.E. Computer Science", from: "BITS Pilani Dubai", when: "2024 to 2028", state: "in progress" },
-  { id: "course-1", title: "A placeholder certificate in interface design", from: "A provider", when: "2025", state: "done", sample: true },
-  { id: "course-2", title: "A placeholder course in web development", from: "A provider", when: "2025", state: "done", sample: true },
-  { id: "course-3", title: "A placeholder course in machine learning", from: "A provider", when: "2026", state: "in progress", sample: true },
+  sample("course-1", "course", "course in interface design", "Coursera", "2025"),
+  sample("course-2", "course", "course in web development", "Coursera", "2025"),
+  sample("course-3", "course", "course in machine learning", "Coursera", "2025"),
+  sample("course-4", "course", "course in data structures", "Coursera", "2024"),
+  sample("course-5", "course", "course in databases", "Coursera", "2024"),
+  sample("course-6", "course", "course in cloud computing", "Coursera", "2026"),
+  sample("sport-1", "sport", "badminton tournament medal", "A sports body", "2024"),
+  sample("sport-2", "sport", "badminton league award", "A sports body", "2023"),
+  sample("sport-3", "sport", "inter-school sports certificate", "A school", "2022"),
+  sample("event-1", "event", "hackathon participation", "A hackathon", "2025"),
+  sample("event-2", "event", "hackathon finalist", "A hackathon", "2025"),
+  sample("event-3", "event", "event volunteer certificate", "IEEE BITS Dubai", "2024"),
+  sample("event-4", "event", "workshop certificate", "A university club", "2024"),
 ];
 
 /** A club or standing role: one banner on a pole beside the stage at the Grounds. */

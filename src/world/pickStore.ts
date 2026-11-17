@@ -29,7 +29,7 @@ export type Pick = ReturnType<typeof createPick>;
 export const parts = createPick();
 /** The question put to him at the camp. */
 export const asked = createPick();
-/** The lantern (a course or certificate) picked at the camp. */
-export const lanterns = createPick();
+/** The certificate picked on the shelves inside the camp's tent. */
+export const trophies = createPick();
 /** The club banner picked at the Grounds. */
 export const banners = createPick();

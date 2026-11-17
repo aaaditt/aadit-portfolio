@@ -19,42 +19,6 @@ export function armSwing(since: number): number {
   return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2);
 }
 
-// ---- The lantern line ----
-
-/** The line runs from the tent's pole to the top of the signpost, sagging in the middle. */
-export const LINE = { from: { x: -3.5, y: 3.7, z: -0.3 }, to: { x: 4.55, y: 3.3, z: -0.35 }, sag: 0.55 };
-
-/** A point `k` of the way along the line, 0 at the tent and 1 at the signpost. */
-export function linePoint(k: number): Point3 {
-  const { from, to, sag } = LINE;
-  return {
-    x: from.x + (to.x - from.x) * k,
-    y: from.y + (to.y - from.y) * k - Math.sin(Math.PI * k) * sag,
-    z: from.z + (to.z - from.z) * k,
-  };
-}
-
-/** Where lantern `i` of `n` hangs: evenly along the line, clear of both ends. */
-export const lanternSlot = (i: number, n: number): Point3 => linePoint((i + 1) / (n + 1));
-
-/** Each lantern lights this long after the one before, as the light runs along the line. */
-const LIGHT_GAP = 0.3;
-
-/** How long the whole line takes to light. Short: the list in the card never waits for it. */
-export const lineLitAfter = (n: number) => (n - 1) * LIGHT_GAP + 0.3;
-
-/**
- * How brightly lantern `i` glows, 0 to 1.
- * - `asked`: the visitor asked about his studies, `since` seconds ago, so the line lights in turn.
- * - `night`: how far into night it is; the line glows softly then, asked or not.
- * - a course still in progress only ever half lights.
- */
-export function lanternGlow(i: number, state: "done" | "in progress", now: { asked: boolean; since: number; night: number; still?: boolean }): number {
-  const most = state === "done" ? 1 : 0.4;
-  const reached = now.asked && (now.still || now.since >= i * LIGHT_GAP);
-  return most * Math.max(reached ? 1 : 0, now.night * 0.6);
-}
-
 // ---- The paper plane ----
 
 /** The plane is out over the valley for at least this long, however quickly the note is sent: long enough to be seen. */

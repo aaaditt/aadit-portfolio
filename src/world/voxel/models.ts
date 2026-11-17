@@ -341,12 +341,40 @@ export function tentFlap(): Box[] {
   return [b(0, 0, 0, 1, 1.6, 0.1, K.navyD)];
 }
 
-/** One lantern for the line at the camp, hanging from the origin. `flame` is the part that lights. */
-export function hangingLantern(): { solid: Box[]; flame: Box[] } {
-  return {
-    solid: [b(-0.03, -0.18, -0.03, 0.06, 0.18, 0.06, K.navyD), b(-0.2, -0.26, -0.2, 0.4, 0.08, 0.4, K.navyD), b(-0.2, -0.72, -0.2, 0.4, 0.08, 0.4, K.navyD)],
-    flame: [b(-0.19, -0.66, -0.19, 0.38, 0.42, 0.38, K.fire)],
-  };
+/** One certificate's object for the trophy shelves, centred on the origin, in its shelf's colour. */
+export function trophy(shape: "scroll" | "medal" | "badge" | "frame", tint: string): Box[] {
+  if (shape === "scroll") {
+    return [
+      b(-0.3, -0.1, -0.1, 0.6, 0.2, 0.2, "#f3ead2"),
+      b(-0.34, -0.12, -0.12, 0.06, 0.24, 0.24, K.creamD),
+      b(0.28, -0.12, -0.12, 0.06, 0.24, 0.24, K.creamD),
+      b(-0.05, -0.13, -0.13, 0.1, 0.26, 0.26, tint),
+      b(-0.04, -0.3, 0.06, 0.08, 0.18, 0.04, tint),
+    ];
+  }
+  if (shape === "medal") {
+    return [
+      b(-0.16, 0.05, -0.02, 0.12, 0.34, 0.04, tint),
+      b(0.04, 0.05, -0.02, 0.12, 0.34, 0.04, tint),
+      b(-0.18, -0.3, -0.04, 0.36, 0.36, 0.08, K.gold),
+      b(-0.11, -0.23, 0.02, 0.22, 0.22, 0.04, K.yellow),
+    ];
+  }
+  if (shape === "badge") {
+    return [
+      b(-0.18, 0.08, -0.02, 0.06, 0.3, 0.04, tint),
+      b(0.12, 0.08, -0.02, 0.06, 0.3, 0.04, tint),
+      b(-0.2, -0.32, -0.03, 0.4, 0.42, 0.06, K.white),
+      b(-0.2, -0.02, 0.01, 0.4, 0.1, 0.04, tint),
+      b(-0.12, -0.2, 0.01, 0.24, 0.05, 0.04, K.stone),
+    ];
+  }
+  return [
+    b(-0.27, -0.22, -0.04, 0.54, 0.44, 0.06, K.woodD),
+    b(-0.22, -0.17, 0, 0.44, 0.34, 0.04, "#fbf7ee"),
+    b(-0.14, 0.04, 0.03, 0.28, 0.04, 0.02, K.stone),
+    b(0.08, -0.13, 0.03, 0.09, 0.09, 0.02, tint),
+  ];
 }
 
 /** A paper plane, nose along +z, centred on the origin. */
@@ -365,9 +393,8 @@ export function camp(): Box[] {
   return [
     // tent
     ...[0, 1, 2].map((k) => b(-5.2 + k * 0.5, k, -3.2, 3.4 - k, 1, 3, k % 2 ? K.creamD : K.orange)),
-    // the dark of the doorway (its flap is `tentFlap`), and a pole for the lantern line
+    // the dark of the doorway (its flap is `tentFlap`)
     b(-4, 0, -0.26, 1, 1.6, 0.06, K.black),
-    b(-3.6, 3, -0.4, 0.2, 0.8, 0.2, K.woodD),
     // log bench
     b(-4.2, 0, 1.6, 0.5, 0.5, 0.6, K.woodD),
     b(-2.3, 0, 1.6, 0.5, 0.5, 0.6, K.woodD),

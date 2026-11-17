@@ -11,6 +11,9 @@ import { asked } from "./pickStore";
 import { driftWeight, handover } from "./landingRule";
 import { fogRange, stageFov, stageStepBack, viewDrop } from "./stageRule";
 import { cameraMove, stage } from "./stageStore";
+import { CREDENTIALS } from "@/content/about";
+import { ROOM_FOV, roomCamera, roomSize } from "./show/trophyRule";
+import { ROOM_AT, tent } from "./tentStore";
 import { riseClock } from "./voxel/Voxels";
 import { groundY } from "./voxel/terrain";
 import { walker } from "./walker";
@@ -36,7 +39,7 @@ const FLIGHT = new THREE.CatmullRomCurve3(
     new THREE.Vector3(-36, 34, 30),
     new THREE.Vector3(-28, 20, 46),
     // Ends beside the resting view, so the last second is one curve that arrives, not a blend of two.
-    new THREE.Vector3(4, 13.5, 42),
+    new THREE.Vector3(4.8, 14.3, 48.4),
   ],
   false,
   "centripetal",
@@ -72,6 +75,8 @@ const smoothstep = (a: number, c: number, t: number) => {
 
 type Move = { from: THREE.Vector3; fromTarget: THREE.Vector3; t: number };
 
+const ROOM = roomSize(CREDENTIALS);
+
 /**
  * Flies the opening shot, then carries the camera between sections in a timed arc that lifts
  * over the rooftops, while the character makes his own way there. At rest, the visitor can turn
@@ -90,6 +95,8 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
   const resting = useRef(0);
   /** During the opening, how far it has handed over to the resting view, 0 to 1. */
   const landing = useRef(0);
+  /** Whether the camera was inside the trophy tent last frame. */
+  const wasInside = useRef(false);
   /** How far the picture is shifted, in pixels, to keep the action clear of the card. */
   const shift = useRef({ x: 0, y: 0 });
 
@@ -106,7 +113,23 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
       const view: View = ask === "done" ? VALLEY_VIEW : ask ? CAMP_VIEW : section.camera;
       goalTarget.set(...view.target);
       goalPosition.set(...view.position);
+      if (tent.inside) {
+        // Inside the trophy tent: square on to the shelves, far enough back to take in the wall.
+        // The page's card leaves only part of the screen clear: on a desktop the third to the
+        // right of the picture's middle, on a phone the band above the sheet.
+        const free = size.width >= WIDE ? { across: 0.68, down: 1 } : size.width <= 560 ? { across: 1, down: 0.48 } : { across: 1, down: 1 };
+        const at = roomCamera(ROOM, aspect, free);
+        goalTarget.set(ROOM_AT[0], ROOM_AT[1] + at.height, ROOM_AT[2]);
+        goalPosition.set(ROOM_AT[0], ROOM_AT[1] + at.height + 0.4, ROOM_AT[2] + at.distance);
+        return;
+      }
       const offset = aimOffset.copy(goalPosition).sub(goalTarget).multiplyScalar(pullBack);
+      if (section.id === "home" && aspect < 1) {
+        // On a tall phone the full pull-back loses the camp in hillside and water: stay closer,
+        // and look a little higher.
+        offset.multiplyScalar(0.8);
+        goalTarget.y += 1.5;
+      }
       if (piece) {
         // Come in on the show at the exhibit he is working at, along the section's own line of sight.
         goalTarget.set(piece.x, groundY(piece.x, piece.z) + 1.6, piece.z + 0.4);
@@ -122,6 +145,15 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
     aim();
     // Then turn it however the visitor has turned the view.
     if (orbit.turned) goalPosition.set(...orbited(goalPosition.toArray(), goalTarget.toArray(), groundY));
+
+    // Going into or out of the trophy tent happens behind the dark of the doorway: the camera
+    // simply is in its new place when the dark lifts.
+    if (tent.inside !== wasInside.current && target.current) {
+      wasInside.current = tent.inside;
+      camera.position.copy(goalPosition);
+      target.current.copy(goalTarget);
+      move.current = null;
+    }
 
     // First frame without an opening flight: start at the section, do not glide in from the sky.
     if (!target.current) {
@@ -230,7 +262,7 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
     shift.current.y += (wantY - shift.current.y) * glide;
     const shifted = Math.abs(shift.current.x) > 0.5 || Math.abs(shift.current.y) > 0.5;
     // A staged show is seen through a long lens: flatter, and bigger in the frame.
-    camera.fov = opening ? fov : stageFov(stage.level, size.width);
+    camera.fov = opening ? fov : tent.inside ? ROOM_FOV : stageFov(stage.level, size.width);
     if (shifted) camera.setViewOffset(size.width, size.height, shift.current.x, shift.current.y, size.width, size.height);
     else if (camera.view?.enabled) camera.clearViewOffset();
     camera.updateProjectionMatrix();

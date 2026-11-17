@@ -10,6 +10,7 @@ import { Camp } from "./show/Camp";
 import { Banners, StageLights } from "./show/Grounds";
 import { Lab } from "./show/Lab";
 import { Stage } from "./show/Stage";
+import { Trophies } from "./show/Trophies";
 import { Boat, Campfire, Clouds, CodeSign, HotAirBalloon, MailFlag, Water, WindmillSails } from "./voxel/Animated";
 import { Appear } from "./voxel/Appear";
 import { Character } from "./voxel/Character";
@@ -54,6 +55,7 @@ export function Scene({
         <Campfire />
         <MailFlag />
         <Camp current={current} />
+        <Trophies current={current} />
       </Appear>
       <Appear distance={18}>
         <CodeSign />

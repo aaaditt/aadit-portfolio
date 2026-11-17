@@ -31,7 +31,7 @@ test("each question has a few words for his bubble, and either a full answer or 
     expect(a.says.length, a.id).toBeGreaterThan(3);
     // Short enough for a speech bubble.
     expect(a.says.length, a.id).toBeLessThanOrEqual(24);
-    if (!["study", "reach", "cv"].includes(a.id)) expect(a.answer.length, a.id).toBeGreaterThan(20);
+    if (!["reach", "cv"].includes(a.id)) expect(a.answer.length, a.id).toBeGreaterThan(20);
   }
 });
 
@@ -42,12 +42,15 @@ test("the CV is only offered once there is one", () => {
 test("courses and clubs have unique names to pick them by, and placeholders say what they are", () => {
   expect(new Set(CREDENTIALS.map((c) => c.id)).size).toBe(CREDENTIALS.length);
   expect(new Set(CLUBS.map((c) => c.id)).size).toBe(CLUBS.length);
-  for (const c of CREDENTIALS) if (c.sample) expect(c.title, c.id).toMatch(/^A placeholder/);
+  for (const c of CREDENTIALS) {
+    if (c.sample) expect(c.title, c.id).toMatch(/^A placeholder/);
+    expect(c.kind.trim().length, c.id).toBeGreaterThan(0);
+    if (c.link) expect(c.link, c.id).toMatch(/^https:\/\//);
+  }
   for (const c of CLUBS) {
     if (c.sample) expect(c.name, c.id).toMatch(/^A placeholder/);
     expect(c.colour, c.id).toMatch(/^#[0-9a-f]{6}$/i);
   }
-  // Few enough to hang on one line, or stand in one row.
-  expect(CREDENTIALS.length).toBeLessThanOrEqual(8);
+  // Clubs are few enough to stand in one row by the stage.
   expect(CLUBS.length).toBeLessThanOrEqual(4);
 });
