@@ -8,6 +8,7 @@ import type { Section } from "@/content/sections";
 import { intro } from "./introStore";
 import { flight } from "./overlayState";
 import { asked } from "./pickStore";
+import { driftWeight, handover } from "./landingRule";
 import { fogRange, stageFov, stageStepBack, viewDrop } from "./stageRule";
 import { cameraMove, stage } from "./stageStore";
 import { riseClock } from "./voxel/Voxels";
@@ -44,12 +45,6 @@ const FLIGHT_LOOK_FROM = new THREE.Vector3(0, 0, 0);
 const goalPosition = new THREE.Vector3();
 const goalTarget = new THREE.Vector3();
 const flightPoint = new THREE.Vector3();
-const landingDirection = new THREE.Vector3();
-
-/** How long the camera takes to settle after the opening lands, in seconds. */
-const SETTLE_SECONDS = 1.1;
-/** How far it carries on past its resting place before springing back, as a share of its distance. */
-const OVERSHOOT = 0.075;
 
 /**
  * With a project open, the camera comes in this much closer to its exhibit than the section's
@@ -90,18 +85,16 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
   const shown = useRef(section.id);
   const move = useRef<Move | null>(null);
   const flying = useRef(false);
-  /** Seconds since the opening landed, while the camera is still settling. */
-  const settling = useRef(-1);
-  /** The settling nudge added last frame, taken off again before this frame is worked out. */
-  const nudge = useRef(new THREE.Vector3());
+  /** Seconds since the camera last came to rest, after the opening or a move. */
+  const resting = useRef(0);
+  /** During the opening, how far it has handed over to the resting view, 0 to 1. */
+  const landing = useRef(0);
   /** How far the picture is shifted, in pixels, to keep the action clear of the card. */
   const shift = useRef({ x: 0, y: 0 });
 
   useFrame(({ camera, scene, size, pointer }, delta) => {
     if (!(camera instanceof THREE.PerspectiveCamera)) return;
     const step = Math.min(delta, 0.1);
-    camera.position.sub(nudge.current);
-    nudge.current.set(0, 0, 0);
     // On tall, narrow screens, step back so the subject still fits.
     const aspect = size.width / size.height;
     const pullBack = aspect < 1.25 ? Math.min(1.25 / aspect, 2.2) : 1;
@@ -157,13 +150,14 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
       const t = smoothstep(HOLD, 1, flight.progress);
       FLIGHT.getPoint(t, flightPoint);
       // Hand over from the flight path to the real resting place over the last stretch.
-      camera.position.copy(flightPoint).lerp(goalPosition, smoothstep(0.72, 1, t));
+      landing.current = handover(t);
+      resting.current = 0;
+      camera.position.copy(flightPoint).lerp(goalPosition, landing.current);
       target.current.copy(FLIGHT_LOOK_FROM).lerp(goalTarget, smoothstep(0.35, 1, t));
       fov = MAP_FOV + (FOV - MAP_FOV) * smoothstep(0.15, 0.8, t);
       if (flown.current >= 1) intro.finish();
     } else {
-      // The opening just landed: carry on a little past the resting place, then spring back.
-      if (flying.current && animate && flown.current >= 1) settling.current = 0;
+      // The opening has landed exactly on the resting view, so there is nothing left to settle.
       flying.current = false;
       flight.progress = 1;
       riseClock.value = 100;
@@ -200,14 +194,18 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
         camera.position.y += Math.sin(Math.PI * e) * lift;
         target.current.lerpVectors(m.fromTarget, goalTarget, e);
         cameraMove.progress = Math.min(1, m.t);
+        resting.current = 0;
         if (m.t >= 1) move.current = null;
       } else if (animate) {
         cameraMove.progress = 1;
+        resting.current += step;
         // At rest, drift a little with the pointer so the scene feels alive, until the visitor
-        // takes hold of the view; then follow their hand closely.
+        // takes hold of the view; then follow their hand closely. The drift fades in after
+        // arriving, so a landing holds still instead of sliding off towards the pointer.
         if (!orbit.turned) {
-          goalPosition.x += pointer.x * 0.6;
-          goalPosition.y += pointer.y * 0.3;
+          const drift = driftWeight(resting.current);
+          goalPosition.x += pointer.x * 0.6 * drift;
+          goalPosition.y += pointer.y * 0.3 * drift;
         }
         const ease = 1 - Math.exp(-(orbit.dragging ? 16 : orbit.turned ? 7 : 2.4) * step);
         camera.position.lerp(goalPosition, ease);
@@ -219,27 +217,14 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
       }
     }
 
-    if (settling.current >= 0) {
-      settling.current += step;
-      const k = settling.current / SETTLE_SECONDS;
-      if (k >= 1 || move.current) settling.current = -1;
-      else {
-        // A damped swing: forward towards the subject, a little back, then still.
-        const reach = camera.position.distanceTo(goalTarget) * OVERSHOOT;
-        const swing = Math.sin(k * Math.PI * 1.5) * Math.exp(-k * 2.6) * reach;
-        landingDirection.subVectors(goalTarget, camera.position).normalize();
-        nudge.current.copy(landingDirection).multiplyScalar(swing);
-        nudge.current.y -= swing * 0.25;
-        camera.position.add(nudge.current);
-      }
-    }
-
     // Keep the action clear of the page's card: to its right on a wide screen, above it on a
-    // phone. Not during the opening, which has the screen to itself.
+    // phone. The opening starts centred and moves into this framing as it lands, in step with
+    // the camera, so it arrives composed instead of sliding over afterwards.
     const opening = intro.get() === "playing";
-    const wantX = opening ? 0 : size.width >= WIDE ? -Math.min(240, size.width * 0.16) : 0;
-    const wantY = opening || section.id === "home" ? 0 : size.height * viewDrop(stage.level, size.width);
-    const glide = animate ? 1 - Math.exp(-4 * step) : 1;
+    const share = opening ? landing.current : 1;
+    const wantX = (size.width >= WIDE ? -Math.min(240, size.width * 0.16) : 0) * share;
+    const wantY = (section.id === "home" ? 0 : size.height * viewDrop(stage.level, size.width)) * share;
+    const glide = opening || !animate ? 1 : 1 - Math.exp(-4 * step);
     shift.current.x += (wantX - shift.current.x) * glide;
     shift.current.y += (wantY - shift.current.y) * glide;
     const shifted = Math.abs(shift.current.x) > 0.5 || Math.abs(shift.current.y) > 0.5;

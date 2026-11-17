@@ -65,7 +65,7 @@
   right: 0;
   height: 11vh;
   background: #0c0f14;
-  transition: transform 0.7s cubic-bezier(0.7, 0, 0.2, 1);
+  transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .top {
@@ -84,6 +84,15 @@
 .overlay[data-playing="true"] .bar,
 .overlay[data-loading="true"] .bar {
   transform: none;
+}
+
+/* Just before the flight lands, the bars begin to open, so the reveal overlaps the slow-down. */
+.overlay[data-playing="true"][data-landing] .top {
+  transform: translateY(-101%);
+}
+
+.overlay[data-playing="true"][data-landing] .bottom {
+  transform: translateY(101%);
 }
 
 .caption {

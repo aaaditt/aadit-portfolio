@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { intro, useIntro } from "@/world/introStore";
+import { BARS_OPEN_AT } from "@/world/landingRule";
 import { flight, hover, mapLabels } from "@/world/overlayState";
 import { isListPage } from "./listPage";
 import { PixelLetter } from "./pixelArt";
@@ -24,6 +25,7 @@ export function IntroOverlay() {
   const plain = isListPage(usePathname());
   const labels = useRef<(HTMLSpanElement | null)[]>([]);
   const tag = useRef<HTMLSpanElement>(null);
+  const overlay = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     document.documentElement.dataset.intro = state;
@@ -56,6 +58,8 @@ export function IntroOverlay() {
       mouseY = event.clientY;
     };
     const follow = () => {
+      // The bars begin to open just before the flight lands, so the full picture arrives with it.
+      overlay.current?.toggleAttribute("data-landing", intro.get() === "playing" && flight.progress >= BARS_OPEN_AT);
       const showLabels = intro.get() === "playing" && flight.progress > 0.14 && flight.progress < 0.36;
       labels.current.forEach((el, i) => {
         if (!el) return;
@@ -84,7 +88,7 @@ export function IntroOverlay() {
   const playing = state === "playing";
 
   return (
-    <div className={styles.overlay} data-playing={playing} data-loading={state === "pending" && !plain}>
+    <div ref={overlay} className={styles.overlay} data-playing={playing} data-loading={state === "pending" && !plain}>
       <div className={styles.cover} aria-hidden={state !== "pending" || plain}>
         <p className={styles.wordmark} aria-label="Aadit">
           {[..."AADIT"].map((letter, i) => (
