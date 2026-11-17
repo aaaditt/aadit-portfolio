@@ -17,7 +17,7 @@ import { PART, builtAfter, partSlot, partTarget, runAt, type PartPose } from "./
 import { pin, unpin } from "./pin";
 
 const cube = new THREE.BoxGeometry(1, 1, 1);
-const BODY = new THREE.MeshStandardMaterial({ color: K.navyD, roughness: 1 });
+const BODY = new THREE.MeshStandardMaterial({ color: K.navy, roughness: 1 });
 const TRIM = new THREE.MeshStandardMaterial({ color: K.stoneL, roughness: 1 });
 const PIPE = new THREE.MeshStandardMaterial({ color: K.stoneD, roughness: 1 });
 const LIGHT = new THREE.MeshBasicMaterial({ color: "#fff1c4", toneMapped: false });
@@ -148,7 +148,7 @@ export function Machine({ exhibit, y, project, open }: { exhibit: Exhibit; y: nu
     if (flow.current) {
       flow.current.visible = allOut && (run.on || run.done);
       flow.current.position.set((left + head) / 2, lineY, lineZ + PART.size / 2 + 0.05);
-      flow.current.scale.set(Math.max(head - left, 0.001), 0.07, 0.04);
+      flow.current.scale.set(Math.max(head - left, 0.001), 0.16, 0.05);
     }
     if (packet.current) {
       packet.current.visible = allOut && run.on;
@@ -193,7 +193,7 @@ export function Machine({ exhibit, y, project, open }: { exhibit: Exhibit; y: nu
     <>
       <mesh ref={pipe} geometry={cube} material={PIPE} visible={false} />
       <mesh ref={flow} geometry={cube} material={LIGHT} visible={false} />
-      <mesh ref={packet} geometry={cube} material={LIGHT} scale={0.26} visible={false} />
+      <mesh ref={packet} geometry={cube} material={LIGHT} scale={0.42} visible={false} />
       <mesh ref={thread} geometry={cube} material={THREAD} visible={false} />
       <group position={[exhibit.x + LEVER.x, y + LEVER.y, exhibit.z + LEVER.z]}>
         <mesh geometry={cube} material={TRIM} position={[0, 0.05, 0]} scale={[0.26, 0.1, 0.26]} />

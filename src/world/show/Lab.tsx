@@ -16,7 +16,7 @@ const cube = new THREE.BoxGeometry(1, 1, 1);
 /** How far the hood lifts, in radians, when the lab is open. */
 const HOOD_OPEN = 0.72;
 /** How bright a project's row and core are when nothing points at it. */
-const RESTING = 0.38;
+const RESTING = 0.7;
 
 /**
  * The parts of the Code Lab that move.

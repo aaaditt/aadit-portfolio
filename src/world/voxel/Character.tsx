@@ -307,7 +307,8 @@ export function Character({ greet }: { greet: boolean }) {
       pose.armL = -0.3;
       pose.armLSide = -(2.2 + Math.sin(t * 6) * 0.25);
       pose.sway = Math.sin(t * 3) * 0.05;
-      pose.hop = Math.abs(Math.sin(t * 3)) * 0.08 + Math.sin(cheer * Math.PI) * 0.4;
+      // Up on the cart's step, so he and the mic clear the crowd's heads.
+      pose.hop = 0.55 + Math.abs(Math.sin(t * 3)) * 0.08 + Math.sin(cheer * Math.PI) * 0.4;
     } else if (presenting) {
       // Showing the sheets fanned out above the easel: one arm raised towards them, open-handed.
       // He raises whichever arm is on the camera's side of him, so the gesture is never hidden.

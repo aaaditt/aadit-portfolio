@@ -65,7 +65,7 @@ type View = { position: [number, number, number]; target: [number, number, numbe
 /** At the camp, a question widens the view to take in whatever answers it. */
 const CAMP_VIEW: View = { position: [9.2, 12.4, 42.5], target: [0.4, 8.5, 24.5] };
 /** "What have you done?" looks past him and out over the valley. */
-const VALLEY_VIEW: View = { position: [3.5, 15, 41], target: [3.5, 5, -2] };
+const VALLEY_VIEW: View = { position: [10.5, 15.5, 38], target: [1, 5, -4] };
 
 const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 const smoothstep = (a: number, c: number, t: number) => {

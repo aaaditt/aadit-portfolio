@@ -24,7 +24,7 @@ import { pin, unpin } from "./pin";
 
 const cube = new THREE.BoxGeometry(1, 1, 1);
 const UNLIT = new THREE.Color("#6b5335");
-const LIT = new THREE.Color("#ffc46b");
+const LIT = new THREE.Color("#fff0a0");
 
 /** Where he goes to answer each question, and which way he turns there. */
 export function askStand(ask: string): Stand {

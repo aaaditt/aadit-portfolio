@@ -345,7 +345,7 @@ export function tentFlap(): Box[] {
 export function hangingLantern(): { solid: Box[]; flame: Box[] } {
   return {
     solid: [b(-0.03, -0.18, -0.03, 0.06, 0.18, 0.06, K.navyD), b(-0.2, -0.26, -0.2, 0.4, 0.08, 0.4, K.navyD), b(-0.2, -0.72, -0.2, 0.4, 0.08, 0.4, K.navyD)],
-    flame: [b(-0.15, -0.64, -0.15, 0.3, 0.38, 0.3, K.fire)],
+    flame: [b(-0.19, -0.66, -0.19, 0.38, 0.42, 0.38, K.fire)],
   };
 }
 

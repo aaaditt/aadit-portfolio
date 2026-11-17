@@ -2,9 +2,14 @@
 
 ## Status
 
-Stage 1 (ready to share) built and pushed on 2026-11-16. Stage 2 (the Light Table for one project, Brand refresh) built on 2026-11-17, with one critic round acted on; it waits for Aadit's verdict before stage 3.
+Stage 1 (ready to share) built and pushed on 2026-11-16. Stage 2 (the Light Table for one project) built on 2026-11-17. Aadit then asked for the rest without stopping between stages; stages 3 to 6 were built and pushed together on 2026-11-17 (commit b8330cd), and stage 7's critic round followed. Real content is still to come.
 
-How the Light Table turned out, where it differs from the text below: the sheets fan out above the easel like a hand of cards, each on a thread of light, instead of lifting off a table. A picked sheet is held up large beside him, draws itself again, and is named by a caption on the page pinned to it. The selection lives in `src/world/sheetStore.ts` (it is state both sides set, so not a one-off cue).
+How it turned out, where it differs from the text below:
+- **Design.** Sheets fan out above the easel on threads of light rather than lifting off a table. Each project has its own picture layout (blocks, screen, poster). The buckets take the open project's colours.
+- **Code.** The hood lifts whenever the visitor is at the lab, not on a separate step; under it are three cores, one per project, which brighten with the project's row on the wall. The machine floats above the terminal.
+- **Events.** The Grounds keep the tent and stage, replace the giant cabinet with a marquee gate, and add club banners on poles in front of the stage.
+- **About.** He does not greet at the camp; he waits to be asked. Questions: who, where, what have you done, what have you studied, how do I reach you, and CV (hidden until `CV` in `src/content/about.ts` is set). The plane is out for at least 1.6 s whatever the network does, and the flag rises only when it lands.
+- Picks shared by card and world live in `src/world/pickStore.ts`; the per-place logic is in `src/world/show/*Rule.ts`, tested.
 
 ## Context
 

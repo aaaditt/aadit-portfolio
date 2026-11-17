@@ -5,7 +5,7 @@
  */
 
 /** A block's size, the gap between neighbours' middles, and where the row floats. */
-export const PART = { size: 1.15, gap: 1.65, y: 4.5, z: 0.9 };
+export const PART = { size: 1.15, gap: 1.65, y: 5.1, z: 0.9 };
 
 export type PartPose = { x: number; y: number; z: number; size: number; shown: boolean };
 
