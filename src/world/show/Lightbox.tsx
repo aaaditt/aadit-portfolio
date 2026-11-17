@@ -306,9 +306,9 @@ export function Lightbox({ exhibit, y, project, open }: { exhibit: Exhibit; y: n
     const step = Math.min(delta, 0.05);
     const still = !animate;
 
-    // The show begins once the stage is nearly up and the camera nearly at rest, so the whole build
+    // The show begins once the stage is 70% up and the camera nearly at rest, so the whole build
     // is seen, in (almost) its final framing.
-    if (open && began.current < 0 && stage.level >= 0.8) {
+    if (open && began.current < 0 && stage.level >= 0.7) {
       began.current = t;
       whole.current = false;
       scrubbedAlone.current = false;

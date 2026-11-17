@@ -106,7 +106,7 @@ When an item opens, the world goes dark around one lit stage. Within 1.5 seconds
   - On desktop the row moves right of the card; on a phone it is 1.15× larger.
 - **Direction.** Dragging right moves to later stages. A tap moves on one stage. There is a soft tick per stage crossed, and on release a click and a 200 ms squash.
 - **Tabs.** At rest there is no tab: the card picks the top stage's chip as soon as the sheet is whole, so it names the stage. Spread out, each plane's tab shows its name.
-- **Timing, changed from the brief.** The rise starts once the stage is 80% up, so the whole build is seen from the settled camera. The sheet is whole about 1.7 s after the item opens, not 1.5 s. The peel hint comes about 0.3 s after that, not at 0.6 s, because there is no sheet to peel before it is built. The critic flagged both, and both are deliberate.
+- **Timing, changed from the brief.** The rise starts once the stage is 70% up, so the whole build is seen from the nearly settled camera; the sheet is whole about 1.5 s after the item opens. The peel hint comes about 0.3 s after that, not at 0.6 s, because there is no sheet to peel before it is built. The critic flagged both, and both are deliberate.
 - **Peel.** It starts 0.3 s after the sheet is whole and holds for 0.35 s. It lifts the top sheet's right edge towards the viewer and slides it aside, so the stage under it shows; a pure 15° turn is invisible head-on. Untouched, it peels again at +2.2 s, then scrubs once on its own at 4 s.
 - **Grip.** A paper tab with arrows, inset on the top sheet's right edge. It moves with the peel.
 - **Leaving mid-drag.** The finger stays claimed (`lightbox.owner` / `held`) until it lifts, so it never turns the world or scrubs the next sheet.
