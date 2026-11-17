@@ -2,6 +2,8 @@
 
 ## Status
 
+Round 4 is done; the work continues as round 5 (`2026-11-17-round-5-wow-design.md`). Start a new session from `docs/START-HERE.md`.
+
 Stage 1 (ready to share) built and pushed on 2026-11-16. Stage 2 (the Light Table for one project) built on 2026-11-17. Aadit then asked for the rest without stopping between stages; stages 3 to 6 were built and pushed together on 2026-11-17 (commit b8330cd), and stage 7's critic round followed. Real content is still to come.
 
 How it turned out, where it differs from the text below:
