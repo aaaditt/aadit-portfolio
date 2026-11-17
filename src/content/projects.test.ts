@@ -103,6 +103,8 @@ test("a design project has a few named sheets, each with something to say, endin
       expect(s.label.length, p.id).toBeGreaterThan(0);
       expect(s.note.length, p.id).toBeGreaterThan(10);
       if (p.sample) expect(s.note, p.id).toMatch(/^A placeholder/);
+      if (s.image !== undefined) expect(s.image, p.id).toMatch(/^\/work\/[a-z0-9-]+\/[\w.-]+\.(png|jpe?g|webp)$/);
+      if (s.weeks !== undefined) expect(Number.isInteger(s.weeks) && s.weeks > 0 && s.weeks < 100, `${p.id} weeks`).toBe(true);
     }
   }
   // The three do not all look alike.

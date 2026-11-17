@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useThree } from "@react-three/fiber";
 import { intro } from "./introStore";
 import { orbit, turnBy, zoomBy } from "./orbit";
+import { lightbox } from "./show/lightboxStore";
 
 /** Radians turned for each pixel dragged. */
 const TURN = 0.006;
@@ -41,6 +42,8 @@ export function OrbitInput() {
       last.y = event.clientY;
       orbit.moved += Math.abs(dx) + Math.abs(dy);
 
+      // A finger on the Lightbox's sheet is scrubbing it, not turning the world.
+      if (lightbox.held === event.pointerId) return;
       if (down.size === 2) {
         // Two fingers: pinching in pulls the camera back, spreading brings it closer.
         const [a, c] = [...down.values()];
@@ -56,6 +59,8 @@ export function OrbitInput() {
 
     const onUp = (event: PointerEvent) => {
       down.delete(event.pointerId);
+      // A finger whose sheet went away mid-drag is freed here; a live sheet frees its own.
+      if (lightbox.held === event.pointerId && lightbox.owner === "") lightbox.held = -1;
       if (down.size === 0) orbit.dragging = false;
     };
 

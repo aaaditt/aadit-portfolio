@@ -14,10 +14,11 @@ import { cameraMove, stage, stageUniforms } from "../stageStore";
 import { ROOM_AT, tent } from "../tentStore";
 import type { Exhibit } from "../voxel/exhibitData";
 import { groundY, plateau } from "../voxel/terrain";
+import { SHEET_AT } from "./lightboxRule";
 
-/** Where the show of an exhibit is, measured from its foot: above the easel, the machine above the terminal, the crowd in front of the cart. */
+/** Where the show of an exhibit is, measured from its foot: the Lightbox's sheet behind the easel, the machine above the terminal, the crowd in front of the cart. */
 const SHOW_AT: Record<Exhibit["kind"], [number, number, number]> = {
-  easel: [0.5, 3.7, 1.2],
+  easel: [SHEET_AT.x, SHEET_AT.y, SHEET_AT.z],
   terminal: [0, 4.3, 0.9],
   cart: [0, 1.4, 2.4],
 };

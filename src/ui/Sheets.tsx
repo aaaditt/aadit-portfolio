@@ -19,7 +19,7 @@ export function Sheets({ project }: { project: Project }) {
       heading="How it was made"
       items={list.map((sheet) => ({ id: sheet.kind, label: sheet.label, note: sheet.note }))}
       store={sheets}
-      hint="Pick a stage to bring its sheet forward."
+      hint="Drag the big sheet sideways, or pick a stage."
       sample={project.sample}
     >
       <p className={styles.swatches}>

@@ -16,7 +16,7 @@ import type { Box } from "./box";
 import { EXHIBITS, type Exhibit } from "./exhibitData";
 import { Fair } from "../show/Fair";
 import { Machine } from "../show/Machine";
-import { LightTable } from "./LightTable";
+import { Lightbox } from "../show/Lightbox";
 import * as M from "./models";
 import { heightAt } from "./terrain";
 import { Voxels } from "./Voxels";
@@ -136,7 +136,7 @@ export function Exhibits({ project, onOpen }: { project: string | null; onOpen: 
             <Work exhibit={EXHIBITS[i]} y={item.y} colours={item.project.colours} swap={item.model.swap} keep={item.model.keep} finished={Boolean(item.project.show)} />
           </group>
           {/* Whatever the project has to show is built here from its own facts when it is opened. */}
-          {item.project.show?.sheets && <LightTable exhibit={EXHIBITS[i]} y={item.y} project={item.project} open={selected === i} />}
+          {item.project.show?.sheets && <Lightbox exhibit={EXHIBITS[i]} y={item.y} project={item.project} open={selected === i} />}
           {item.project.show?.parts && <Machine exhibit={EXHIBITS[i]} y={item.y} project={item.project} open={selected === i} />}
           {item.project.show?.attendance && <Fair exhibit={EXHIBITS[i]} y={item.y} project={item.project} open={selected === i} />}
           <mesh

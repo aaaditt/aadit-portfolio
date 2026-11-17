@@ -9,7 +9,8 @@ import { intro } from "./introStore";
 import { flight } from "./overlayState";
 import { asked } from "./pickStore";
 import { driftWeight, handover } from "./landingRule";
-import { fogRange, stageFov, stageStepBack, viewDrop } from "./stageRule";
+import { lightbox } from "./show/lightboxStore";
+import { SHOW_FRAME, fogRange, stageFov, stageStepBack, viewDrop } from "./stageRule";
 import { cameraMove, stage } from "./stageStore";
 import { CREDENTIALS } from "@/content/about";
 import { ROOM_FOV, roomCamera, roomSize } from "./show/trophyRule";
@@ -139,6 +140,14 @@ export function CameraRig({ section, project, animate }: { section: Section; pro
         // The long lens of a staged show would bring it too close: step back as the lens narrows,
         // so the show grows in the frame without filling it.
         offset.multiplyScalar(stageStepBack(stage.level));
+        // Some shows want their own framing: further back, or lower.
+        const frame = SHOW_FRAME[stage.place];
+        offset.y *= 1 + (frame.rise - 1) * stage.level;
+        offset.multiplyScalar(1 + (frame.back - 1) * stage.level);
+        if (aspect < 1) offset.multiplyScalar(1 + (frame.phone - 1) * stage.level);
+        offset.x += frame.side * stage.level;
+        // Pulling the Lightbox's stages apart, it stands back a little more to take in the row.
+        if (stage.place === "design") offset.multiplyScalar(1 + 0.12 * lightbox.spread);
       }
       goalPosition.copy(goalTarget).add(offset);
     };

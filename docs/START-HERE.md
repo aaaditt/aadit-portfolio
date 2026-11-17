@@ -13,7 +13,8 @@ Aadit's portfolio is a voxel valley in the browser. It is live at https://aadit-
   - Item 1, the Stage: the world goes dark around an open show.
   - Item 2, "light the valley": beams over each place.
   - Design: `docs/superpowers/specs/2026-11-17-round-5-wow-design.md`.
-- **Next: round 5, items 3 to 6.** Plan: `docs/superpowers/plans/2026-11-17-round-5-items-3-to-6.md`. Item 3, the Design Lightbox, is first.
+- **Round 5, item 3, the Design Lightbox: mechanics built** on placeholder art. It replaces the old Light Table (`src/world/show/Lightbox.tsx`). It is not signed off until Aadit's real images are in and he has looked at it.
+- **Next: items 4 to 6.** Plan: `docs/superpowers/plans/2026-11-17-round-5-items-3-to-6.md`.
 - **Almost all content is still placeholder.** What is real: the About facts, the contact links, the IEEE BITS Dubai role, and the BITS Pilani degree.
 
 ## Waiting on Aadit
@@ -50,6 +51,6 @@ Aadit's portfolio is a voxel valley in the browser. It is live at https://aadit-
 | Pages | `src/app/` (`[section]`, `[section]/[project]`, `about`, `work` for the plain list) |
 | Card UI | `src/ui/` (`Sheets.tsx`, `Asks.tsx`, `Contact.tsx`, `ValleyTags.tsx`, `DoorFade.tsx`) |
 | World | `src/world/`: the camera in `CameraRig.tsx` (opening flight, section views, landing), light in `DayNight.tsx`, the Stage in `stageRule.ts`, `stageStore.ts` and `show/Stage.tsx` |
-| Shows | `src/world/show/` (each with a tested `*Rule.ts`) and `src/world/voxel/LightTable.tsx` |
+| Shows | `src/world/show/` (each with a tested `*Rule.ts`; the design show is `Lightbox.tsx`) |
 | Models | `src/world/voxel/models.ts`, terrain in `terrain.ts`, routes in `routes.ts`, the character in `Character.tsx` |
 | Shared stores | `overlayState.ts` (`cue`, `caption`, `mailbox`), `pickStore.ts`, `sheetStore.ts`, `tentStore.ts`, `bubbleStore.ts` |

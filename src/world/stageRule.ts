@@ -65,6 +65,22 @@ const PHONE = 560;
  */
 export const stageStepBack = (level: number) => 1 + 0.35 * level;
 
+/**
+ * Per place, how the staged camera frames its show:
+ * - `back`: how much further back it stands;
+ * - `rise`: how much of its height above the show it keeps;
+ * - `side`: how far it moves to the right (world units);
+ * - `phone`: how much closer it comes on a tall screen, where the card sits below and the show can be larger.
+ * The Lightbox's sheet is three times his height, so the camera stands well back, comes down low
+ * and steps right, past the tree in front of the easels, to look over his shoulder at it.
+ */
+export const SHOW_FRAME: Record<StagePlace, { back: number; rise: number; side: number; phone: number }> = {
+  design: { back: 2.15, rise: 0.35, side: 2, phone: 0.85 },
+  code: { back: 1, rise: 1, side: 0, phone: 1 },
+  events: { back: 1, rise: 1, side: 0, phone: 1 },
+  about: { back: 1, rise: 1, side: 0, phone: 1 },
+};
+
 /** The lens, from the ordinary 35 to the stage's narrow one. */
 export function stageFov(level: number, width: number): number {
   const narrow = width <= PHONE ? NARROW.phone : NARROW.desktop;

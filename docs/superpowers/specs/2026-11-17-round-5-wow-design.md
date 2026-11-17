@@ -6,7 +6,7 @@
 |---|---|
 | 1. Stage | Built and live (commit 8fd4104). |
 | 2. About: light the valley | Built and live (commit 640dac4). |
-| 3. Design: the Lightbox | Not started. Waits on one real design project's four stage images. |
+| 3. Design: the Lightbox | Mechanics built on placeholder art (2026-11-17), not signed off: waits on one real design project's four stage images. |
 | 4. Events: count them in | Not started. Waits on one real event. |
 | 5. Code: the lab unfolds | Not started. Waits on one real build split into parts. |
 | 6. Impact kit | Not started. Last. |
@@ -95,6 +95,22 @@ When an item opens, the world goes dark around one lit stage. Within 1.5 seconds
 - At 0.6 s the top plane peels back 15° and springs back.
 - A grip tab sits on the sheet's edge.
 - With no touch after 4 s, it scrubs once on its own.
+
+**As built** (`show/Lightbox.tsx`, `show/lightboxRule.ts`, `show/lightboxStore.ts`):
+- **Size.** He is about 3.5 tall: his legs run below his model's origin. So the sheet is 14.3 × 10.6. It stands just behind the easel, with him in front of it.
+- **Camera.** The design show's camera (`SHOW_FRAME` in `stageRule.ts`) stands 2.15× further back, lower, and 2 units right, over his shoulder and past the tree. It is 15% closer on a phone, and a further 12% back while the stages are spread.
+- **Rise.** A 0.2 s beat, then 60 blocks arc up from the grass to their cells, landing about 1.1× large. All are in by 0.97 s.
+- **Scrub.** The scrub is a continuous stage index `s`, blended by `spread` from a neat pad (stage `s` on top) to a row of cards.
+  - The row overlaps like a hand of cards, each card in front of the one on its left.
+  - The picked card comes forward 1.3× and is drawn down out of the hand, so no name tab is ever covered.
+  - On desktop the row moves right of the card; on a phone it is 1.15× larger.
+- **Direction.** Dragging right moves to later stages. A tap moves on one stage. There is a soft tick per stage crossed, and on release a click and a 200 ms squash.
+- **Tabs.** At rest there is no tab: the card picks the top stage's chip as soon as the sheet is whole, so it names the stage. Spread out, each plane's tab shows its name.
+- **Timing, changed from the brief.** The rise starts once the stage is 80% up, so the whole build is seen from the settled camera. The sheet is whole about 1.7 s after the item opens, not 1.5 s. The peel hint comes about 0.3 s after that, not at 0.6 s, because there is no sheet to peel before it is built. The critic flagged both, and both are deliberate.
+- **Peel.** It starts 0.3 s after the sheet is whole and holds for 0.35 s. It lifts the top sheet's right edge towards the viewer and slides it aside, so the stage under it shows; a pure 15° turn is invisible head-on. Untouched, it peels again at +2.2 s, then scrubs once on its own at 4 s.
+- **Grip.** A paper tab with arrows, inset on the top sheet's right edge. It moves with the peel.
+- **Leaving mid-drag.** The finger stays claimed (`lightbox.owner` / `held`) until it lifts, so it never turns the world or scrubs the next sheet.
+- **Pictures.** Each stage has two 128-pixel-wide canvases, one per kind of tab. Each holds the real `image` if given, else `sheetArt`, plus "N weeks" in the 3×5 pixel font. The rising voxels take their colours from it.
 
 **Done when:**
 - the sheet is at least 3× his height on desktop and at least 55% of the screen width on a phone;

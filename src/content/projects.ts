@@ -11,6 +11,10 @@ export type Sheet = {
   label: string;
   /** What happened at this stage, in a sentence or two. */
   note: string;
+  /** A real picture of this stage, in /public (e.g. "/work/<id>/sketch.png"). Until then one is drawn from the project's colours. */
+  image?: string;
+  /** How many weeks this stage took, if known: printed on its sheet. */
+  weeks?: number;
 };
 
 /** One working part of a code project: a block of its machine, and a line about it in the card. */
