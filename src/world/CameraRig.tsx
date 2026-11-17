@@ -35,7 +35,8 @@ const FLIGHT = new THREE.CatmullRomCurve3(
     new THREE.Vector3(-18, 62, 30),
     new THREE.Vector3(-36, 34, 30),
     new THREE.Vector3(-28, 20, 46),
-    new THREE.Vector3(-6, 14, 50),
+    // Ends beside the resting view, so the last second is one curve that arrives, not a blend of two.
+    new THREE.Vector3(4, 13.5, 42),
   ],
   false,
   "centripetal",
